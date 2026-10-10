@@ -1,0 +1,106 @@
+button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+  &.primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+  }
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+}
+input,
+select,
+textarea {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--color-text-muted);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 16px;
+}
+textarea {
+  resize: vertical;
+  min-height: 160px;
+}
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+.form-field {
+  margin-bottom: var(--space-4);
+}
+.field-error,
+.error-message {
+  color: var(--color-error);
+}
+.success-message {
+  color: var(--color-success);
+}
+.hint {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
+}
+.page-heading h1 {
+  margin: 0;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+@media (max-width: 767px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.checkbox {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  min-height: 44px;
+}
+input[type='checkbox'] {
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
+  min-height: 22px;
+  padding: 0;
+  accent-color: var(--color-primary);
+}

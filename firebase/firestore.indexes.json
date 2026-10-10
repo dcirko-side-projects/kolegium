@@ -1,0 +1,169 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "scheduleTemplates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "courseId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "validUntil",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "validFrom",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "sessions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "courseId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "scheduledOn",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "scoreAttempts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "order": "ASCENDING",
+          "fieldPath": "activityId"
+        },
+        {
+          "order": "ASCENDING",
+          "fieldPath": "attemptNumber"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "order": "ASCENDING",
+          "fieldPath": "context.type"
+        },
+        {
+          "order": "ASCENDING",
+          "fieldPath": "context.id"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "order": "ASCENDING",
+          "fieldPath": "context.type"
+        },
+        {
+          "order": "ASCENDING",
+          "fieldPath": "isCompleted"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "order": "ASCENDING",
+          "fieldPath": "context.type"
+        },
+        {
+          "order": "ASCENDING",
+          "fieldPath": "context.id"
+        },
+        {
+          "order": "ASCENDING",
+          "fieldPath": "isCompleted"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "assessments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isCompleted",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "scheduledOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "projects",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isCompleted",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dueOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isCompleted",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dueOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "installments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isPaid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dueOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

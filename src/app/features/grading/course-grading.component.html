@@ -1,0 +1,298 @@
+<section class="panel">
+  <h2>Bodovanje i ocjena kolegija</h2>
+  <p>
+    Osobni izračun koristi samo eksplicitno odabrane pokušaje i potvrđena pravila. Službeni rezultat
+    unosi se zasebno.
+  </p>
+  <button (click)="refresh()" [disabled]="loading() || !store.academic.online()">
+    Prikaži / osvježi bodovanje
+  </button>
+  @if (loading()) {
+    <p role="status">Učitavam bodovanje…</p>
+  }
+  @if (error()) {
+    <p role="alert" class="error-message">{{ error()?.message }}</p>
+    @if (error()?.category === 'conflict') {
+      <p>Nova server verzija: {{ serverDescription() }}</p>
+      <button (click)="discard()">Učitaj novu verziju bodovanja</button>
+    }
+  }
+  @if (store.success()) {
+    <p role="status" class="success-message">{{ store.success() }}</p>
+  }
+  @if (data()) {
+    @if (archived()) {
+      <p>Ovo je arhiva. Za ispravak izričito uključi uređivanje.</p>
+      <button (click)="work.archiveEditing.set(!work.archiveEditing())">
+        {{ work.archiveEditing() ? 'Zatvori uređivanje arhive' : 'Uredi arhivu bodovanja' }}
+      </button>
+    }
+    @if (summary(); as result) {
+      <section aria-label="Osobni izračun">
+        <h3>Osobni izračun</h3>
+        <p>Odabrani poznati bodovi: {{ result.total ?? 'nisu poznati' }}</p>
+        <p>Izračunata ocjena: {{ result.grade ?? 'nije određena' }}</p>
+        <p>
+          {{
+            result.complete
+              ? 'Izračun prema unesenoj konfiguraciji — nije službeni rezultat.'
+              : 'Obračun je nepotpun.'
+          }}
+        </p>
+        <ul>
+          @for (reason of result.reasons; track reason) {
+            <li>{{ reason }}</li>
+          }
+        </ul>
+      </section>
+    }
+    <section aria-label="Službeni rezultat">
+      <h3>Službeni rezultat</h3>
+      <p>
+        Službeni bodovi: {{ data()?.outcome?.officialPoints ?? 'nisu poznati' }} · Službena ocjena:
+        {{ data()?.outcome?.officialGrade ?? 'nije poznata' }}
+      </p>
+      @if (
+        summary()?.grade &&
+        data()?.outcome?.officialGrade &&
+        summary()?.grade !== data()?.outcome?.officialGrade
+      ) {
+        <p>Unesena službena i izračunata ocjena razlikuju se.</p>
+      }
+      @if (pointsDiffer()) {
+        <p>Uneseni službeni i odabrani bodovi razlikuju se.</p>
+      }
+    </section>
+    <div class="actions">
+      <button (click)="beginActivity()" [disabled]="!canWrite()">Dodaj bodovanu aktivnost</button
+      ><button (click)="beginRules()" [disabled]="!canWrite()">Uredi pravila bodovanja</button
+      ><button (click)="beginOutcome()" [disabled]="!canWrite()">Uredi službeni rezultat</button>
+    </div>
+    @if (editor() === 'activity') {
+      <form class="panel form-grid" [formGroup]="activityForm" (ngSubmit)="submit()">
+        <h3>Aktivnost i uvjeti</h3>
+        <div class="field">
+          <label for="grading-name">Naziv bodovane aktivnosti</label
+          ><input id="grading-name" formControlName="name" maxlength="200" />
+        </div>
+        <div class="field">
+          <label for="grading-type">Vrsta bodovane aktivnosti</label
+          ><select
+            id="grading-type"
+            formControlName="type"
+            [attr.disabled]="
+              activityForm.controls.type.value === 'assessment' ||
+              activityForm.controls.type.value === 'project'
+                ? ''
+                : null
+            "
+          >
+            <option value="exercise">Vježbe</option>
+            <option value="lecture">Predavanja</option>
+            <option value="assessment" disabled>Provjera znanja</option>
+            <option value="project" disabled>Projekt</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="grading-key">Ključ komponente (opcionalno)</label
+          ><input id="grading-key" formControlName="componentKey" />
+        </div>
+        <div class="field">
+          <label for="grading-max">Maksimalni bodovi aktivnosti (opcionalno)</label
+          ><input id="grading-max" inputmode="decimal" formControlName="maxPoints" />
+        </div>
+        <div class="field">
+          <label for="grading-min">Minimalni bodovi aktivnosti (opcionalno)</label
+          ><input id="grading-min" inputmode="decimal" formControlName="minimumPoints" />
+        </div>
+        <p>Granice i komponentu unesi samo prema pravilima. Dolaznost sama ne stvara bodove.</p>
+        <div class="actions">
+          <button class="primary" [disabled]="!canWrite()">Spremi aktivnost</button
+          ><button type="button" (click)="cancel()">Odustani od bodovanja</button>
+        </div>
+      </form>
+    }
+    @if (editor() === 'outcome') {
+      <form class="panel form-grid" [formGroup]="outcomeForm" (ngSubmit)="submit()">
+        <h3>Službeni rezultat kolegija</h3>
+        <div class="field">
+          <label for="official-points">Službeni bodovi (opcionalno)</label
+          ><input id="official-points" inputmode="decimal" formControlName="officialPoints" />
+        </div>
+        <div class="field">
+          <label for="official-grade">Službena ocjena (opcionalno)</label
+          ><input id="official-grade" formControlName="officialGrade" maxlength="200" />
+        </div>
+        <div class="actions">
+          <button class="primary" [disabled]="!canWrite()">Spremi službeni rezultat</button
+          ><button type="button" (click)="cancel()">Odustani od bodovanja</button>
+        </div>
+      </form>
+    }
+    @if (editor() === 'rules') {
+      <form class="panel" [formGroup]="rulesForm" (ngSubmit)="submit()">
+        <h3>Pravila prema izvoru kolegija</h3>
+        <p>
+          Potvrdi tek kada su unesene sve bodovane aktivnosti i komponente prema izvoru. Nema
+          automatskog izbora pokušaja.
+        </p>
+        <div class="field">
+          <label for="include-projects">Ulaze li projekti u zbroj?</label
+          ><select id="include-projects" formControlName="projectPointsIncluded">
+            <option value="">Nije poznato</option>
+            <option value="true">Da</option>
+            <option value="false">Ne</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="rounding-policy">Zaokruživanje</label
+          ><select id="rounding-policy" formControlName="roundingPolicy">
+            <option value="">Nije poznato / druga politika</option>
+            <option value="none">Bez zaokruživanja — prema izvoru</option>
+          </select>
+        </div>
+        <label class="checkbox"
+          ><input type="checkbox" formControlName="isConfirmed" />Pravila i popis aktivnosti
+          potvrđeni su prema izvoru kolegija</label
+        >
+        <p>Ukupno najviše 6 komponenti i intervala ocjena.</p>
+        <h4>Komponente</h4>
+        <div formArrayName="components">
+          @for (c of rulesForm.controls.components.controls; track c; let i = $index) {
+            <fieldset [formGroupName]="i">
+              <legend>Komponenta {{ i + 1 }}</legend>
+              <div class="form-grid">
+                <div class="field">
+                  <label [for]="'component-key-' + i">Ključ komponente {{ i + 1 }}</label
+                  ><input [id]="'component-key-' + i" formControlName="key" />
+                </div>
+                <div class="field">
+                  <label [for]="'component-label-' + i">Naziv komponente {{ i + 1 }}</label
+                  ><input [id]="'component-label-' + i" formControlName="label" />
+                </div>
+                <div class="field">
+                  <label [for]="'component-max-' + i">Maksimum komponente {{ i + 1 }}</label
+                  ><input
+                    [id]="'component-max-' + i"
+                    formControlName="maxPoints"
+                    inputmode="decimal"
+                  />
+                </div>
+                <div class="field">
+                  <label [for]="'component-min-' + i">Minimum komponente {{ i + 1 }}</label
+                  ><input
+                    [id]="'component-min-' + i"
+                    formControlName="minimumPoints"
+                    inputmode="decimal"
+                  />
+                </div>
+              </div>
+              <button type="button" (click)="removeComponent(i)">
+                Ukloni komponentu {{ i + 1 }}
+              </button>
+            </fieldset>
+          }
+        </div>
+        <button
+          type="button"
+          (click)="addComponent()"
+          [disabled]="rulesForm.controls.components.length + rulesForm.controls.scale.length >= 6"
+        >
+          Dodaj komponentu
+        </button>
+        <h4>Intervali ocjena</h4>
+        <p>
+          Donja granica uključena, gornja isključena. Prazna gornja granica znači bez gornje
+          granice; intervale unesi uzlazno prema izvoru.
+        </p>
+        <div formArrayName="scale">
+          @for (c of rulesForm.controls.scale.controls; track c; let i = $index) {
+            <fieldset [formGroupName]="i">
+              <legend>Interval {{ i + 1 }}</legend>
+              <div class="form-grid">
+                <div class="field">
+                  <label [for]="'scale-grade-' + i">Ocjena intervala {{ i + 1 }}</label
+                  ><input [id]="'scale-grade-' + i" formControlName="grade" />
+                </div>
+                <div class="field">
+                  <label [for]="'scale-min-' + i">Od bodova {{ i + 1 }}</label
+                  ><input
+                    [id]="'scale-min-' + i"
+                    formControlName="minInclusive"
+                    inputmode="decimal"
+                  />
+                </div>
+                <div class="field">
+                  <label [for]="'scale-max-' + i">Do bodova {{ i + 1 }} (opcionalno)</label
+                  ><input
+                    [id]="'scale-max-' + i"
+                    formControlName="maxExclusive"
+                    inputmode="decimal"
+                  />
+                </div>
+              </div>
+              <button type="button" (click)="removeScale(i)">Ukloni interval {{ i + 1 }}</button>
+            </fieldset>
+          }
+        </div>
+        <button
+          type="button"
+          (click)="addScale()"
+          [disabled]="rulesForm.controls.components.length + rulesForm.controls.scale.length >= 6"
+        >
+          Dodaj interval ocjene
+        </button>
+        <h4>Obračunski pokušaji</h4>
+        <div formArrayName="selections">
+          @for (c of rulesForm.controls.selections.controls; track c; let i = $index) {
+            <div class="field" [formGroupName]="i">
+              <label [for]="'selection-' + i"
+                >Obračunski pokušaj — {{ activityName(c.controls.activityId.value) }}</label
+              ><select [id]="'selection-' + i" formControlName="attemptId">
+                <option value="">Nije odabran</option>
+                @for (a of attempts(c.controls.activityId.value); track a.id) {
+                  <option [value]="a.id">
+                    Pokušaj {{ a.attemptNumber }} · {{ a.points ?? 'bodovi nepoznati' }}
+                  </option>
+                }
+              </select>
+            </div>
+          }
+        </div>
+        <div class="actions">
+          <button class="primary" [disabled]="!canWrite()">Spremi pravila bodovanja</button
+          ><button type="button" (click)="cancel()">Odustani od bodovanja</button>
+        </div>
+      </form>
+    }
+    @for (activity of data()?.activities; track activity.id) {
+      <article class="panel" [attr.aria-label]="activity.name">
+        <h3>{{ activity.name }}</h3>
+        <p>
+          Komponenta: {{ activity.componentKey ?? 'nije poznata' }} · Maksimum:
+          {{ activity.maxPoints ?? 'nije poznat' }} · Minimum:
+          {{ activity.minimumPoints ?? 'nije poznat' }}
+        </p>
+        <div class="actions">
+          <button (click)="beginActivity(activity)" [disabled]="!canWrite()">
+            Uredi uvjete aktivnosti</button
+          ><button (click)="history.set(history() === activity.id ? null : activity.id)">
+            Pokušaji aktivnosti
+          </button>
+        </div>
+        @if (history() === activity.id) {
+          <app-result-history
+            [editable]="canWrite()"
+            [sourceType]="activity.source.type"
+            [sourceId]="activity.source.id ?? activity.id"
+          />
+        }
+      </article>
+    } @empty {
+      <p>
+        Nema bodovanih aktivnosti. Provjera ili projekt dobiva svoju aktivnost pri prvom unosu
+        rezultata.
+      </p>
+    }
+  }
+</section>

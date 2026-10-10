@@ -1,0 +1,201 @@
+@if (!embedded()) {
+  <div class="page-heading">
+    <h1>To-do</h1>
+    <a routerLink="/sections">Pogledaj sve sekcije</a>
+  </div>
+  <p>Jedna lista zadataka: samostalni, za kolegij, projekt ili diplomski.</p>
+} @else {
+  <h2>Povezani zadaci</h2>
+}
+@if (store.loading()) {
+  <p role="status">Učitavam zadatke…</p>
+}
+@if (store.error()) {
+  <p role="alert">{{ store.error()?.message }}</p>
+  <button (click)="store.refresh()">Osvježi zadatke</button>
+}
+@if (error()) {
+  <p role="alert" class="error-message">{{ error()?.message }}</p>
+  @if (error()?.category === 'conflict') {
+    <p>Server verzija: {{ serverDescription() }}</p>
+    <button (click)="replaceWithServer()">Učitaj novu verziju zadatka</button>
+  }
+}
+@if (store.success()) {
+  <p role="status" class="success-message">{{ store.success() }}</p>
+}
+@if (store.academic.busy()) {
+  <p role="status">Spremam promjenu…</p>
+}
+<div class="actions">
+  <button class="primary" (click)="start()" [disabled]="!store.canWrite()">Dodaj zadatak</button>
+  <button
+    (click)="store.archiveEditing.set(!store.archiveEditing())"
+    [attr.aria-pressed]="store.archiveEditing()"
+  >
+    Uredi arhivu
+  </button>
+</div>
+@if (!embedded()) {
+  <div class="panel form-grid">
+    <div>
+      <label for="task-filter-type">Filtriraj kontekst</label
+      ><select
+        id="task-filter-type"
+        [disabled]="store.academic.busy() || store.loading()"
+        #typeFilter
+        [value]="filterType()"
+        (change)="changeFilters(typeFilter.value, '', statusFilter.value)"
+      >
+        <option value="all">Svi konteksti</option>
+        <option value="none">Samostalni</option>
+        <option value="course">Kolegij</option>
+        <option value="project">Projekt</option>
+        <option value="thesis">Diplomski</option>
+      </select>
+    </div>
+    <div>
+      <label for="task-filter-status">Status zadataka</label
+      ><select
+        id="task-filter-status"
+        [disabled]="store.academic.busy() || store.loading()"
+        #statusFilter
+        [value]="filterStatus()"
+        (change)="changeFilters(typeFilter.value, filterId(), statusFilter.value)"
+      >
+        <option value="all">Svi statusi</option>
+        <option value="open">Otvoreni</option>
+        <option value="done">Dovršeni</option>
+      </select>
+    </div>
+    @if (filterType() === 'course') {
+      <div>
+        <label for="task-filter-context">Odaberi kolegij za filter</label
+        ><select
+          id="task-filter-context"
+          [disabled]="store.academic.busy() || store.loading()"
+          #courseFilter
+          [value]="filterId()"
+          (change)="changeFilters(typeFilter.value, courseFilter.value, statusFilter.value)"
+        >
+          <option value="">Svi kolegiji</option>
+          @for (c of store.academic.courses(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+    }
+    @if (filterType() === 'project') {
+      <div>
+        <label for="task-filter-project">Odaberi projekt za filter</label
+        ><select
+          id="task-filter-project"
+          [disabled]="store.academic.busy() || store.loading()"
+          #projectFilter
+          [value]="filterId()"
+          (change)="changeFilters(typeFilter.value, projectFilter.value, statusFilter.value)"
+        >
+          <option value="">Svi projekti</option>
+          @for (p of store.projects(); track p.id) {
+            <option [value]="p.id">{{ p.name }}</option>
+          }
+        </select>
+      </div>
+    }
+  </div>
+}
+@if (editing()) {
+  <form class="panel" [formGroup]="form" (ngSubmit)="submit()">
+    <h2>{{ old() ? 'Uredi zadatak' : 'Novi zadatak' }}</h2>
+    <div class="form-field">
+      <label [attr.for]="'task-title-' + (fixedId() ?? 'all')">Naziv zadatka</label
+      ><input [id]="'task-title-' + (fixedId() ?? 'all')" maxlength="200" formControlName="title" />
+    </div>
+    <div class="form-field">
+      <label [attr.for]="'task-date-' + (fixedId() ?? 'all')">Rok zadatka (opcionalno)</label
+      ><input [id]="'task-date-' + (fixedId() ?? 'all')" type="date" formControlName="dueOn" />
+    </div>
+    @if (!fixedType()) {
+      <div class="form-field">
+        <label for="task-context-type">Kontekst zadatka</label
+        ><select id="task-context-type" formControlName="contextType" (change)="contextChanged()">
+          <option value="none">Samostalni</option>
+          <option value="course">Kolegij</option>
+          <option value="project">Projekt</option>
+          <option value="thesis">Diplomski</option>
+        </select>
+      </div>
+      @if (form.controls.contextType.value === 'course') {
+        <div class="form-field">
+          <label for="task-course">Kolegij zadatka</label
+          ><select id="task-course" formControlName="contextId">
+            <option value="">Odaberi kolegij</option>
+            @for (c of store.academic.courses(); track c.id) {
+              <option [value]="c.id" [selected]="form.controls.contextId.value === c.id">
+                {{ c.name }}
+              </option>
+            }
+            @if (missingContextOption()) {
+              <option [value]="form.controls.contextId.value" selected>
+                {{ store.courseNames()[form.controls.contextId.value] ?? 'Izvorni kolegij' }}
+              </option>
+            }
+          </select>
+        </div>
+      }
+      @if (form.controls.contextType.value === 'project') {
+        <div class="form-field">
+          <label for="task-project">Projekt zadatka</label
+          ><select id="task-project" formControlName="contextId">
+            <option value="">Odaberi projekt</option>
+            @for (p of store.projects(); track p.id) {
+              <option [value]="p.id" [selected]="form.controls.contextId.value === p.id">
+                {{ p.name }}
+              </option>
+            }
+            @if (missingContextOption()) {
+              <option [value]="form.controls.contextId.value" selected>Izvorni projekt</option>
+            }
+          </select>
+        </div>
+        <p class="hint">Kolegij se određuje iz projekta; ne upisuje se drugi kontekst.</p>
+      }
+      @if (form.controls.contextType.value === 'thesis' && !store.thesis()) {
+        <p>Najprije spremi osnovnu evidenciju diplomskog u sekciji Diplomski.</p>
+      }
+    }
+    @if (store.academic.moreCourses()) {
+      <button type="button" (click)="store.academic.loadMore('courses')">
+        Učitaj još kolegija
+      </button>
+    }
+    @if (store.moreProjects()) {
+      <p>Za ostale projekte otvori njihov detalj i dodaj povezani zadatak.</p>
+    }
+    <div class="actions">
+      <button class="primary" [disabled]="!store.canWrite()">Spremi zadatak</button
+      ><button type="button" (click)="cancel()">Odustani od zadatka</button>
+    </div>
+  </form>
+}
+@for (row of visible(); track row.id) {
+  <article class="panel" [attr.aria-label]="row.title">
+    <h3>{{ row.title }}</h3>
+    <p>
+      {{ description(row) }} · Rok: {{ row.dueOn ?? 'nije zadan' }} ·
+      {{ row.isCompleted ? 'Dovršeno' : 'Otvoreno' }}
+    </p>
+    <div class="actions">
+      <button (click)="toggle(row)" [disabled]="!store.canEdit(row.id)">
+        {{ row.isCompleted ? 'Ponovno otvori zadatak' : 'Dovrši zadatak' }}</button
+      ><button (click)="start(row)" [disabled]="!store.canEdit(row.id)">Uredi zadatak</button>
+    </div>
+  </article>
+} @empty {
+  @if (!store.loading()) {
+    <p>Nema zadataka u ovom pregledu.</p>
+  }
+}
+@if (store.more()) {
+  <button (click)="store.loadMore()" [disabled]="store.loading()">Učitaj još zadataka</button>
+}

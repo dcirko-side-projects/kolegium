@@ -1,0 +1,103 @@
+<div class="page-heading">
+  <h1>Postavke</h1>
+  <button class="primary" (click)="open()" [disabled]="!store.canWrite()">Dodaj semestar</button>
+</div>
+<section class="panel">
+  <h2>Aktualni semestar</h2>
+  <p>{{ store.activeSemester()?.name ?? 'Aktualni semestar još nije postavljen.' }}</p>
+  <p class="hint">Semestri čuvaju povijest. Arhiva se pregledava odvojeno i ne briše kolegije.</p>
+</section>
+@if (error()) {
+  <div class="panel error-message" role="alert">
+    {{ error()?.message }}
+    @if (error()?.category === 'conflict' && editing()) {
+      <p>Na poslužitelju: {{ serverName() }}</p>
+      <button (click)="replaceWithServer()">Učitaj novu verziju</button>
+    }
+  </div>
+}
+@if (success()) {
+  <p class="success-message" role="status">{{ success() }}</p>
+}
+@if (formOpen()) {
+  <section class="panel" aria-labelledby="semester-form-title">
+    <h2 id="semester-form-title">
+      {{
+        editing()
+          ? editing()?.isArchived
+            ? 'Uredi arhivu semestra'
+            : 'Uredi semestar'
+          : 'Novi semestar'
+      }}
+    </h2>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-field">
+        <label for="semester-name">Naziv semestra</label
+        ><input id="semester-name" formControlName="name" maxlength="200" required />
+      </div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="semester-start">Početak nastave</label
+          ><input id="semester-start" type="date" formControlName="startsOn" required />
+        </div>
+        <div class="form-field">
+          <label for="semester-end">Završetak nastave</label
+          ><input id="semester-end" type="date" formControlName="endsOn" required />
+        </div>
+      </div>
+      <div class="actions">
+        <button class="primary" type="submit" [disabled]="!store.canWrite()">
+          {{ store.busy() ? 'Spremam…' : 'Spremi semestar' }}</button
+        ><button type="button" (click)="cancel()" [disabled]="store.busy()">Odustani</button>
+      </div>
+    </form>
+  </section>
+}
+<section aria-labelledby="semesters-title">
+  <h2 id="semesters-title">Semestri i arhiva</h2>
+  @if (store.ready() && !store.semesters().length) {
+    <div class="panel">
+      <p>Nema unesenih semestara. Dodaj prvi semestar, zatim ga postavi kao aktualan.</p>
+    </div>
+  }
+  @for (row of store.semesters(); track row.id) {
+    <article class="panel">
+      <div class="semester-heading">
+        <h3>{{ row.name }}</h3>
+        <span class="badge">{{
+          row.isArchived
+            ? 'Arhiva'
+            : row.id === store.preferences()?.activeSemesterId
+              ? 'Aktualni'
+              : 'Semestar'
+        }}</span>
+      </div>
+      <p class="hint">{{ row.startsOn }} — {{ row.endsOn }}</p>
+      <div class="actions">
+        <button (click)="view(row)" [disabled]="store.loading()">Pregled kolegija</button>
+        @if (!row.isArchived && row.id !== store.preferences()?.activeSemesterId) {
+          <button (click)="activate(row)" [disabled]="!store.canWrite()">Postavi aktualnim</button>
+        }
+        <button (click)="open(row)" [disabled]="!store.canWrite()">
+          {{ row.isArchived ? 'Uredi arhivu' : 'Uredi' }}</button
+        ><button (click)="archive(row)" [disabled]="!store.canWrite()">
+          {{ row.isArchived ? 'Vrati iz arhive' : 'Arhiviraj' }}
+        </button>
+      </div>
+    </article>
+  }
+  @if (store.moreSemesters()) {
+    <button (click)="store.loadMore('semesters')" [disabled]="store.loading()">
+      Učitaj još semestara
+    </button>
+  }
+</section>
+<app-backup />
+<section class="panel">
+  <h2>Instalacija aplikacije</h2>
+  <p>
+    Na iPhoneu otvori aplikaciju u Safariju i odaberi Dijeli → Dodaj na početni zaslon. Na Androidu
+    ili Windowsu koristi ponuđenu instalaciju ili izbornik preglednika. Za podatke i spremanje
+    potrebna je internetska veza.
+  </p>
+</section>

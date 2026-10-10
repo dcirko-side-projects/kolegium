@@ -1,0 +1,327 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owner(uid) { return request.auth != null && request.auth.uid == uid && uid == 'local-owner'; }
+    function validId(id) { return id is string && id.matches('^[A-Za-z0-9_-]{1,128}$'); }
+    function rootPath(uid) { return /databases/$(database)/documents/users/$(uid); }
+    function entityPath(uid, ds, coll, id) { return /databases/$(database)/documents/users/$(uid)/datasets/$(ds)/$(coll)/$(id); }
+    function active(uid, ds) { return exists(rootPath(uid)) && get(rootPath(uid)).data.activeDatasetId == ds; }
+    function unlockedMutation(uid, ds) {
+      let before = get(rootPath(uid)).data;
+      let after = getAfter(rootPath(uid)).data;
+      return before.activeDatasetId == ds && before.restoreToken == null && after.restoreToken == null
+        && after.activeDatasetId == ds && after.dataRevision == before.dataRevision + 1 && after.updatedAt == request.time;
+    }
+    function stagingMutation(uid,ds) {
+      let root=get(rootPath(uid)).data;
+      return root.restoreToken!=null && root.stagingDatasetId==ds && root.activeDatasetId!=ds && get(/databases/$(database)/documents/users/$(uid)/datasets/$(ds)).data.state=='staging';
+    }
+    function creation(uid,ds) { return unlockedMutation(uid,ds) || stagingMutation(uid,ds); }
+    function readable(uid,ds) {
+      let root=get(rootPath(uid)).data;
+      return root.activeDatasetId==ds || root.previousDatasetId==ds || root.stagingDatasetId==ds || get(/databases/$(database)/documents/users/$(uid)/datasets/$(ds)).data.state in ['abandoned','retained'];
+    }
+    function orphan(uid,ds) {
+      let root=get(rootPath(uid)).data;
+      return ds!=root.activeDatasetId && ds!=root.previousDatasetId && ds!=root.stagingDatasetId && get(/databases/$(database)/documents/users/$(uid)/datasets/$(ds)).data.state in ['abandoned','retained'];
+    }
+    function restoreRoot(uid) {
+      let b=resource.data;
+      let a=request.resource.data;
+      return a.diff(b).affectedKeys().hasOnly(['activeDatasetId','previousDatasetId','stagingDatasetId','restoreToken','dataRevision','updatedAt']) && a.keys()==b.keys() && a.dataRevision is int && a.dataRevision==b.dataRevision+1 && a.dataRevision<=9007199254740991 && a.updatedAt==request.time
+        && ((b.restoreToken==null && validId(a.restoreToken) && validId(a.stagingDatasetId) && a.stagingDatasetId!=b.activeDatasetId && a.stagingDatasetId!=b.previousDatasetId && a.activeDatasetId==b.activeDatasetId && a.previousDatasetId==b.previousDatasetId && !exists(/databases/$(database)/documents/users/$(uid)/datasets/$(a.stagingDatasetId)) && getAfter(/databases/$(database)/documents/users/$(uid)/datasets/$(a.stagingDatasetId)).data.state=='staging')
+          || (b.restoreToken!=null && a.restoreToken==null && a.stagingDatasetId==null &&
+             ((a.activeDatasetId==b.activeDatasetId && a.previousDatasetId==b.previousDatasetId && getAfter(/databases/$(database)/documents/users/$(uid)/datasets/$(b.stagingDatasetId)).data.state=='abandoned')
+               || (a.activeDatasetId==b.stagingDatasetId && a.previousDatasetId==b.activeDatasetId && get(/databases/$(database)/documents/users/$(uid)/datasets/$(b.stagingDatasetId)).data.state=='verifying' && getAfter(/databases/$(database)/documents/users/$(uid)/datasets/$(b.stagingDatasetId)).data.state=='active' && getAfter(/databases/$(database)/documents/users/$(uid)/datasets/$(b.activeDatasetId)).data.state=='retained'))));
+    }
+    function metadataTransition(uid,ds) {
+      let b=get(rootPath(uid)).data;
+      let a=getAfter(rootPath(uid)).data;
+      let old=resource.data.state;
+      let state=request.resource.data.state;
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['state']) && request.resource.data.keys()==resource.data.keys()
+        && ((old=='staging' && state=='verifying' && b.restoreToken!=null && b.stagingDatasetId==ds && a==b)
+          || (old in ['staging','verifying'] && state=='abandoned' && b.restoreToken!=null && b.stagingDatasetId==ds && a.restoreToken==null && a.stagingDatasetId==null && a.activeDatasetId==b.activeDatasetId)
+          || (old=='verifying' && state=='active' && b.restoreToken!=null && b.stagingDatasetId==ds && a.activeDatasetId==ds && a.previousDatasetId==b.activeDatasetId && a.restoreToken==null && a.stagingDatasetId==null)
+          || (old=='active' && state=='retained' && b.restoreToken!=null && b.activeDatasetId==ds && a.activeDatasetId==b.stagingDatasetId && a.previousDatasetId==ds && a.restoreToken==null && a.stagingDatasetId==null));
+    }
+    function common(d, id) {
+      return validId(id) && d.id == id && d.revision is int && d.revision >= 1 && d.revision <= 9007199254740991
+        && d.updatedAt == request.time;
+    }
+    function title(t) { return t is string && t.size() > 0 && t.size() <= 200 && !t.matches('^\\s*$'); }
+    function validDate(d) {
+      return d is string && (d.matches('^[0-9]{4}-((01|03|05|07|08|10|12)-(0[1-9]|[12][0-9]|3[01])|(04|06|09|11)-(0[1-9]|[12][0-9]|30)|02-(0[1-9]|1[0-9]|2[0-8]))$')
+        || d.matches('^([0-9]{2}(0[48]|[2468][048]|[13579][26])|([02468][048]|[13579][26])00)-02-29$'));
+    }
+    function rule(r) {
+      return r is map && r.keys().hasAll(['total','minimum']) && r.keys().hasOnly(['total','minimum'])
+        && (r.total == null || (r.total is int && r.total >= 0 && r.total <= 9007199254740991))
+        && (r.minimum == null || (r.minimum is int && r.minimum >= 0 && r.minimum <= 9007199254740991))
+        && (r.total == null || r.minimum == null || r.minimum <= r.total);
+    }
+    function link(l) {
+      return l is map && l.keys().hasAll(['label','url']) && l.keys().hasOnly(['label','url']) && title(l.label)
+        && l.url is string && l.url.size() <= 2000 && l.url.matches('^https?://[^/@\\s]+([/?#][^\\s]*)?$');
+    }
+    function linkAt(links, n) { return links.size() <= n || link(links[n]); }
+    function links(l) {
+      return l is list && l.size() <= 20 && linkAt(l,0) && linkAt(l,1) && linkAt(l,2) && linkAt(l,3) && linkAt(l,4)
+        && linkAt(l,5) && linkAt(l,6) && linkAt(l,7) && linkAt(l,8) && linkAt(l,9) && linkAt(l,10) && linkAt(l,11)
+        && linkAt(l,12) && linkAt(l,13) && linkAt(l,14) && linkAt(l,15) && linkAt(l,16) && linkAt(l,17) && linkAt(l,18) && linkAt(l,19);
+    }
+    function semesterShape(d, id) {
+      return d.keys().hasAll(['id','revision','updatedAt','name','startsOn','endsOn','isArchived'])
+        && d.keys().hasOnly(['id','revision','updatedAt','name','startsOn','endsOn','isArchived'])
+        && common(d,id) && title(d.name) && validDate(d.startsOn) && validDate(d.endsOn) && d.startsOn <= d.endsOn && d.isArchived is bool;
+    }
+    function preferencesShape(uid, ds, d) {
+      return d.keys().hasAll(['id','revision','updatedAt','activeSemesterId']) && d.keys().hasOnly(['id','revision','updatedAt','activeSemesterId'])
+        && common(d,'app') && (d.activeSemesterId == null || (validId(d.activeSemesterId)
+          && existsAfter(entityPath(uid,ds,'semesters',d.activeSemesterId)) && !getAfter(entityPath(uid,ds,'semesters',d.activeSemesterId)).data.isArchived));
+    }
+    function courseShape(uid, ds, d, id) {
+      return d.keys().hasAll(['id','revision','updatedAt','semesterId','name','information','links','isArchived','attendanceRules'])
+        && d.keys().hasOnly(['id','revision','updatedAt','semesterId','name','information','links','isArchived','attendanceRules'])
+        && common(d,id) && validId(d.semesterId) && existsAfter(entityPath(uid,ds,'semesters',d.semesterId)) && title(d.name)
+        && d.information is string && d.information.size() <= 10000 && d.isArchived is bool && links(d.links)
+        && d.attendanceRules is map && d.attendanceRules.keys().hasAll(['lecture','exercise']) && d.attendanceRules.keys().hasOnly(['lecture','exercise'])
+        && rule(d.attendanceRules.lecture) && rule(d.attendanceRules.exercise);
+    }
+    function validTime(t) { return t is string && t.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'); }
+    function teaching(d) {
+      return d.kind in ['lecture','exercise'] && validTime(d.startsAt) && validTime(d.endsAt) && d.startsAt < d.endsAt
+        && (d.location == null || (d.location is string && d.location.size() <= 200));
+    }
+    function templateShape(uid, ds, d, id) {
+      let course = getAfter(entityPath(uid,ds,'courses',d.courseId)).data;
+      let semester = getAfter(entityPath(uid,ds,'semesters',course.semesterId)).data;
+      return d.keys().hasAll(['id','revision','updatedAt','courseId','kind','weekday','startsAt','endsAt','location','validFrom','validUntil'])
+        && d.keys().hasOnly(['id','revision','updatedAt','courseId','kind','weekday','startsAt','endsAt','location','validFrom','validUntil'])
+        && common(d,id) && validId(d.courseId) && teaching(d) && d.weekday is int && d.weekday >= 1 && d.weekday <= 7
+        && validDate(d.validFrom) && validDate(d.validUntil) && d.validFrom <= d.validUntil
+        && d.validFrom >= semester.startsOn && d.validUntil <= semester.endsOn;
+    }
+    function dayOfWeek(date) {
+      let p = date.split('-');
+      return timestamp.date(int(p[0]),int(p[1]),int(p[2])).dayOfWeek();
+    }
+    function sessionShape(uid, ds, d, id) {
+      return d.keys().hasAll(['id','revision','updatedAt','courseId','templateId','scheduledOn','startsAt','endsAt','kind','location','isCancelled','attendance','replacementForId'])
+        && d.keys().hasOnly(['id','revision','updatedAt','courseId','templateId','scheduledOn','startsAt','endsAt','kind','location','isCancelled','attendance','replacementForId'])
+        && common(d,id) && validId(d.courseId) && existsAfter(entityPath(uid,ds,'courses',d.courseId)) && teaching(d) && validDate(d.scheduledOn)
+        && d.isCancelled is bool && d.attendance in ['unmarked','present','absent'] && (!d.isCancelled || d.attendance == 'unmarked')
+        && (d.templateId == null || validId(d.templateId))
+        && (d.replacementForId == null || (d.templateId == null && validId(d.replacementForId) && d.replacementForId != id
+          && getAfter(entityPath(uid,ds,'sessions',d.replacementForId)).data.courseId == d.courseId
+          && getAfter(entityPath(uid,ds,'sessions',d.replacementForId)).data.kind == d.kind));
+    }
+    function templateSnapshot(uid, ds, d, id) {
+      let t = getAfter(entityPath(uid,ds,'scheduleTemplates',d.templateId)).data;
+      return id == d.templateId + '_' + d.scheduledOn && d.courseId == t.courseId && d.kind == t.kind
+        && d.startsAt == t.startsAt && d.endsAt == t.endsAt && d.location == t.location && d.replacementForId == null
+        && d.scheduledOn >= t.validFrom && d.scheduledOn <= t.validUntil && dayOfWeek(d.scheduledOn) == t.weekday;
+    }
+    function nullableDate(d) { return d == null || validDate(d); }
+    function nullableText(t, n) { return t == null || (t is string && t.size() > 0 && t.size() <= n && !t.matches('^\\s*$')); }
+    function nullableCourse(uid,ds,id) { return id == null || (validId(id) && existsAfter(entityPath(uid,ds,'courses',id))); }
+    function points(p) { return p == null || (p is string && p.matches('^(0|[1-9][0-9]{0,5})(\\.[0-9]{1,4})?$') && float(p) <= 100000); }
+    function assessmentShape(uid,ds,d,id) {
+      return d.keys().hasAll(['id','revision','updatedAt','courseId','name','type','scheduledOn','scheduledAt','isCompleted'])
+        && d.keys().hasOnly(['id','revision','updatedAt','courseId','name','type','scheduledOn','scheduledAt','isCompleted'])
+        && common(d,id) && validId(d.courseId) && nullableCourse(uid,ds,d.courseId) && title(d.name)
+        && d.type in ['quiz','exam','oral','defense','other'] && validDate(d.scheduledOn)
+        && (d.scheduledAt == null || validTime(d.scheduledAt)) && d.isCompleted is bool;
+    }
+    function projectShape(uid,ds,d,id) {
+      return d.keys().hasAll(['id','revision','updatedAt','courseId','name','dueOn','isCompleted','isArchived'])
+        && d.keys().hasOnly(['id','revision','updatedAt','courseId','name','dueOn','isCompleted','isArchived'])
+        && common(d,id) && nullableCourse(uid,ds,d.courseId) && title(d.name) && nullableDate(d.dueOn) && d.isCompleted is bool && d.isArchived is bool;
+    }
+    function sourceCourseStable(uid,ds,type,id,courseId) {
+      let path = entityPath(uid,ds,'scoreActivities',type+'_'+id);
+      return !existsAfter(path) || getAfter(path).data.courseId == courseId;
+    }
+    function taskShape(uid,ds,d,id) {
+      return d.keys().hasAll(['id','revision','updatedAt','title','dueOn','isCompleted','context'])
+        && d.keys().hasOnly(['id','revision','updatedAt','title','dueOn','isCompleted','context'])
+        && common(d,id) && title(d.title) && nullableDate(d.dueOn) && d.isCompleted is bool
+        && d.context is map && d.context.keys().hasAll(['type','id']) && d.context.keys().hasOnly(['type','id'])
+        && ((d.context.type == 'none' && d.context.id == null)
+          || (d.context.type == 'course' && validId(d.context.id) && existsAfter(entityPath(uid,ds,'courses',d.context.id)))
+          || (d.context.type == 'project' && validId(d.context.id) && existsAfter(entityPath(uid,ds,'projects',d.context.id)))
+          || (d.context.type == 'thesis' && d.context.id == 'main' && existsAfter(entityPath(uid,ds,'thesis','main'))));
+    }
+    function thesisShape(d,id) {
+      return id == 'main' && d.keys().hasAll(['id','revision','updatedAt','topic','mentor','information'])
+        && d.keys().hasOnly(['id','revision','updatedAt','topic','mentor','information']) && common(d,id)
+        && nullableText(d.topic,500) && nullableText(d.mentor,500) && d.information is string && d.information.size() <= 10000;
+    }
+    function activityShape(uid,ds,d,id) {
+      return d.keys().hasAll(['id','revision','updatedAt','courseId','name','source','componentKey','maxPoints','minimumPoints'])
+        && d.keys().hasOnly(['id','revision','updatedAt','courseId','name','source','componentKey','maxPoints','minimumPoints'])
+        && common(d,id) && title(d.name) && nullableCourse(uid,ds,d.courseId)
+        && d.source is map && d.source.keys().hasAll(['type','id']) && d.source.keys().hasOnly(['type','id'])
+        && (((d.source.type == 'lecture' || d.source.type == 'exercise') && d.source.id == null && d.courseId != null && id.matches('^'+d.source.type+'_'+d.courseId+'_[A-Za-z0-9_-]+$'))
+          || (validId(d.source.id) && id == d.source.type+'_'+d.source.id
+            && ((d.source.type == 'assessment' && getAfter(entityPath(uid,ds,'assessments',d.source.id)).data.courseId == d.courseId)
+              || (d.source.type == 'project' && getAfter(entityPath(uid,ds,'projects',d.source.id)).data.courseId == d.courseId))))
+        && nullableText(d.componentKey,200) && points(d.maxPoints) && points(d.minimumPoints)
+        && (d.maxPoints == null || d.minimumPoints == null || float(d.minimumPoints) <= float(d.maxPoints));
+    }
+    function attemptShape(uid,ds,d,id) {
+      let activity = getAfter(entityPath(uid,ds,'scoreActivities',d.activityId)).data;
+      return d.keys().hasAll(['id','revision','updatedAt','activityId','attemptNumber','takenOn','points','grade'])
+        && d.keys().hasOnly(['id','revision','updatedAt','activityId','attemptNumber','takenOn','points','grade'])
+        && common(d,id) && validId(d.activityId) && d.attemptNumber is int && d.attemptNumber >= 1 && d.attemptNumber <= 10000
+        && id == d.activityId+'_'+string(d.attemptNumber) && nullableDate(d.takenOn) && points(d.points) && nullableText(d.grade,200)
+        && (activity.maxPoints == null || d.points == null || float(d.points) <= float(activity.maxPoints));
+    }
+    function installmentShape(d,id) {
+      return d.keys().hasAll(['id','revision','updatedAt','name','amountCents','dueOn','isPaid']) && d.keys().hasOnly(['id','revision','updatedAt','name','amountCents','dueOn','isPaid']) && common(d,id) && title(d.name) && d.amountCents is int && d.amountCents>0 && d.amountCents<=1000000000 && validDate(d.dueOn) && d.isPaid is bool;
+    }
+    // matches() rejects non-string values; compact checks keep maximum configs below the evaluation limit.
+    function componentValue(c) {
+      return c.keys().hasOnly(['key','label','maxPoints','minimumPoints']) && c.key.matches('^[A-Za-z0-9_-]{1,128}$') && c.label.matches('^[\\s\\S]{1,200}$') && !c.label.matches('^\\s*$') && (c.maxPoints==null || c.maxPoints.matches('^(100000(\\.0{1,4})?|(0|[1-9][0-9]{0,4})(\\.[0-9]{1,4})?)$')) && (c.minimumPoints==null || c.minimumPoints.matches('^(100000(\\.0{1,4})?|(0|[1-9][0-9]{0,4})(\\.[0-9]{1,4})?)$')) && (c.maxPoints==null || c.minimumPoints==null || float(c.minimumPoints)<=float(c.maxPoints));
+    }
+    function scaleValue(c) {
+      return c.keys().hasOnly(['grade','minInclusive','maxExclusive']) && c.grade.matches('^[\\s\\S]{1,200}$') && !c.grade.matches('^\\s*$') && c.minInclusive!=null && (c.minInclusive==null || c.minInclusive.matches('^(100000(\\.0{1,4})?|(0|[1-9][0-9]{0,4})(\\.[0-9]{1,4})?)$')) && (c.maxExclusive==null || c.maxExclusive.matches('^(100000(\\.0{1,4})?|(0|[1-9][0-9]{0,4})(\\.[0-9]{1,4})?)$')) && (c.maxExclusive==null || float(c.maxExclusive)>float(c.minInclusive));
+    }
+    function selections(list) {
+      let joined = list.join(',');
+      return list.size()==0 || (list == joined.split(',') && joined.matches('^[A-Za-z0-9_-]{1,128}(,[A-Za-z0-9_-]{1,128})*$'));
+    }
+    function gradingComponents(list) { return (list.size()<=0 || componentValue(list[0])) && (list.size()<=1 || componentValue(list[1])) && (list.size()<=2 || componentValue(list[2])) && (list.size()<=3 || componentValue(list[3])) && (list.size()<=4 || componentValue(list[4])) && (list.size()<=5 || componentValue(list[5])) && (list.size()<=6 || componentValue(list[6])) && (list.size()<=7 || componentValue(list[7])) && (list.size()<=8 || componentValue(list[8])) && (list.size()<=9 || componentValue(list[9])); }
+    function gradingScale(list) { return (list.size()<=0 || scaleValue(list[0])) && (list.size()<=1 || scaleValue(list[1])) && (list.size()<=2 || scaleValue(list[2])) && (list.size()<=3 || scaleValue(list[3])) && (list.size()<=4 || scaleValue(list[4])) && (list.size()<=5 || scaleValue(list[5])) && (list.size()<=6 || scaleValue(list[6])) && (list.size()<=7 || scaleValue(list[7])) && (list.size()<=8 || scaleValue(list[8])) && (list.size()<=9 || scaleValue(list[9])); }
+    function gradingShape(uid,ds,d,id) {
+      return d.keys().hasAll(['id','revision','updatedAt','scale','components','countedAttemptIds','projectPointsIncluded','roundingPolicy','isConfirmed']) && d.keys().hasOnly(['id','revision','updatedAt','scale','components','countedAttemptIds','projectPointsIncluded','roundingPolicy','isConfirmed']) && common(d,id) && existsAfter(entityPath(uid,ds,'courses',id)) && d.scale is list && d.scale.size()<=10 && d.components is list && d.components.size()<=10 && d.components.size()+d.scale.size()<=6 && d.countedAttemptIds is list && d.countedAttemptIds.size()<=100 && d.countedAttemptIds.toSet().size()==d.countedAttemptIds.size() && selections(d.countedAttemptIds) && (d.projectPointsIncluded==null || d.projectPointsIncluded is bool) && nullableText(d.roundingPolicy,200) && d.isConfirmed is bool;
+    }
+    function outcomeShape(uid,ds,d,id) {
+      return d.keys().hasAll(['id','revision','updatedAt','officialGrade','officialPoints']) && d.keys().hasOnly(['id','revision','updatedAt','officialGrade','officialPoints']) && common(d,id) && existsAfter(entityPath(uid,ds,'courses',id)) && nullableText(d.officialGrade,200) && points(d.officialPoints);
+    }
+    match /users/{uid} {
+      allow read: if owner(uid);
+      allow create: if owner(uid)
+        && request.resource.data.keys().hasAll(['activeDatasetId','previousDatasetId','stagingDatasetId','restoreToken','dataRevision','schemaVersion','updatedAt'])
+        && request.resource.data.keys().hasOnly(['activeDatasetId','previousDatasetId','stagingDatasetId','restoreToken','dataRevision','schemaVersion','updatedAt'])
+        && validId(request.resource.data.activeDatasetId) && request.resource.data.previousDatasetId == null && request.resource.data.stagingDatasetId == null
+        && request.resource.data.restoreToken == null && request.resource.data.dataRevision is int && request.resource.data.dataRevision == 0
+        && request.resource.data.schemaVersion is int && request.resource.data.schemaVersion == 1 && request.resource.data.updatedAt == request.time
+        && !exists(/databases/$(database)/documents/users/$(uid)/datasets/$(request.resource.data.activeDatasetId))
+        && getAfter(/databases/$(database)/documents/users/$(uid)/datasets/$(request.resource.data.activeDatasetId)).data.state == 'active';
+      allow update: if owner(uid) && (( resource.data.restoreToken == null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['dataRevision','updatedAt'])
+        && request.resource.data.dataRevision is int && request.resource.data.dataRevision == resource.data.dataRevision + 1
+        && request.resource.data.dataRevision <= 9007199254740991
+        && request.resource.data.updatedAt == request.time) || restoreRoot(uid));
+      allow delete: if false;
+      match /datasets/{ds} {
+        allow read: if owner(uid);
+        allow create: if owner(uid) && validId(ds) && request.resource.data.keys().hasAll(['schemaVersion','state','createdAt']) && request.resource.data.keys().hasOnly(['schemaVersion','state','createdAt']) && request.resource.data.schemaVersion is int && request.resource.data.schemaVersion==1 && request.resource.data.createdAt==request.time
+          && ((!exists(rootPath(uid)) && getAfter(rootPath(uid)).data.activeDatasetId==ds && request.resource.data.state=='active') || (getAfter(rootPath(uid)).data.restoreToken!=null && getAfter(rootPath(uid)).data.stagingDatasetId==ds && request.resource.data.state=='staging'));
+        allow update: if owner(uid) && metadataTransition(uid,ds);
+        allow delete: if owner(uid) && orphan(uid,ds);
+        match /{coll}/{id} {
+          allow delete: if owner(uid) && coll in ['semesters','courses','preferences','scheduleTemplates','sessions','assessments','projects','tasks','thesis','scoreActivities','scoreAttempts','gradingRules','courseOutcomes','installments'] && orphan(uid,ds);
+        }
+        match /semesters/{id} {
+          allow read: if owner(uid) && readable(uid,ds);
+          allow create: if owner(uid) && creation(uid,ds) && semesterShape(request.resource.data,id) && request.resource.data.revision == 1;
+          allow update: if owner(uid) && unlockedMutation(uid,ds) && semesterShape(request.resource.data,id) && request.resource.data.revision == resource.data.revision + 1
+            && (!request.resource.data.isArchived || !existsAfter(entityPath(uid,ds,'preferences','app')) || getAfter(entityPath(uid,ds,'preferences','app')).data.activeSemesterId != id);
+          allow delete: if false;
+        }
+        match /courses/{id} {
+          allow read: if owner(uid) && readable(uid,ds);
+          allow create: if owner(uid) && creation(uid,ds) && courseShape(uid,ds,request.resource.data,id) && request.resource.data.revision == 1;
+          allow update: if owner(uid) && unlockedMutation(uid,ds) && courseShape(uid,ds,request.resource.data,id)
+            && request.resource.data.revision == resource.data.revision + 1 && request.resource.data.semesterId == resource.data.semesterId;
+          allow delete: if false;
+        }
+        match /scheduleTemplates/{id} {
+          allow read: if owner(uid) && readable(uid,ds);
+          allow create: if owner(uid) && creation(uid,ds) && templateShape(uid,ds,request.resource.data,id) && request.resource.data.revision == 1;
+          allow update: if owner(uid) && unlockedMutation(uid,ds) && templateShape(uid,ds,request.resource.data,id)
+            && request.resource.data.revision == resource.data.revision + 1 && request.resource.data.courseId == resource.data.courseId
+            && request.resource.data.validFrom == resource.data.validFrom;
+          allow delete: if false;
+        }
+        match /sessions/{id} {
+          allow read: if owner(uid) && readable(uid,ds);
+          allow create: if owner(uid) && creation(uid,ds) && sessionShape(uid,ds,request.resource.data,id)
+            && request.resource.data.revision == 1 && (stagingMutation(uid,ds) || request.resource.data.templateId == null || templateSnapshot(uid,ds,request.resource.data,id));
+          allow update: if owner(uid) && unlockedMutation(uid,ds) && sessionShape(uid,ds,request.resource.data,id)
+            && request.resource.data.revision == resource.data.revision + 1
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attendance','isCancelled','revision','updatedAt']);
+          allow delete: if false;
+        }
+        match /assessments/{id} {
+          allow read: if owner(uid) && readable(uid,ds);
+          allow create: if owner(uid) && creation(uid,ds) && assessmentShape(uid,ds,request.resource.data,id) && request.resource.data.revision == 1;
+          allow update: if owner(uid) && unlockedMutation(uid,ds) && assessmentShape(uid,ds,request.resource.data,id)
+            && request.resource.data.revision == resource.data.revision+1 && sourceCourseStable(uid,ds,'assessment',id,request.resource.data.courseId);
+          allow delete: if false;
+        }
+        match /projects/{id} {
+          allow read: if owner(uid) && readable(uid,ds);
+          allow create: if owner(uid) && creation(uid,ds) && projectShape(uid,ds,request.resource.data,id) && request.resource.data.revision == 1;
+          allow update: if owner(uid) && unlockedMutation(uid,ds) && projectShape(uid,ds,request.resource.data,id)
+            && request.resource.data.revision == resource.data.revision+1 && sourceCourseStable(uid,ds,'project',id,request.resource.data.courseId);
+          allow delete: if false;
+        }
+        match /tasks/{id} {
+          allow read: if owner(uid) && readable(uid,ds);
+          allow create: if owner(uid) && creation(uid,ds) && taskShape(uid,ds,request.resource.data,id) && request.resource.data.revision == 1;
+          allow update: if owner(uid) && unlockedMutation(uid,ds) && taskShape(uid,ds,request.resource.data,id) && request.resource.data.revision == resource.data.revision+1;
+          allow delete: if false;
+        }
+        match /thesis/{id} {
+          allow read: if owner(uid) && readable(uid,ds);
+          allow create: if owner(uid) && creation(uid,ds) && thesisShape(request.resource.data,id) && request.resource.data.revision == 1;
+          allow update: if owner(uid) && unlockedMutation(uid,ds) && thesisShape(request.resource.data,id) && request.resource.data.revision == resource.data.revision+1;
+          allow delete: if false;
+        }
+        match /scoreActivities/{id} {
+          allow read: if owner(uid) && readable(uid,ds);
+          allow create: if owner(uid) && creation(uid,ds) && activityShape(uid,ds,request.resource.data,id)
+            && request.resource.data.revision == 1;
+          allow update: if owner(uid) && unlockedMutation(uid,ds) && activityShape(uid,ds,request.resource.data,id) && request.resource.data.revision == resource.data.revision+1 && request.resource.data.courseId == resource.data.courseId && request.resource.data.source == resource.data.source;
+          allow delete: if false;
+        }
+        match /installments/{id} {
+          allow read: if owner(uid) && readable(uid,ds);
+          allow create: if owner(uid) && creation(uid,ds) && installmentShape(request.resource.data,id) && request.resource.data.revision==1;
+          allow update: if owner(uid) && unlockedMutation(uid,ds) && installmentShape(request.resource.data,id) && request.resource.data.revision==resource.data.revision+1;
+          allow delete: if false;
+        }
+        match /gradingRules/{id} {
+          allow read: if owner(uid) && readable(uid,ds);
+          allow create: if owner(uid) && creation(uid,ds) && request.resource.data.revision==1 && gradingShape(uid,ds,request.resource.data,id) && gradingComponents(request.resource.data.components) && gradingScale(request.resource.data.scale);
+          allow update: if owner(uid) && unlockedMutation(uid,ds) && request.resource.data.revision==resource.data.revision+1 && gradingShape(uid,ds,request.resource.data,id) && gradingComponents(request.resource.data.components) && gradingScale(request.resource.data.scale);
+          allow delete: if false;
+        }
+        match /courseOutcomes/{id} {
+          allow read: if owner(uid) && readable(uid,ds);
+          allow create: if owner(uid) && creation(uid,ds) && outcomeShape(uid,ds,request.resource.data,id) && request.resource.data.revision==1;
+          allow update: if owner(uid) && unlockedMutation(uid,ds) && outcomeShape(uid,ds,request.resource.data,id) && request.resource.data.revision==resource.data.revision+1;
+          allow delete: if false;
+        }
+        match /scoreAttempts/{id} {
+          allow read: if owner(uid) && readable(uid,ds);
+          allow create: if owner(uid) && creation(uid,ds) && attemptShape(uid,ds,request.resource.data,id) && request.resource.data.revision == 1;
+          allow update: if owner(uid) && unlockedMutation(uid,ds) && attemptShape(uid,ds,request.resource.data,id)
+            && request.resource.data.revision == resource.data.revision+1 && request.resource.data.activityId == resource.data.activityId
+            && request.resource.data.attemptNumber == resource.data.attemptNumber;
+          allow delete: if false;
+        }
+        match /preferences/{id} {
+          allow read: if owner(uid) && readable(uid,ds);
+          allow create: if owner(uid) && id == 'app' && creation(uid,ds) && preferencesShape(uid,ds,request.resource.data) && request.resource.data.revision == 1;
+          allow update: if owner(uid) && id == 'app' && unlockedMutation(uid,ds) && preferencesShape(uid,ds,request.resource.data) && request.resource.data.revision == resource.data.revision + 1;
+          allow delete: if false;
+        }
+      }
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

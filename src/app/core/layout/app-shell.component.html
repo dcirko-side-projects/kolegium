@@ -1,0 +1,70 @@
+@if (auth.status() === 'allowed') {
+  <a class="skip-link" href="#main-content">Preskoči na sadržaj</a>
+  <aside class="sidebar">
+    <a class="brand" routerLink="/" aria-label="Kolegium — početna"
+      ><img src="/icons/kolegium.svg" alt="" width="36" height="36" />Kolegium</a
+    >
+    <p class="tagline">Tvoj studentski prostor</p>
+    <nav aria-label="Glavna navigacija">
+      @for (item of navigation; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          ariaCurrentWhenActive="page"
+          ><app-icon [name]="item.icon" />{{ item.label }}</a
+        >
+      }
+    </nav>
+    <p class="sidebar-note">Jedno mjesto za tvoj fakultet.</p>
+  </aside>
+  <div class="workspace">
+    <header>
+      <a class="mobile-brand" routerLink="/">Kolegium</a
+      ><span class="preview">{{ auth.isLocal ? 'Lokalni emulator' : 'Privatni prostor' }}</span>
+      <button (click)="logout()" [disabled]="store.busy()">Odjava</button>
+    </header>
+    <main id="main-content" tabindex="-1">
+      <app-data-status /><app-pwa-status />
+      @if (store.datasetChanged()) {
+        <section class="panel" role="alert">
+          <h2>Podatkovna kopija je promijenjena</h2>
+          <p>
+            Prikazuješ prethodnu evidenciju. Izmjene su blokirane kako otvoreni unos ne bi prepisao
+            obnovljene podatke.
+          </p>
+          <button (click)="reload()" [disabled]="store.busy()">Učitaj obnovljene podatke</button>
+        </section>
+      }
+      @if (auth.error()) {
+        <p role="alert" class="error-message">{{ auth.error() }}</p>
+      }
+      <router-outlet />
+    </main>
+  </div>
+  <nav class="mobile-nav" aria-label="Mobilna navigacija">
+    @for (item of mobileNavigation; track item.path) {
+      <a
+        [routerLink]="item.path"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        ariaCurrentWhenActive="page"
+        ><app-icon [name]="item.icon" /><span>{{ item.label }}</span></a
+      >
+    }
+  </nav>
+} @else {
+  <main class="panel">
+    <h1>Prijava je potrebna</h1>
+    <p role="alert">
+      {{
+        auth.status() === 'forbidden'
+          ? 'Ovaj račun nema dopušten pristup.'
+          : 'Prijava je istekla. Prijavi se ponovno za nastavak.'
+      }}
+    </p>
+    <a class="text-link" routerLink="/login" [queryParams]="{ returnUrl: router.url }"
+      >Otvori prijavu</a
+    >
+  </main>
+}

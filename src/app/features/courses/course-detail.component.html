@@ -1,0 +1,168 @@
+<a class="text-link" routerLink="/courses">← Svi kolegiji</a>
+@if (loading()) {
+  <p role="status">Učitavam kolegij…</p>
+}
+@if (error()) {
+  <div class="panel error-message" role="alert">
+    {{ error()?.message }}
+    @if (error()?.category === 'conflict') {
+      <h2>Nova verzija na poslužitelju</h2>
+      <p class="information">{{ serverDescription() }}</p>
+      <p>Tvoj lokalni unos ostaje u obrascu.</p>
+      <button (click)="replaceWithServer()" [disabled]="!store.online()">
+        Učitaj novu verziju
+      </button>
+    } @else if (!course()) {
+      <button (click)="load()" [disabled]="!store.online() || !store.ready()">
+        Pokušaj ponovno
+      </button>
+    }
+  </div>
+}
+@if (success()) {
+  <p class="success-message" role="status">{{ success() }}</p>
+}
+@if (course(); as row) {
+  <div class="page-heading">
+    <h1>{{ row.name }}</h1>
+    <div class="actions">
+      @if (!editing()) {
+        <button
+          class="primary"
+          (click)="startEditing()"
+          [disabled]="!store.canWrite() || loading()"
+        >
+          {{ row.isArchived || semester()?.isArchived ? 'Uredi arhivu' : 'Uredi kolegij' }}</button
+        ><button (click)="archive()" [disabled]="!store.canWrite() || loading()">
+          {{ row.isArchived ? 'Vrati iz arhive' : 'Arhiviraj kolegij' }}
+        </button>
+      }
+    </div>
+  </div>
+  <p class="hint">
+    Semestar: {{ semester()?.name }}.
+    {{
+      row.isArchived || semester()?.isArchived ? 'Pregled arhive; povijest ostaje sačuvana.' : ''
+    }}
+  </p>
+  @if (editing()) {
+    <section class="panel" aria-labelledby="edit-course-title">
+      <h2 id="edit-course-title">
+        {{ row.isArchived || semester()?.isArchived ? 'Uređivanje arhive' : 'Uređivanje kolegija' }}
+      </h2>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="form-field">
+          <label for="detail-name">Naziv kolegija</label
+          ><input id="detail-name" formControlName="name" maxlength="200" required />
+        </div>
+        <div class="form-field">
+          <label for="detail-info">Informacije o kolegiju (opcionalno)</label
+          ><textarea id="detail-info" formControlName="information" maxlength="10000"></textarea>
+        </div>
+        <div formArrayName="links">
+          <h3>Poveznice (opcionalno)</h3>
+          @for (link of form.controls.links.controls; track link; let i = $index) {
+            <div class="link-fields" [formGroupName]="i">
+              <div class="form-field">
+                <label [for]="'detail-label-' + i">Naziv poveznice {{ i + 1 }}</label
+                ><input
+                  [id]="'detail-label-' + i"
+                  formControlName="label"
+                  maxlength="200"
+                  required
+                />
+              </div>
+              <div class="form-field">
+                <label [for]="'detail-url-' + i">URL poveznice {{ i + 1 }}</label
+                ><input
+                  [id]="'detail-url-' + i"
+                  formControlName="url"
+                  type="url"
+                  maxlength="2000"
+                  required
+                />
+              </div>
+              <button
+                type="button"
+                (click)="removeLink(i)"
+                [attr.aria-label]="'Ukloni poveznicu ' + (i + 1)"
+              >
+                Ukloni
+              </button>
+            </div>
+          }
+        </div>
+        <button
+          type="button"
+          (click)="addLink()"
+          [disabled]="form.controls.links.length >= 20 || store.busy()"
+        >
+          Dodaj poveznicu
+        </button>
+        <p class="hint">
+          HTTP/HTTPS poveznice otvaraju se izvan aplikacije. Kolegij zadržava izvorni semestar.
+        </p>
+        <div class="actions">
+          <button class="primary" type="submit" [disabled]="!store.canWrite() || loading()">
+            {{ store.busy() ? 'Spremam…' : 'Spremi promjene' }}</button
+          ><button type="button" (click)="cancel()" [disabled]="store.busy()">Odustani</button>
+        </div>
+      </form>
+    </section>
+  } @else {
+    <section class="panel">
+      <h2>Informacije</h2>
+      <p class="information">{{ row.information || 'Informacije o kolegiju još nisu unesene.' }}</p>
+    </section>
+    <section class="panel">
+      <h2>Poveznice</h2>
+      @if (!row.links.length) {
+        <p class="hint">Nema unesenih poveznica.</p>
+      }
+      @for (link of row.links; track $index) {
+        <a
+          class="text-link external-link"
+          [href]="link.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          >{{ link.label }} <span aria-hidden="true">↗</span
+          ><span class="sr-only"> (otvara se u novoj kartici)</span></a
+        >
+      }
+    </section>
+  }
+  <section class="panel">
+    <h2>Uvjeti dolaznosti</h2>
+    <p>
+      Predavanja:
+      {{
+        row.attendanceRules.lecture.total === null
+          ? 'ukupni broj nije poznat'
+          : 'ukupno ' + row.attendanceRules.lecture.total
+      }}; minimum
+      {{
+        row.attendanceRules.lecture.minimum === null
+          ? 'nije poznat'
+          : row.attendanceRules.lecture.minimum
+      }}.
+    </p>
+    <p>
+      Vježbe:
+      {{
+        row.attendanceRules.exercise.total === null
+          ? 'ukupni broj nije poznat'
+          : 'ukupno ' + row.attendanceRules.exercise.total
+      }}; minimum
+      {{
+        row.attendanceRules.exercise.minimum === null
+          ? 'nije poznat'
+          : row.attendanceRules.exercise.minimum
+      }}.
+    </p>
+    <p class="hint">
+      Dolaznost je dostupna u sekciji Dolaznost. Ocjena se ne izračunava bez potvrđenih pravila
+      kolegija.
+    </p>
+  </section>
+  <app-course-work [courseId]="row.id" /><app-course-grading [courseId]="row.id" />
+}

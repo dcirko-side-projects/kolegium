@@ -1,0 +1,156 @@
+<div class="page-heading">
+  <h1>Kolegiji</h1>
+  @if (store.selectedSemester()) {
+    <button
+      class="primary"
+      (click)="open()"
+      [disabled]="
+        !store.canWrite() ||
+        formOpen() ||
+        (store.selectedSemester()?.isArchived && !archiveEditing())
+      "
+    >
+      Dodaj kolegij
+    </button>
+  }
+</div>
+<div class="panel">
+  <label for="course-semester">Semestar za pregled</label
+  ><select
+    id="course-semester"
+    #semesterSelect
+    (change)="changeSemester(semesterSelect)"
+    [disabled]="store.loading() || store.busy()"
+  >
+    <option value="" [selected]="store.selectedSemesterId() === null">Odaberi semestar</option>
+    @for (row of store.semesters(); track row.id) {
+      <option [value]="row.id" [selected]="store.selectedSemesterId() === row.id">
+        {{ row.name }}{{ row.isArchived ? ' — arhiva' : '' }}
+      </option>
+    }
+  </select>
+  <p class="hint">
+    Aktualni: {{ store.activeSemester()?.name ?? 'nije postavljen' }}.
+    <a class="text-link" routerLink="/settings">Upravljanje semestrima</a>
+  </p>
+  @if (store.moreSemesters()) {
+    <button (click)="store.loadMore('semesters')" [disabled]="store.loading()">
+      Učitaj još semestara
+    </button>
+  }
+  @if (store.selectedSemester()?.isArchived) {
+    <p class="hint">Pregledavaš arhivu. Podaci su sačuvani; uređivanje otvori izričito.</p>
+    @if (!archiveEditing()) {
+      <button (click)="allowArchive()" [disabled]="!store.canWrite()">Uredi arhivu</button>
+    }
+  }
+</div>
+@if (error()) {
+  <p class="error-message" role="alert">{{ error()?.message }}</p>
+}
+@if (success()) {
+  <p class="success-message" role="status">{{ success() }}</p>
+}
+@if (formOpen()) {
+  <section class="panel" aria-labelledby="course-form-title">
+    <h2 id="course-form-title">Novi kolegij</h2>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-field">
+        <label for="course-name">Naziv kolegija</label
+        ><input id="course-name" formControlName="name" maxlength="200" required />
+      </div>
+      <div class="form-field">
+        <label for="course-info">Informacije o kolegiju (opcionalno)</label
+        ><textarea id="course-info" formControlName="information" maxlength="10000"></textarea>
+      </div>
+      <div formArrayName="links">
+        <h3>Poveznice (opcionalno)</h3>
+        @for (link of form.controls.links.controls; track link; let i = $index) {
+          <div class="link-fields" [formGroupName]="i">
+            <div class="form-field">
+              <label [for]="'course-link-label-' + i">Naziv poveznice {{ i + 1 }}</label
+              ><input
+                [id]="'course-link-label-' + i"
+                formControlName="label"
+                maxlength="200"
+                required
+              />
+            </div>
+            <div class="form-field">
+              <label [for]="'course-link-url-' + i">URL poveznice {{ i + 1 }}</label
+              ><input
+                [id]="'course-link-url-' + i"
+                formControlName="url"
+                type="url"
+                maxlength="2000"
+                required
+              />
+            </div>
+            <button
+              type="button"
+              (click)="removeLink(i)"
+              [attr.aria-label]="'Ukloni poveznicu ' + (i + 1)"
+            >
+              Ukloni
+            </button>
+          </div>
+        }
+      </div>
+      <button
+        type="button"
+        (click)="addLink()"
+        [disabled]="form.controls.links.length >= 20 || store.busy()"
+      >
+        Dodaj poveznicu
+      </button>
+      <p class="hint">
+        Samo HTTP/HTTPS adrese. Pravila dolaznosti i bodovanja ostaju nepoznata dok ih ne dostaviš.
+      </p>
+      <div class="actions">
+        <button class="primary" type="submit" [disabled]="!store.canWrite()">
+          {{ store.busy() ? 'Spremam…' : 'Spremi kolegij' }}</button
+        ><button type="button" (click)="cancel()" [disabled]="store.busy()">Odustani</button>
+      </div>
+    </form>
+  </section>
+}
+@if (!store.selectedSemesterId() && store.ready()) {
+  <div class="panel">
+    <h2>Odaberi ili dodaj semestar</h2>
+    <p>Kolegiji pripadaju konkretnom semestru kako bi povijest ostala sačuvana.</p>
+    <a class="text-link" routerLink="/settings">Otvori semestre</a>
+  </div>
+}
+@if (store.selectedSemesterId()) {
+  <label class="filter"
+    ><input
+      type="checkbox"
+      [checked]="showArchived()"
+      (change)="showArchived.set(!showArchived())"
+    />
+    Prikaži arhivirane kolegije</label
+  >
+  <div class="course-grid">
+    @for (row of visibleCourses(); track row.id) {
+      <a class="course-card" [routerLink]="['/courses', row.id]"
+        ><h2>{{ row.name }}</h2>
+        <span class="hint"
+          >{{
+            row.isArchived || store.selectedSemester()?.isArchived
+              ? 'Arhiva'
+              : 'Informacije i uvjeti'
+          }}
+          <span aria-hidden="true">→</span></span
+        ></a
+      >
+    }
+  </div>
+  @if (!visibleCourses().length && store.ready() && !store.loading()) {
+    <div class="panel"><p>Nema kolegija u ovom prikazu.</p></div>
+  }
+  @if (store.moreCourses()) {
+    <button (click)="store.loadMore('courses')" [disabled]="store.loading()">
+      Učitaj još kolegija
+    </button>
+  }
+}

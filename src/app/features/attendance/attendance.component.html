@@ -1,0 +1,122 @@
+<h1>Dolaznost</h1>
+@if (store.academic.moreCourses()) {
+  <button (click)="store.academic.loadMore('courses')">Učitaj još kolegija</button>
+}
+@if (store.busy()) {
+  <p role="status">Spremam promjenu…</p>
+}
+<p class="hint">
+  Predavanja i vježbe vode se odvojeno. Neoznačeno nije izostanak; otkazani termini ne ulaze u
+  evidenciju održane nastave.
+</p>
+<div class="panel">
+  <label for="attendance-course">Kolegij za pregled dolaznosti</label
+  ><select id="attendance-course" #courseSelect (change)="select(courseSelect)">
+    <option value="" [selected]="store.courseId() === null">Odaberi kolegij</option>
+    @for (c of store.courses(); track c.id) {
+      <option [value]="c.id" [selected]="store.courseId() === c.id">
+        {{ c.name }}{{ c.isArchived ? ' — arhiva' : '' }}
+      </option>
+    }
+  </select>
+  <p>
+    <a routerLink="/courses">Promijeni semestar / kolegije</a> ·
+    <a routerLink="/schedule">Raspored i nadoknade</a>
+  </p>
+</div>
+@if (store.loading()) {
+  <p role="status">Učitavam dolaznost…</p>
+}
+@if (store.error()) {
+  <p role="alert" class="error-message">{{ store.error()?.message }}</p>
+  <button (click)="store.refresh()">Osvježi dolaznost</button>
+}
+@if (error()) {
+  <p role="alert" class="error-message">{{ error()?.message }}</p>
+  @if (error()?.category === 'conflict') {
+    <p>{{ serverRules() }}</p>
+    <button (click)="replaceRules()">Učitaj aktualne uvjete</button>
+  }
+}
+@if (store.success()) {
+  <p role="status" class="success-message">{{ store.success() }}</p>
+}
+@if (course(); as c) {
+  @if (c.isArchived || store.academic.selectedSemester()?.isArchived) {
+    <p>Pregled arhive. Za korekciju odaberi izričito uređivanje.</p>
+    <button (click)="store.archiveEditing.set(true)">Uredi arhivu</button>
+  }
+  <div class="form-grid">
+    @for (kind of kinds; track kind) {
+      <section class="panel">
+        <h2>{{ kind === 'lecture' ? 'Predavanja' : 'Vježbe' }}</h2>
+        @let s = summary(kind);
+        <p>
+          Prisutni: {{ s.present }} · Odsutni: {{ s.absent }} · Neoznačeni prošli termini:
+          {{ s.unmarked }}
+        </p>
+        <p>
+          Službeni ukupan broj: {{ c.attendanceRules[kind].total ?? 'nije poznat' }}; minimum:
+          {{ c.attendanceRules[kind].minimum ?? 'nije poznat' }}.
+        </p>
+        @if (s.remaining !== null) {
+          <p>Preostalo do minimuma: {{ s.remaining }}</p>
+        }
+        @if (s.percentOfOfficial !== null) {
+          <p>Udio dolazaka u službenom fondu: {{ s.percentOfOfficial.toFixed(1) }}%</p>
+        }
+        <p class="hint">Ovo je osobna evidencija, a ne potvrda prolaza kolegija.</p>
+      </section>
+    }
+  </div>
+  <button (click)="editRules()" [disabled]="!store.canEditCourse(c.id)">
+    Uredi uvjete dolaznosti
+  </button>
+  @if (editing()) {
+    <form class="panel" [formGroup]="form" (ngSubmit)="save()">
+      <h2>Uvjeti kolegija</h2>
+      <p class="hint">
+        Unesi službeni fond i minimum prema izvoru. Prazno znači nepoznato, 0 znači poznata nula.
+        Otkazivanje ne mijenja fond.
+      </p>
+      <div class="form-grid">
+        <div class="field">
+          <label for="lecture-total">Predavanja — ukupan broj</label
+          ><input id="lecture-total" inputmode="numeric" formControlName="lectureTotal" />
+        </div>
+        <div class="field">
+          <label for="lecture-min">Predavanja — minimum</label
+          ><input id="lecture-min" inputmode="numeric" formControlName="lectureMinimum" />
+        </div>
+        <div class="field">
+          <label for="exercise-total">Vježbe — ukupan broj</label
+          ><input id="exercise-total" inputmode="numeric" formControlName="exerciseTotal" />
+        </div>
+        <div class="field">
+          <label for="exercise-min">Vježbe — minimum</label
+          ><input id="exercise-min" inputmode="numeric" formControlName="exerciseMinimum" />
+        </div>
+      </div>
+      <div class="actions">
+        <button type="submit" class="primary" [disabled]="!store.canWrite()">Spremi uvjete</button
+        ><button type="button" (click)="cancel()">Odustani</button>
+      </div>
+    </form>
+  }
+  <h2>Evidencija termina</h2>
+  <div class="actions">
+    <button (click)="kind.set('all')">Sve vrste</button
+    ><button (click)="kind.set('lecture')">Samo predavanja</button
+    ><button (click)="kind.set('exercise')">Samo vježbe</button>
+  </div>
+  @for (row of displayRows().slice(0, shown()); track row.id) {
+    <app-session-row [row]="row" [name]="c.name" />
+  } @empty {
+    <p class="panel">Nema današnjih ili prošlih termina u rasporedu ovog kolegija.</p>
+  }
+  @if (shown() < displayRows().length) {
+    <button (click)="shown.set(shown() + 50)">Prikaži još termina</button>
+  }
+} @else {
+  <p class="panel">Dodaj kolegij i raspored kako bi mogao pratiti dolaznost.</p>
+}

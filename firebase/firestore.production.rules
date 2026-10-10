@@ -1,0 +1,7 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Production stays closed until its owner/configuration and release are reviewed.
+    match /{document=**} { allow read, write: if false; }
+  }
+}
