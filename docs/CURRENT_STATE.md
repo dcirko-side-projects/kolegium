@@ -1,7 +1,7 @@
 # Trenutno stanje
 
 **Datum:** 2026-10-10
-**Faza:** TASK-001–010 lokalno implementirani/provjereni; TASK-009C čeka izvore. TASK-011 PWA/hardening lokalno, release gates otvoreni; TASK-012: korisnik kreirao Firebase projekt/bazu Frankfurt i dostavio owner UID, lokalni release kandidat pripremljen; cloud deploy/acceptance još nisu provedeni.
+**Faza:** TASK-001–010 lokalno implementirani/provjereni; TASK-009C čeka izvore. TASK-011 PWA/hardening lokalno, release gates otvoreni; TASK-012: prva online testna verzija objavljena po korisnikovu nalogu, privatni GitHub repo s kodom na main. Stvarni owner/device/cross-device/recovery acceptance još je otvoren.
 
 ## Odobrenje i granice
 
@@ -83,6 +83,10 @@ Svi podatkovni suiteovi i captures izvršavaju se sekvencijalno nad demo-kolegiu
 - Emulator export/import restart roundtrip, višegodišnji stvarni volume i real mrežni kvarovi nisu provjereni. Deterministički restore checkpoint fault tests dokazuju lokalni recovery ugovor, ne svaku provider situaciju.
 
 ## Sljedeće faze
+
+Završna readiness provjera svih 10 cloud indeksa: READY 10/10. Hosted login/SPA rute/worker/manifest/auth helper 200; HTML Cache-Control no-cache nakon korekcije potvrđen, anonymous Firestore owner-root 403. Odobrena objava i privatni GitHub repo ostvareni. Slijede real owner Google prijava, server-confirmed prvi osobni unos/refresh, drugi uređaj/PWA i odvojeni backup acceptance; TASK-012 zato nije full Done. TASK-009C čeka stvarne TVZ izvore; TASK-011 upozorenja/performance/CSP/mobile acceptance ostaju otvoreni. Nema izmišljenih stvarnih podataka, credentials u repou ili billing upgradea.
+
+GitHub završna provjera: privatni https://github.com/dcirko/kolegium (Private vidljivo u UI) s početnim commitom `99c2e73` na main, push PASS i remote hash jednak lokalnom HEAD. .firebase-cli/.emulator-data/node_modules/dist/artifacts/.env nisu u commit-u; pregled obrasca private keys/refresh tokens bez nalaza u izvorima. Nema automatskog deploy workflowa. Git metadata/credential-helper pristup zahtijevao standardnu sandbox eskalaciju koja je odobrena; ne radi se o GitHub grešci. Screenshot privatnog repoa u artifacts/release/github-private.png.
 
 Hosted smoke: primarni origin /login, /courses SPA, service-worker, manifest i reserved Auth iframe vraćaju 200; anonymous owner-root i nakon Rules deploya 403. Browser prikazuje hrvatski Google login gumb bez unconfigured poruke. Ispravljen stvarno uočen SPA HTML cache header (opći no-cache, worker no-store, hashed assets immutable), Hosting ponovno objavljen. Screenshot login dokaza u ignoriranom artifacts/release/hosted-login.png. Privatni repo https://github.com/dcirko/kolegium kreiran korisnikovim nalogom; source/ignore provjera bez credentials/privatnih lokalnih podataka. Git zapis/slanje evidentirati nakon uspjeha; nisu izvedeni real private writes niti physical-device/cloud restore testovi.
 

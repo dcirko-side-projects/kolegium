@@ -2,6 +2,8 @@
 
 Datum: 2026-10-10. Korisnik izričito odobrio i agent objavio prvu online testnu verziju: Firestore Rules/10 indeksa, zatim Firebase Hosting. Ovo nije završni acceptance cijelog MVP-a. Primarni URL: https://kolegium-c8970.firebaseapp.com (isti authDomain). Hosting alias: https://kolegium-c8970.web.app.
 
+Završni hosted smoke PASS: login/SPA/worker/manifest/Auth iframe HTTP 200, browser hrvatski Google login, anonymous root 403, indeksi READY 10/10. HTML no-cache nakon korekcije potvrđen. Privatni kod u https://github.com/dcirko/kolegium, početni commit 99c2e73 na main, push i remote hash provjereni; credentials/lokalni podaci ignorirani. App je dostupan bez pokrenutog laptopa; real authenticated podaci i fizički uređaji još čekaju provjeru.
+
 ## Konkretna objava za pregled
 
 Projekt `kolegium-c8970`, postojeća `(default)` Firestore Standard/Native baza u `europe-west3`, freeTier=true verificirano read-only CLI pozivom. Korisnik potvrdio Spark plan. Hosting origin za prvi test: `https://kolegium-c8970.firebaseapp.com`, isti kao authDomain radi mobile redirect toka. Javni app shell; privatni podaci dostupni isključivo odobrenom UID-u prema Rules. Nema Analyticsa, seedanja kolegija niti plaćenih servisa.

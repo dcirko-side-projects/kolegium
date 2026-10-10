@@ -8,11 +8,11 @@ Naknadni update: korisnik kreirao projekt i dostavio ID `kolegium-c8970` te web 
 |---|---|---|
 | Lokalni build i testovi | PASS lokalno | Završni brojevi u CURRENT_STATE |
 | Production pristup zatvoren | PASS lokalno | Unconfigured environment i deny-all production Rules |
-| Firebase projekt / EU lokacija baze | PARTIAL | ID/config dostavljeni; Frankfurt europe-west3 potvrđen; kreiranje baze i Spark plan još nisu verificirani |
+| Firebase projekt / EU lokacija baze | PASS projekt/baza | CLI ACTIVE, default Standard/Native europe-west3/freeTier=true; Spark korisnik potvrdio |
 | Google Auth / approved UID | PARTIAL | Google provider i UID potvrđeni korisnikom; agent nije neposredno verificirao real OAuth/device tok |
 | Web konfiguracija / isti auth domain | NOT RUN | Public web config, bez service-account ključa; OAuth redirect provjeriti na Hosting domeni |
-| Production Rules i indeksi | PARTIAL lokalno | Owner Rules kandidat PASS 2/2 emulator; default deploy deny-all, cloud permissions/indeksi NOT RUN |
-| CSP / Hosting headers | NOT RUN cloud | Konfiguracija pripremljena; CSP Report-Only je kandidat, ne aktivna zaštita. Potvrditi izvore s real OAuth i zatim uključiti enforced CSP |
+| Production Rules i indeksi | PARTIAL cloud | Rules compile/deploy PASS; cloud indeksi READY 10/10. Owner Rules emulator PASS 2/2, anonymous cloud 403; real owner/other Google data test otvoren |
+| CSP / Hosting headers | PARTIAL cloud | HTTPS/app/auth-helper/worker/manifest HTTP smoke PASS; HTML no-cache ispravljen i potvrđen. CSP Report-Only, OAuth enforcement još otvoren |
 | Runtime dependencies | PASS snapshot 0 | DEPENDENCY_REVIEW; nije potpuna sigurnosna revizija |
 | Dev/deploy dependencies | OPEN | CLI nalazi nisu riješeni; procjena kompatibilne zakrpe prije deploya |
 | Stvarni kolegiji / grading | NOT RUN | TASK-009C čeka izvore; app ih ne izmišlja |
