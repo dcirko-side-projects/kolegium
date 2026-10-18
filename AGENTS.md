@@ -2,7 +2,7 @@
 
 ## Najnoviji nastavak 2026-10-18 — prijenos na novi laptop
 
-Korisnik izričito naložio commit i push svih aktualnih projektnih izmjena u postojeći privatni dcirko/kolegium radi nastavka na novom laptopu. Nalog obuhvaća ovaj checkpoint izvornog koda/testova/dokumentacije, ne privatne privitke, source PDF/ZIP/ICS, lokalne backupe, credentials ili generirane artefakte. Ne mijenjati vidljivost repozitorija niti deployati/aktivirati naplatu. Za nastavak pročitati docs/NEXT_CHAT_PROMPT.md i docs/NEW_LAPTOP_SETUP.md; putanja novog checkouta može biti drukčija.
+Korisnik izričito naložio commit i push svih aktualnih projektnih izmjena u postojeći privatni repozitorij radi nastavka na novom laptopu. GitHub je pri pushu potvrdio preseljenje s dcirko/kolegium na dcirko-side-projects/kolegium; canonical origin i nove handoff upute koriste novu adresu. Nalog obuhvaća ovaj checkpoint izvornog koda/testova/dokumentacije, ne privatne privitke, source PDF/ZIP/ICS, lokalne backupe, credentials ili generirane artefakte. Ne mijenjati vidljivost repozitorija niti deployati/aktivirati naplatu. Za nastavak pročitati docs/NEXT_CHAT_PROMPT.md i docs/NEW_LAPTOP_SETUP.md; putanja novog checkouta može biti drukčija.
 
 Aktualno: 5 kolegija/174 termina, četiri rate, informacije o kolegijima, četiri projekta/seminara, dva BU kolokvija i šest praznih bodovnih aktivnosti već su u cloudu. Ne ponavljati seed. Faza 1 Google prijave/pregleda potvrđena od korisnika 15.10.; cross-device mutacije/refresh/reopen/conflict/offline još nisu potvrđeni. Podsjetnici odgođeni; lokalni in-app kod postoji, nije objavljen. TASK-009C nije full Done: ne izmišljati bodovne/attendance ugovore koji nedostaju. Najnoviji dokazi u CURRENT_STATE; stariji statusni odlomci ispod ostaju povijest.
 

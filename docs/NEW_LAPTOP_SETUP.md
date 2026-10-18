@@ -1,13 +1,13 @@
 # Nastavak Kolegiuma na novom laptopu
 
-Datum: 2026-10-18. Privatni repozitorij: https://github.com/dcirko/kolegium. Ovaj dokument i NEXT_CHAT_PROMPT prenose projektni kontekst; ne predstavljaju izvoz razgovora ili lokalnih privatnih datoteka.
+Datum: 2026-10-18. Privatni repozitorij: https://github.com/dcirko-side-projects/kolegium. Ovaj dokument i NEXT_CHAT_PROMPT prenose projektni kontekst; ne predstavljaju izvoz razgovora ili lokalnih privatnih datoteka.
 
 ## 1. Preuzimanje projekta i konteksta
 
 Prijavi Git/GitHub pristup računu koji smije čitati privatni repozitorij. U odabranoj lokalnoj mapi:
 
 ```powershell
-git clone https://github.com/dcirko/kolegium.git
+git clone https://github.com/dcirko-side-projects/kolegium.git
 cd kolegium
 git status --short --branch
 git log -1 --oneline

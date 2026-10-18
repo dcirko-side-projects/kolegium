@@ -112,7 +112,7 @@ npm.cmd run test:pwa
 Dev/e2e ne registriraju worker. PWA nije offline sinkronizacija. TASK-012 ima odvojeni release config i već objavljenu testnu aplikaciju na Firebase Hostingu. Zadani build/firebase.json ostaju zatvoreni. [Release checklist](docs/RELEASE_CHECKLIST.md) bilježi otvorene provjere i granice dokaza; nova objava zahtijeva zaseban nalog.
 # Online testna verzija
 
-Prva verzija objavljena po korisnikovu odobrenju: [Kolegium](https://kolegium-c8970.firebaseapp.com). Privatni kod: [dcirko/kolegium](https://github.com/dcirko/kolegium). App shell je javno dostupan; evidencija je ograničena na odobreni Google UID kroz Firestore Rules. Spark, bez aktivirane naplate ili Analyticsa. Stvarni device/private-data acceptance još otvoren; detalji u docs/CURRENT_STATE.md i docs/RELEASE_CHECKLIST.md.
+Prva verzija objavljena po korisnikovu odobrenju: [Kolegium](https://kolegium-c8970.firebaseapp.com). Privatni kod: [dcirko/kolegium](https://github.com/dcirko-side-projects/kolegium). App shell je javno dostupan; evidencija je ograničena na odobreni Google UID kroz Firestore Rules. Spark, bez aktivirane naplate ili Analyticsa. Stvarni device/private-data acceptance još otvoren; detalji u docs/CURRENT_STATE.md i docs/RELEASE_CHECKLIST.md.
 
 Release build: `npm run release:build`, zatim `npm run test:pwa:release`. Odvojena `firebase.release.json` bira owner Rules; default build/deploy config ostaju zatvoreni. Objave isključivo po korisnikovu nalogu; nema CI auto deploya. Firebase CLI credentials i lokalni podaci ignorirani su u Gitu.
 

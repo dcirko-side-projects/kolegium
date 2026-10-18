@@ -2,7 +2,7 @@
 
 ## Aktualna uputa za novi laptop — 2026-10-18
 
-Nastavljamo postojeći Kolegium u trenutno otvorenom checkoutu privatnog repozitorija https://github.com/dcirko/kolegium. Putanja checkouta može biti drukčija nego na starom laptopu. Prvo pročitaj AGENTS.md i ovaj dokument, zatim aktualne dokumente prema reading orderu, posebno CURRENT_STATE.md, IMPLEMENTATION_PLAN.md, COURSE_SOURCE_REVIEW.md i NEW_LAPTOP_SETUP.md. Provjeri live Git status i očuvaj radne izmjene. Ne ponavljaj bootstrap.
+Nastavljamo postojeći Kolegium u trenutno otvorenom checkoutu privatnog repozitorija https://github.com/dcirko-side-projects/kolegium. Putanja checkouta može biti drukčija nego na starom laptopu. Prvo pročitaj AGENTS.md i ovaj dokument, zatim aktualne dokumente prema reading orderu, posebno CURRENT_STATE.md, IMPLEMENTATION_PLAN.md, COURSE_SOURCE_REVIEW.md i NEW_LAPTOP_SETUP.md. Provjeri live Git status i očuvaj radne izmjene. Ne ponavljaj bootstrap.
 
 Korisnik 18.10. izričito naložio commit/push aktualnog projektnog checkpointa radi prijenosa na novi laptop. Git čuva source/testove/dokumentaciju, ne chat history, osobne privitke ili bazu. Git hash i status provjeri uživo. Nalog ne dopušta buduće automatske push/deploy/billing/public-repo ili destructive cloud akcije.
 
