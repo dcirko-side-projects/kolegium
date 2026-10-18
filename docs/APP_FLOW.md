@@ -1,5 +1,9 @@
 # App Flow
 
+2026-10-11 rate: Početna → Podsjetnici za rate → Rate fakulteta. Zaseban online prikaz neplaćenih rata od 30 dana prije roka; poruka zadnjih 7 dana i na dueOn, paid odmah nestaje nakon server refresha. Dodatne stranice imaju Učitaj još podsjetnika; error/offline označavaju zadnje učitane podatke. Ostale obaveze ostaju u 14-day rasponu. Prikaz je lokalno provjeren, nije deployan; mobile push još Proposed, bez permission prompta ili zakazanog slanja.
+
+Update 2026-10-11: Raspored → Uvezi TVZ raspored → lokalni ICS preview → odabir grupa/datum/učionica → potvrda u izabranom semestru. Predavanja su početno odabrana; vježbe korisnik uključuje. Nedostajući semestar dodaje se kroz Postavke. Import može stati djelomično; vidljivi potvrđeni napredak i retry preskaču postojeće. Dodaj pojedinačni termin ima kolegij/lecture-exercise/datum/vrijeme/lokaciju. Otkaži termin + Sakrij otkazane uklanja iz aktivnog prikaza uz sačuvanu povijest; Prikaži otkazane + Vrati u održano vraća neoznačen termin. Detaljni source/operativni ugovor u SCHEDULE_IMPORT.md.
+
 Datum: 2026-10-07. Bootstrap baseline; UI hrvatski, online PWA.
 
 Implementirani podskup 2026-10-08 (TASK-002/003): /login, /settings semestri, /courses i /courses/:id. Odjava je dostupna u headeru svih privatnih ekrana. Postavke nude dodavanje/uređivanje semestra, aktualni kontekst, arhivu i pregled kolegija pojedinog semestra. Kolegiji imaju odabrani semestar, informacije/linkove, detalj i eksplicitni Uredi arhivu. Arhiva ne briše povijest; arhivirani semestar ne može biti aktualni. Course upis ne premješta se u drugi semestar.

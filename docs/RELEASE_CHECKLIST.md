@@ -1,5 +1,7 @@
 # Release evidencija — TASK-012
 
+Najnovije 2026-10-15: korisnik potvrdio „Faza 1 gotova, sve radi” za predloženu Google prijavu i pregled podataka na mobitelu/laptopu. PASS — korisnička potvrda owner pristupa/pregleda, bez agentova neposrednog opažanja ili popisa OS/browser verzija. Cross-device mutacije/refresh/reopen, other UID, PWA native install/update i recovery i dalje čekaju zasebne dokaze. Stariji NOT RUN zapisi o owner pristupu opisuju stanje prije te potvrde.
+
 Stanje 2026-10-10: korisnik potvrdio da Firebase projekt još nije napravljen. Ovo je lokalna priprema, bez objave i naplate. Projekt od početka ostaje Spark, preferirano 0 EUR, ukupni odobreni limit 5 EUR/mjesečno ne dopušta automatski Blaze upgrade.
 
 Naknadni update: korisnik kreirao projekt i dostavio ID `kolegium-c8970` te web konfiguraciju. Potrebne javne vrijednosti unesene u `app-environment.ts`; mode ostaje unconfigured, approved UID prazan, production Rules deny-all. Nema Analytics importa/inicijalizacije ni measurementId u aplikaciji. Stvarni Spark plan, Google provider, UID, baza/lokacija i cloud pristup još nisu verificirani. Raniji zapis o nepostojećem projektu opisuje stanje prije ovog updatea.
@@ -9,7 +11,7 @@ Naknadni update: korisnik kreirao projekt i dostavio ID `kolegium-c8970` te web 
 | Lokalni build i testovi | PASS lokalno | Završni brojevi u CURRENT_STATE |
 | Production pristup zatvoren | PASS lokalno | Unconfigured environment i deny-all production Rules |
 | Firebase projekt / EU lokacija baze | PASS projekt/baza | CLI ACTIVE, default Standard/Native europe-west3/freeTier=true; Spark korisnik potvrdio |
-| Google Auth / approved UID | PARTIAL | Google provider i UID potvrđeni korisnikom; agent nije neposredno verificirao real OAuth/device tok |
+| Google Auth / approved UID | PASS owner — korisnička potvrda | 15.10. korisnik potvrdio fazu prijave/pregleda na svojim uređajima; other UID i session edge cases još otvoreni, nije agent-observed |
 | Web konfiguracija / isti auth domain | NOT RUN | Public web config, bez service-account ključa; OAuth redirect provjeriti na Hosting domeni |
 | Production Rules i indeksi | PARTIAL cloud | Rules compile/deploy PASS; cloud indeksi READY 10/10. Owner Rules emulator PASS 2/2, anonymous cloud 403; real owner/other Google data test otvoren |
 | CSP / Hosting headers | PARTIAL cloud | HTTPS/app/auth-helper/worker/manifest HTTP smoke PASS; HTML no-cache ispravljen i potvrđen. CSP Report-Only, OAuth enforcement još otvoren |

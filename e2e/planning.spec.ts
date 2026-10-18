@@ -39,6 +39,44 @@ test('installment cents/overdue/home visibility and paid/reopen survive reload; 
   await expect(page.getByRole('alert').filter({ hasText: 'dvije decimale' })).toBeVisible();
   await expect(page.getByLabel('Iznos EUR', { exact: true })).toHaveValue('1.001');
 });
+test('unpaid installment reminder appears 30 days ahead and disappears after payment', async ({
+  page,
+}) => {
+  await page.goto('/installments');
+  await page.getByRole('button', { name: 'Dodaj ratu', exact: true }).click();
+  await page.getByLabel('Naziv rate', { exact: true }).fill('Sintetički podsjetnik');
+  await page.getByLabel('Iznos EUR', { exact: true }).fill('10');
+  await page.getByLabel('Rok plaćanja', { exact: true }).fill(addDays(localNow().date, 30));
+  await page.getByRole('button', { name: 'Spremi ratu', exact: true }).click();
+  await saved(page);
+  await page.goto('/');
+  const reminders = page.getByRole('region', { name: 'Podsjetnici za rate', exact: true });
+  await expect(reminders.getByRole('article', { name: 'Sintetički podsjetnik' })).toContainText(
+    '30 dana',
+  );
+  await expect(
+    page
+      .getByRole('region', { name: 'Nadolazeće obaveze' })
+      .getByRole('article', { name: 'Sintetički podsjetnik' }),
+  ).toHaveCount(0);
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .include('[aria-labelledby="installment-reminders-title"]')
+        .analyze()
+    ).violations,
+  ).toEqual([]);
+  await page.setViewportSize({ width: 320, height: 800 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
+  await page.goto('/installments');
+  await page.getByRole('button', { name: 'Označi plaćeno', exact: true }).click();
+  await saved(page);
+  await page.goto('/');
+  await expect(reminders.getByRole('article', { name: 'Sintetički podsjetnik' })).toHaveCount(0);
+  await expect(reminders).toContainText('Nema neplaćenih rata');
+});
 test('manual canonical activity, exact personal grade, explicit selection and separate official outcome', async ({
   page,
 }) => {

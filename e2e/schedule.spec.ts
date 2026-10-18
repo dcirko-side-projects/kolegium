@@ -22,6 +22,66 @@ test.beforeEach(async ({ page }) => {
   await addSemester(page);
   await addCourse(page);
 });
+test('explicit calendar preview excludes databases, selects exercises, retries and edits a single lesson', async ({
+  page,
+}) => {
+  await page.goto('/schedule');
+  await page.getByRole('button', { name: 'Uvezi TVZ raspored' }).click();
+  const event = (name: string, kind: string, start: string, end: string) =>
+    `BEGIN:VEVENT\r\nDESCRIPTION:${name} - ${kind}\\nSintetički profesor\r\nDTSTART:20261012T${start}00\r\nDTEND:20261012T${end}00\r\nLOCATION:Sintetička učionica\r\nEND:VEVENT\r\n`;
+  const source = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\n${event('Sintetički kolegij', 'Predavanja', '1630', '1800')}${event('Sintetički kolegij', 'Laboratorijske vježbe', '1800', '1930')}${event('Modeliranje i administracija baza podataka', 'Predavanja', '0800', '0900')}END:VCALENDAR\r\n`;
+  await page.getByLabel('Datoteka rasporeda (.ics)').setInputFiles({
+    name: 'synthetic.ics',
+    mimeType: 'text/calendar',
+    buffer: Buffer.from(source),
+  });
+  await expect(page.getByText(/Izostavljeno termina baza: 1/)).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: /Predavanja/ })).toBeChecked();
+  const exercises = page.getByRole('checkbox', { name: /Laboratorijske vježbe/ });
+  await expect(exercises).not.toBeChecked();
+  await exercises.check();
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze()
+    ).violations,
+  ).toEqual([]);
+  await page.setViewportSize({ width: 320, height: 780 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
+  await page.getByRole('button', { name: 'Potvrdi uvoz odabranih termina' }).click();
+  await expect(
+    page.getByText('Uvoz potvrđen na poslužitelju: dodano 2, već postojeće 0.'),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Potvrdi uvoz odabranih termina' }).click();
+  await expect(
+    page.getByText('Uvoz potvrđen na poslužitelju: dodano 0, već postojeće 2.'),
+  ).toBeVisible();
+  await page.getByLabel('Datum pregleda').fill('2026-10-12');
+  await expect(session(page, '2026-10-12', '16:30')).toBeVisible();
+  await page.getByRole('button', { name: 'Dodaj pojedinačni termin' }).click();
+  await page.getByLabel('Datum termina', { exact: true }).fill('2026-10-13');
+  await page.getByLabel('Početak nastave', { exact: true }).fill('12:00');
+  await page.getByLabel('Završetak nastave', { exact: true }).fill('13:00');
+  await page.getByRole('button', { name: 'Spremi termin', exact: true }).click();
+  const single = session(page, '2026-10-13', '12:00');
+  await expect(single).toBeVisible();
+  page.once('dialog', (d) => d.accept());
+  await single.getByRole('button', { name: 'Otkaži termin' }).click();
+  await expect(single.getByText('Otkazano', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Sakrij otkazane termine' }).click();
+  await expect(single).not.toBeVisible();
+  await page.getByRole('button', { name: 'Prikaži otkazane termine' }).click();
+  await expect(single).toBeVisible();
+  page.once('dialog', (d) => d.accept());
+  await single.getByRole('button', { name: 'Vrati u održano' }).click();
+  await expect(single.getByText('Neoznačeno', { exact: true })).toBeVisible();
+  await page.reload();
+  await page.getByLabel('Datum pregleda').fill('2026-10-12');
+  await expect(single).toBeVisible();
+});
 test('today quick marks persist with separate lecture/exercise counts and unknown conditions', async ({
   page,
 }) => {

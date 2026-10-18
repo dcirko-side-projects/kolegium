@@ -1,5 +1,7 @@
 # Deployment i environments
 
+2026-10-11: korisnik zasebno odobrio sljedeći hosting-only deploy za TVZ import/pojedinačne termine. Release build/type/lint/format/targeted tests/PWA PASS, hosting deploy PASS, public HTTP /login i /schedule 200 no-cache, worker 200 no-store (cfc6dc22010eee79fdc7). Nema novog Rules rollouta, CI, Git commit/pusha ili naplate. Korisnik izričito zatražio upis bez browser prijave: postojećim CLI admin računom atomarno dodano i readback validirano 5 kolegija/174 termina te semestar/preferences (181 zapisa). Default build/config ostaju zatvoreni. Daljnji deploy zahtijeva zaseban nalog. Detalji i backup u SCHEDULE_IMPORT/CURRENT_STATE.
+
 Datum: 2026-10-07. Plan, ne aktivirano okruženje.
 TASK-001–003 update 2026-10-08: lokalni Angular runtime i Auth/Firestore emulatore verificirali smo na JDK 21. Development demo-kolegium koristi 4200/9099/8080; odvojeni disposable test app demo-kolegium-tests koristi 4300/19099/18080. Emulatori su loopback-only, nema cloud fallbacka. Wrapper koristi lokalni ignorirani .emulator-cache/.firebase-cli i razvojni export/import .emulator-data. README daje preduvjete i naredbe; nagli prekid procesa nije dokaz trajnog backupa.
 

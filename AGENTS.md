@@ -1,5 +1,15 @@
 # Upute AI coding agentima
 
+## Najnoviji nastavak 2026-10-18 — prijenos na novi laptop
+
+Korisnik izričito naložio commit i push svih aktualnih projektnih izmjena u postojeći privatni dcirko/kolegium radi nastavka na novom laptopu. Nalog obuhvaća ovaj checkpoint izvornog koda/testova/dokumentacije, ne privatne privitke, source PDF/ZIP/ICS, lokalne backupe, credentials ili generirane artefakte. Ne mijenjati vidljivost repozitorija niti deployati/aktivirati naplatu. Za nastavak pročitati docs/NEXT_CHAT_PROMPT.md i docs/NEW_LAPTOP_SETUP.md; putanja novog checkouta može biti drukčija.
+
+Aktualno: 5 kolegija/174 termina, četiri rate, informacije o kolegijima, četiri projekta/seminara, dva BU kolokvija i šest praznih bodovnih aktivnosti već su u cloudu. Ne ponavljati seed. Faza 1 Google prijave/pregleda potvrđena od korisnika 15.10.; cross-device mutacije/refresh/reopen/conflict/offline još nisu potvrđeni. Podsjetnici odgođeni; lokalni in-app kod postoji, nije objavljen. TASK-009C nije full Done: ne izmišljati bodovne/attendance ugovore koji nedostaju. Najnoviji dokazi u CURRENT_STATE; stariji statusni odlomci ispod ostaju povijest.
+
+## Najnoviji nastavak 2026-10-11
+
+Korisnik odobrio ograničeni TVZ ICS import i pojedinačno dodavanje/otkazivanje-skrivanje termina. Baze izostavljene; Web servisi vježbe u 18:00, Bihevioralno u 19:00. Zasebno odobrio novu hosting-only objavu, koja je izvršena. Zatim izričito zatražio upis bez browser prijave: 5 kolegija/174 termina + semestar/preferences atomarno dodani kroz postojeći CLI admin račun, backup/preconditions/readback potvrđeni. SCHEDULE_IMPORT i CURRENT_STATE su autoritet za ove dokaze; ne ponavljati seed, ne tvrditi browser OAuth/device uspjeh. Današnje izmjene nisu commitirane/pushane. Ovaj nalog ne dopušta budući automatski deploy, commit/push, naplatu ili public repo.
+
 ## 1. Scope i implementacijska vrata
 
 Ovo je personal/private faculty organizer. Stack i scope iz PRD/ADR su autoritet. Bootstrapping je dokumentacija, ne runtime dokaz. Ne inicijalizirati aplikaciju niti pisati production code dok korisnik izričito ne odobri implementaciju nakon planning rezultata. Nakon odobrenja workflow ide po IMPLEMENTATION_PLAN, bez rebootstrapiranja.

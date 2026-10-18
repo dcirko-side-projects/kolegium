@@ -8,6 +8,27 @@
     Dodaj ponavljanje
   </button>
 </div>
+<div class="actions">
+  <button
+    (click)="open(null, true)"
+    [disabled]="!store.canWrite() || !store.academic.selectedSemester()"
+  >
+    Dodaj pojedinačni termin
+  </button>
+  <button (click)="importing.set(!importing())" [disabled]="store.busy() || store.academic.busy()">
+    {{ importing() ? 'Zatvori uvoz' : 'Uvezi TVZ raspored' }}
+  </button>
+  <button (click)="hideCancelled.set(!hideCancelled())">
+    {{ hideCancelled() ? 'Prikaži otkazane termine' : 'Sakrij otkazane termine' }}
+  </button>
+</div>
+<p class="hint">
+  Za uklanjanje nastave odaberi Otkaži termin, a zatim Sakrij otkazane termine. Evidencija ostaje
+  sačuvana; otkazano nije izostanak.
+</p>
+@if (importing()) {
+  <app-calendar-import />
+}
 <p class="hint">
   Vrijeme nastave: Europe/Zagreb. Aktualni pregled:
   {{ store.academic.selectedSemester()?.name ?? 'odaberi semestar' }}.
@@ -56,8 +77,16 @@
   <p role="status" class="success-message">{{ store.success() }}</p>
 }
 @if (formOpen()) {
-  <form class="panel" [formGroup]="form" (ngSubmit)="prepare()">
-    <h2>{{ editing() ? 'Promjena budućeg rasporeda' : 'Novo ponavljanje' }}</h2>
+  <form class="panel" [formGroup]="form" (ngSubmit)="single() ? saveSingle() : prepare()">
+    <h2>
+      {{
+        single()
+          ? 'Novi pojedinačni termin'
+          : editing()
+            ? 'Promjena budućeg rasporeda'
+            : 'Novo ponavljanje'
+      }}
+    </h2>
     <div class="form-grid">
       <div class="field">
         <label for="schedule-course">Kolegij</label
@@ -75,14 +104,21 @@
           <option value="exercise">Vježbe</option>
         </select>
       </div>
-      <div class="field">
-        <label for="schedule-weekday">Dan u tjednu</label
-        ><select id="schedule-weekday" formControlName="weekday">
-          @for (day of days; track day; let i = $index) {
-            <option [ngValue]="i + 1">{{ day }}</option>
-          }
-        </select>
-      </div>
+      @if (!single()) {
+        <div class="field">
+          <label for="schedule-weekday">Dan u tjednu</label
+          ><select id="schedule-weekday" formControlName="weekday">
+            @for (day of days; track day; let i = $index) {
+              <option [ngValue]="i + 1">{{ day }}</option>
+            }
+          </select>
+        </div>
+      } @else {
+        <div class="field">
+          <label for="schedule-single-date">Datum termina</label
+          ><input id="schedule-single-date" type="date" formControlName="scheduledOn" />
+        </div>
+      }
       <div class="field">
         <label for="schedule-location">Lokacija / učionica (opcionalno)</label
         ><input id="schedule-location" formControlName="location" maxlength="200" />
@@ -95,31 +131,34 @@
         <label for="schedule-end">Završetak nastave</label
         ><input id="schedule-end" type="time" formControlName="endsAt" />
       </div>
-      <div class="field">
-        <label for="schedule-from">Vrijedi od</label
-        ><input
-          id="schedule-from"
-          type="date"
-          formControlName="validFrom"
-          [readOnly]="!!editing()"
-        />
-      </div>
-      <div class="field">
-        <label for="schedule-until">Vrijedi do</label
-        ><input id="schedule-until" type="date" formControlName="validUntil" />
-      </div>
-      @if (editing()) {
+      @if (!single()) {
         <div class="field">
-          <label for="schedule-effective">Datum primjene promjene</label
-          ><input id="schedule-effective" type="date" formControlName="effectiveOn" />
-          <p class="hint">
-            Spremljena povijest ostaje. Spremljeni budući termini blokiraju regeneriranje.
-          </p>
+          <label for="schedule-from">Vrijedi od</label
+          ><input
+            id="schedule-from"
+            type="date"
+            formControlName="validFrom"
+            [readOnly]="!!editing()"
+          />
         </div>
+        <div class="field">
+          <label for="schedule-until">Vrijedi do</label
+          ><input id="schedule-until" type="date" formControlName="validUntil" />
+        </div>
+        @if (editing()) {
+          <div class="field">
+            <label for="schedule-effective">Datum primjene promjene</label
+            ><input id="schedule-effective" type="date" formControlName="effectiveOn" />
+            <p class="hint">
+              Spremljena povijest ostaje. Spremljeni budući termini blokiraju regeneriranje.
+            </p>
+          </div>
+        }
       }
     </div>
     <div class="actions">
-      <button type="submit" [disabled]="!store.canWrite()">Pregledaj termine</button
+      <button type="submit" [disabled]="!store.canWrite()">
+        {{ single() ? 'Spremi termin' : 'Pregledaj termine' }}</button
       ><button type="button" (click)="cancelForm()">Odustani</button>
     </div>
     @if (preview(); as list) {

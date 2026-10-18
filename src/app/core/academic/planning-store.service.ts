@@ -1,4 +1,4 @@
-import { DestroyRef, Injectable, effect, inject, signal, untracked } from '@angular/core';
+import { DestroyRef, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { AcademicStoreService } from './academic-store.service';
 import { FirebaseContextService } from '../../data/firebase-context.service';
 import { PlanningRepository } from '../../data/planning.repository';
@@ -6,6 +6,7 @@ import { WorkRepository } from '../../data/work.repository';
 import { ApplicationError, asApplicationError } from '../errors/application-error';
 import { Deadline, Installment } from '../../domain/planning.models';
 import { addDays, localNow } from '../../domain/schedule';
+import { installmentReminder } from '../../domain/installment-reminders';
 @Injectable()
 export class PlanningStoreService {
   readonly academic = inject(AcademicStoreService);
@@ -20,6 +21,13 @@ export class PlanningStoreService {
   readonly error = signal<ApplicationError | null>(null);
   readonly success = signal<string | null>(null);
   readonly today = signal(localNow().date);
+  private readonly reminderRows = signal<Installment[]>([]);
+  readonly installmentReminders = computed(() =>
+    this.reminderRows().flatMap((row) => {
+      const message = installmentReminder(row, this.today());
+      return message ? [{ ...row, message }] : [];
+    }),
+  );
   private request = 0;
   repository() {
     return new PlanningRepository(this.context.firestore, () => this.academic.online());
@@ -49,6 +57,7 @@ export class PlanningStoreService {
           this.rows.set([]);
           this.deadlines.set([]);
           this.tasks.set([]);
+          this.reminderRows.set([]);
           this.loading.set(false);
         }
       });
@@ -66,10 +75,12 @@ export class PlanningStoreService {
           scope,
           addDays(this.today(), 14),
           this.count(),
+          addDays(this.today(), 30),
         );
         if (request !== this.request) return;
         this.deadlines.set(data.deadlines);
         this.tasks.set(data.tasks);
+        this.reminderRows.set(data.installmentReminders);
         this.more.set(data.more);
       } else {
         const data = await this.repository().installments(scope, this.count());

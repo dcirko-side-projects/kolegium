@@ -14,6 +14,37 @@ import { RouterLink } from '@angular/router';
     <p class="eyebrow">{{ today }}</p>
     <h1>Tvoj fakultet.<br /><span>Na jednom mjestu.</span></h1>
     <p class="intro">Nastava, zadaci i rokovi — pregled koji prati tvoj dan.</p>
+    <section class="panel" aria-labelledby="installment-reminders-title">
+      <h2 id="installment-reminders-title">Podsjetnici za rate</h2>
+      <p>Neplaćene rate prikazuju se 30 dana prije roka, uz upozorenje u zadnjih 7 dana.</p>
+      <a routerLink="/installments">Otvori rate fakulteta</a>
+      @if (planning.loading()) {
+        <p role="status">Učitavam podsjetnike…</p>
+      }
+      @if (planning.error()) {
+        <p role="alert">Podsjetnici nisu osvježeni. {{ planning.error()?.message }}</p>
+        <button (click)="planning.refresh()">Osvježi podsjetnike</button>
+      }
+      @if (!planning.academic.online()) {
+        <p>Nema internetske veze — prikazani podsjetnici su zadnje učitani podaci.</p>
+      }
+      @for (row of planning.installmentReminders(); track row.id) {
+        <article [attr.aria-label]="row.name">
+          <h3>{{ row.name }}</h3>
+          <p>{{ row.message }} Rok: {{ row.dueOn }} · {{ money(row.amountCents) }}</p>
+        </article>
+      } @empty {
+        @if (!planning.loading() && !planning.error() && planning.academic.online()) {
+          <p>Nema neplaćenih rata s rokom u idućih 30 dana u učitanom prikazu.</p>
+        }
+      }
+      @if (planning.more()) {
+        <p>Pregled ima dodatne stranice. Učitaj ih za potpuni prikaz podsjetnika.</p>
+        <button (click)="planning.count.update(increase)" [disabled]="planning.loading()">
+          Učitaj još podsjetnika
+        </button>
+      }
+    </section>
     @if (store.courses().length === 0) {
       <section class="hero" aria-labelledby="start-title">
         <div>
@@ -238,6 +269,11 @@ export class OverviewComponent {
     return addDays(this.planning.today(), 14);
   }
   protected readonly increase = (n: number) => n + 50;
+  protected money(cents: number) {
+    return new Intl.NumberFormat('hr-HR', { style: 'currency', currency: 'EUR' }).format(
+      cents / 100,
+    );
+  }
   constructor() {
     this.planning.kind.set('overview');
     effect(() => {

@@ -1,5 +1,11 @@
 # Security
 
+2026-10-15 TASK-009C: nastavne informacije upisane kao escaped plain text u postojeći course information; linkovi samo existing validated http/https, bez HTML-a/evala ili novih runtime ovlasti. Upute iz ZIP-a tretirane su kao sadržaj kolegija, ne instrukcije za izvršenje ili slanje poruka. Nisu preneseni pristupna lozinka iz PDF-a niti drugi studenti/identifikatori sa screenshota. Administrativni sadržajni batch koristi postojeći CLI račun, backup/preconditions/atomic commit/full readback; nema cloud schema/Rules/billing/deploy izmjene. Detalji COURSE_SOURCE_REVIEW; browser OAuth/Rules i dalje zaseban otvoreni dokaz.
+
+2026-10-11 rate/podsjetnici: novi in-app prikaz nema browser Notification permission, tokene ili privileged SDK. Koristi existing owner server reads; Rules nepromijenjeni. Četiri rate administrativno upisane uz create-only/root updateTime/backup/readback, bez brisanja. Mobile push samo Proposed u PUSH_REMINDERS_PROPOSAL.md; nema IAM/API/billing/Rules promjene niti token storagea.
+
+2026-10-11: TVZ ICS je lokalni plain-text unos ograničen na 1 MiB/1000 explicit događaja; unsupported recurrence/timezone/shape odbija se, UI prikazuje Angular interpolation bez HTML-a. App importer nema administrativne credentials; koristi postojeće owner Rules/revision/restore lock adaptere. Jednokratni administrative cloud seed izričito je zatražen kada korisnik nije mogao dovršiti browser prijavu: postojeći CLI account, create-only zapisi, root updateTime precondition, puna domain/backup graph validacija prije upisa, lokalni backup i server readback. Privremeni script/privatni artefakti su ignored i nisu u javnom bundleu ili source repo-u. Rules/allowlist/naplata nepromijenjeni. Administrative dokaz ne zatvara owner OAuth/Rules/device acceptance.
+
 Datum baselinea: 2026-10-07; aktualna lokalna provedba 2026-10-09. Privatni MVP za jednog korisnika; security plan nije provjeren release.
 
 Lokalne emulator Rules testirane su za sintetički UID local-owner. firebase/firestore.rules koristi se samo lokalnim demo konfiguracijama; firebase.json referencira firestore.production.rules koje odbijaju sve putanje. Production app je nekonfiguriran. Nema stvarnog OAuth/cloud permission dokaza ni odobrenja deploya.

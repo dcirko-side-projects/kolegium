@@ -18,7 +18,11 @@ Status ideje (confirmed/suggested/future idea/unresolved) odvojen je od priorite
 
 Kolegiji, dolaznost, tjedni raspored, provjere znanja i svi pokušaji, projekti, jedna To-do sekcija, osnovni diplomski, rate, evidencija ocjena/bodova, zbroj i računanje ocjene prema dostupnim pravilima, semestralna arhiva, privatni pristup i ručni backup/povrat.
 
+Confirmed / MUST update 2026-10-11: korisnik zatražio ručni unos dostavljenog TVZ ICS rasporeda bez baza i mogućnost dodavanja/uklanjanja termina. Ograničeni import s pregledom/odabirom grupa uklapa se u FR-004/007; pojedinačni termini i otkazivanje/skrivanje čuvaju povijest. Opći calendar sync ostaje LATER. Konačni izvor/odabir/podaci u SCHEDULE_IMPORT.md.
+
 ### SHOULD
+
+Confirmed update 2026-10-11: korisnik traži podsjetnike za neplaćene rate 30 i 7 dana prije roka, u aplikaciji i na mobitelu. In-app prozor prihvaćen i lokalno implementiran. Mobile push je zatražen, ali korisnik za sada odobrio samo prijedlog sustava bez naplate (PUSH_REMINDERS_PROPOSAL.md); infrastruktura/satnica/aktivacija čekaju odluku. Opći push/e-mail za ostale obaveze ostaje LATER.
 
 Pomoćni UI za brzo pronalaženje i sortiranje u postojećim listama; ne blokira osnovne MUST tokove. Nije dodatna puna tražilica.
 
@@ -28,7 +32,7 @@ Dodatne nepovezane bilješke i ukupan preostali iznos svih rata. Nisu dio implem
 
 ### Out of Scope — LATER
 
-Offline unos/sinkronizacija, push/e-mail podsjetnici, widgeti, AI, import rasporeda, vanjske calendar/TVZ/bankovne integracije, uploads materijala/potvrda uplata, djelomične uplate, društvene funkcije, kompleksni milestoneovi diplomskog i napredna statistika. Ne implementirati bez promjene scopea.
+Offline unos/sinkronizacija, opći push/e-mail podsjetnici (za rate vrijedi gore navedeni zasebni nalog/prijedlog), widgeti, AI, opći calendar import/sinkronizacija (osim ručnog TVZ ICS unosa odobrenog 2026-10-11), vanjske calendar/TVZ/bankovne integracije, uploads materijala/potvrda uplata, djelomične uplate, društvene funkcije, kompleksni milestoneovi diplomskog i napredna statistika. Ne implementirati bez promjene scopea.
 
 ## 3. Core user stories
 
@@ -89,7 +93,7 @@ Offline unos/sinkronizacija, push/e-mail podsjetnici, widgeti, AI, import raspor
 
 ## 7. Open questions i assumptions
 
-- Korisnik će dostaviti svih pet aktualnih i dva buduća kolegija, raspored i pravila. Njihova imena, satnica i pravila nisu poznati.
+- Pet aktualnih kolegija i stvarni raspored dostavljeni/upisani 2026-10-11 (SCHEDULE_IMPORT.md). Nastavni izvori zaprimljeni/obrađeni 2026-10-15 i informacije upisane u postojeće kolegije: odabrani Web veliki projekt+seminar s iznimkom dolaznosti, RMA vlastiti projekt, BU timski seminar i dva datirana kolokvija. Bez prijave/Mendeley taskova prema korisniku. COURSE_SOURCE_REVIEW navodi poznate postotke i otvorene bodovne/dolaznosne ugovore; potpun stvarni FR-015 još nije potvrđen. Podaci za dva buduća kolegija čekaju izvore. Datumima rasporeda nije potvrđen cijeli službeni akademski kalendar.
 - Izbor pokušaja trenutačno nije korisnikov prioritet; ostaje otvoren samo za obračun koji o njemu ovisi.
 - Radni naziv Kolegium, projekcije rokova i izvedbena pravila označeni u ovoj dokumentaciji nisu nova potvrda branding odluke.
 - Ne mijenjati MUST u LATER zbog nedostajućih izvora; označiti konfiguraciju/acceptance koji čekaju podatke.

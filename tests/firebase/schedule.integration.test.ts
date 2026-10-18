@@ -6,6 +6,7 @@ import { ScheduleRepository } from '../../src/app/data/schedule.repository';
 import { unknownAttendanceRules, ActiveScope } from '../../src/app/domain/academic.models';
 import { occurrences } from '../../src/app/domain/schedule';
 import { TemplateInput } from '../../src/app/domain/schedule.models';
+import { importCalendar } from '../../src/app/data/calendar-import';
 export const template: TemplateInput = {
   courseId: 'c1',
   kind: 'lecture',
@@ -58,6 +59,62 @@ describe('Schedule SDK transactions', () => {
     const d = await repo.window(scope, 'c1', '2026-10-01', '2027-02-01');
     return occurrences(d.templates, d.sessions, '2026-10-01', '2027-02-01');
   }
+  it('calendar import preserves recorded/cancelled history, skips virtual duplicates and retries a partial import', async () => {
+    const term = await academic.semester(scope, 's1');
+    const original = (await rows())[0];
+    await repo.saveSession(scope, original, { ...original, isCancelled: true });
+    const common = {
+      courseName: 'Sintetički kolegij',
+      teachingLabel: 'Predavanja',
+      kind: 'lecture' as const,
+      scheduledOn: original.scheduledOn,
+      startsAt: original.startsAt,
+      endsAt: original.endsAt,
+      location: original.location,
+    };
+    const fresh = {
+      ...common,
+      courseName: 'Novi sintetički kolegij',
+      startsAt: '12:00',
+      endsAt: '13:00',
+    };
+    // A readback interruption after the first new server-confirmed lesson mimics a partial run.
+    await expect(
+      importCalendar(
+        academic,
+        repo,
+        scope,
+        term,
+        [common, fresh, { ...fresh, scheduledOn: '2026-10-12' }],
+        (done) => {
+          if (done === 2) throw new Error('Synthetic interruption');
+        },
+      ),
+    ).rejects.toThrow('Synthetic interruption');
+    const result = await importCalendar(
+      academic,
+      repo,
+      scope,
+      term,
+      [common, fresh, { ...fresh, scheduledOn: '2026-10-12' }],
+      () => undefined,
+    );
+    expect(result).toEqual({ added: 1, skipped: 2 });
+    expect((await repo.session(scope, original.id)).isCancelled).toBe(true);
+    expect((await academic.page(scope, 'courses', 's1')).records).toHaveLength(2);
+    const control = await academic.readControl(uid);
+    await expect(
+      importCalendar(
+        academic,
+        repo,
+        scope,
+        term,
+        [{ ...fresh, scheduledOn: '2027-02-02' }],
+        () => undefined,
+      ),
+    ).rejects.toMatchObject({ category: 'validation' });
+    expect((await academic.readControl(uid)).dataRevision).toBe(control.dataRevision);
+  });
   it('marks one deterministic session and repeat/lost-response retry does not duplicate or increment', async () => {
     const row = (await rows())[0],
       before = (await academic.readControl(uid)).dataRevision;

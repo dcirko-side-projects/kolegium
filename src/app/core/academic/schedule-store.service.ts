@@ -13,6 +13,8 @@ import {
 import { localNow, occurrences } from '../../domain/schedule';
 import { ApplicationError, asApplicationError } from '../errors/application-error';
 import { Course } from '../../domain/academic.models';
+import { CalendarLesson } from '../../domain/tvz-calendar';
+import { importCalendar } from '../../data/calendar-import';
 
 @Injectable()
 export class ScheduleStoreService {
@@ -173,5 +175,35 @@ export class ScheduleStoreService {
   }
   saveRules(course: Course, rules: Course['attendanceRules']): Promise<void> {
     return this.write(course.id, (repo) => repo.saveRules(this.academic.scope()!, course, rules));
+  }
+  async importLessons(
+    lessons: CalendarLesson[],
+    progress: (done: number, total: number) => void,
+  ): Promise<void> {
+    const scope = this.academic.scope(),
+      semester = this.academic.selectedSemester();
+    if (!this.canWrite() || !scope || !semester)
+      throw new ApplicationError('unavailable', 'Odaberi semestar i osvježi podatke prije uvoza.');
+    this.busy.set(true);
+    this.success.set(null);
+    try {
+      let result = { added: 0, skipped: 0 };
+      await this.academic.externalMutation(async () => {
+        result = await importCalendar(
+          new AcademicRepository(this.context.firestore, () => this.academic.online()),
+          new ScheduleRepository(this.context.firestore, () => this.academic.online()),
+          scope,
+          semester,
+          lessons,
+          progress,
+        );
+      });
+      await this.refresh();
+      this.success.set(
+        `Uvoz potvrđen na poslužitelju: dodano ${result.added}, već postojeće ${result.skipped}.`,
+      );
+    } finally {
+      this.busy.set(false);
+    }
   }
 }

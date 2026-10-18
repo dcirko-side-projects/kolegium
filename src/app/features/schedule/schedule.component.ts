@@ -7,10 +7,11 @@ import { ApplicationError, asApplicationError } from '../../core/errors/applicat
 import { addDays, localNow, occurrences, templateInput, weekStart } from '../../domain/schedule';
 import { Occurrence, ScheduleTemplate, TeachingKind } from '../../domain/schedule.models';
 import { SessionRowComponent } from '../../shared/ui/session-row/session-row.component';
+import { CalendarImportComponent } from './calendar-import.component';
 
 @Component({
   selector: 'app-schedule',
-  imports: [ReactiveFormsModule, RouterLink, SessionRowComponent],
+  imports: [ReactiveFormsModule, RouterLink, SessionRowComponent, CalendarImportComponent],
   providers: [ScheduleStoreService],
   templateUrl: './schedule.component.html',
 })
@@ -20,8 +21,17 @@ export class ScheduleComponent {
   private readonly fb = inject(FormBuilder);
   protected readonly selectedDate = signal(localNow().date);
   protected readonly dayOnly = signal(false);
+  protected readonly hideCancelled = signal(false);
+  protected readonly importing = signal(false);
+  protected readonly single = signal(false);
   protected readonly rows = computed(() =>
-    this.store.rows().filter((r) => !this.dayOnly() || r.scheduledOn === this.selectedDate()),
+    this.store
+      .rows()
+      .filter(
+        (r) =>
+          (!this.dayOnly() || r.scheduledOn === this.selectedDate()) &&
+          (!this.hideCancelled() || !r.isCancelled),
+      ),
   );
   protected readonly formOpen = signal(false);
   protected readonly editing = signal<ScheduleTemplate | null>(null);
@@ -47,6 +57,7 @@ export class ScheduleComponent {
     validFrom: ['', Validators.required],
     validUntil: ['', Validators.required],
     effectiveOn: [''],
+    scheduledOn: [localNow().date, Validators.required],
   });
   protected readonly replacementForm = this.fb.nonNullable.group({
     scheduledOn: ['', Validators.required],
@@ -60,6 +71,7 @@ export class ScheduleComponent {
     const draft = this.changes.takeDraft<{
       id: ReturnType<typeof crypto.randomUUID>;
       date: string;
+      single: boolean;
       old: ScheduleTemplate | null;
       form: ReturnType<ScheduleComponent['form']['getRawValue']>;
       replacement: Occurrence | null;
@@ -68,6 +80,7 @@ export class ScheduleComponent {
     if (draft) {
       this.createId = draft.id;
       this.selectedDate.set(draft.date);
+      this.single.set(draft.single);
       this.editing.set(draft.old);
       this.form.reset(draft.form);
       this.replacement.set(draft.replacement);
@@ -91,6 +104,7 @@ export class ScheduleComponent {
         this.changes.keepDraft('schedule', {
           id: this.createId,
           date: this.selectedDate(),
+          single: this.single(),
           old: this.editing(),
           form: this.form.getRawValue(),
           replacement: this.replacement(),
@@ -115,12 +129,13 @@ export class ScheduleComponent {
   protected moveWeek(count: number): void {
     this.changeDate(addDays(this.selectedDate(), count * 7));
   }
-  protected open(old: ScheduleTemplate | null = null): void {
+  protected open(old: ScheduleTemplate | null = null, single = false): void {
     if (!this.changes.confirm()) return;
     const semester = this.store.academic.selectedSemester();
     if (!semester) return;
     this.createId = crypto.randomUUID();
     this.editing.set(old);
+    this.single.set(single);
     this.replacement.set(null);
     this.form.reset({
       courseId: old?.courseId ?? this.store.courses().find((c) => !c.isArchived)?.id ?? '',
@@ -133,10 +148,38 @@ export class ScheduleComponent {
       validUntil: old?.validUntil ?? semester.endsOn,
       effectiveOn:
         localNow().date > (old?.validFrom ?? '') ? localNow().date : (old?.validFrom ?? ''),
+      scheduledOn: this.selectedDate(),
     });
     this.formOpen.set(true);
     this.preview.set(null);
     this.error.set(null);
+  }
+  protected async saveSingle(): Promise<void> {
+    try {
+      const value = this.form.getRawValue(),
+        semester = this.store.academic.selectedSemester();
+      if (!semester || value.scheduledOn < semester.startsOn || value.scheduledOn > semester.endsOn)
+        throw new ApplicationError('validation', 'Datum termina mora biti unutar semestra.');
+      const row: Occurrence = {
+        id: this.createId,
+        revision: null,
+        courseId: value.courseId,
+        kind: value.kind,
+        scheduledOn: value.scheduledOn,
+        startsAt: value.startsAt,
+        endsAt: value.endsAt,
+        location: value.location || null,
+        templateId: null,
+        replacementForId: null,
+        isCancelled: false,
+        attendance: 'unmarked',
+      };
+      await this.store.saveSession(row, row);
+      this.form.markAsPristine();
+      this.formOpen.set(false);
+    } catch (error) {
+      this.error.set(asApplicationError(error));
+    }
   }
   protected cancelForm(): void {
     if (this.changes.confirm()) {

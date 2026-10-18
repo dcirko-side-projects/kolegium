@@ -227,9 +227,11 @@ export class PlanningRepository {
       );
     return { activities, attempts, completed, rules, outcome };
   }
-  async overview(scope: ActiveScope, until: string, count = 50) {
+  async overview(scope: ActiveScope, until: string, count = 50, installmentsUntil = until) {
     this.connected();
     dateOnly(until);
+    dateOnly(installmentsUntil);
+    const installmentReminders: Installment[] = [];
     const academic = new AcademicRepository(this.db, this.online),
       before = await academic.readControl(scope.uid),
       deadlines: Deadline[] = [];
@@ -247,7 +249,7 @@ export class PlanningRepository {
         const constraints: QueryConstraint[] = [
           where(status, '==', false),
           where(date, '!=', null),
-          where(date, '<=', until),
+          where(date, '<=', name === 'installments' ? installmentsUntil : until),
           orderBy(date),
           orderBy('__name__'),
           ...(cursor ? [startAfter(cursor)] : []),
@@ -261,6 +263,9 @@ export class PlanningRepository {
         );
         for (const d of page.docs) {
           const v = d.data();
+          if (name === 'installments')
+            installmentReminders.push(this.decode('installments', d.id, v) as Installment);
+          if (dateOnly(v[date]) > until) continue;
           if (await this.visible(scope, v))
             deadlines.push({
               id: name + '/' + d.id,
@@ -320,6 +325,7 @@ export class PlanningRepository {
         'Obaveze su promijenjene tijekom čitanja. Osvježi pregled.',
       );
     return {
+      installmentReminders,
       deadlines: deadlines.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id)),
       tasks,
       more,

@@ -6,6 +6,8 @@ Prioriteti: P0 foundation/blocker, P1 MVP core, P2 korisno nakon MVP-a, P3 LATER
 
 ## 1. Dependency roadmap
 
+2026-10-15 korisnička završna provjera: faza 1 (Google prijava/prikaz podataka na mobitelu/laptopu) PASS prema korisnikovu izvještaju „sve radi”. Sljedeća faza je cross-device spremanje/refresh/reopen i odvojeno conflict/offline. Ovo zatvara owner-access podskup, ne puni TASK-011/012 ili sve device/recovery gates.
+
 | ID | Cilj / milestone | Prioritet | FR | Depends on | Status |
 |---|---|---|---|---|---|
 | TASK-001 | Foundation: compatible pinned versions, Angular shell, tooling, docs/run baseline | P0 | FR-018 | Korisnikovo odobrenje dobiveno 2026-10-07 | Done — foundation dokazi u CURRENT_STATE |
@@ -17,7 +19,7 @@ Prioriteti: P0 foundation/blocker, P1 MVP core, P2 korisno nakon MVP-a, P3 LATER
 | TASK-007 | To-do, projekti i osnovni diplomski | P1 | FR-009, FR-010, FR-011, FR-014 | TASK-003, TASK-006 za shared results | Done — lokalna implementacija i dokazi u CURRENT_STATE |
 | TASK-008 | Rate i objedinjena Početna | P1 | FR-012, FR-013 | TASK-005, TASK-006, TASK-007 | Done — lokalna provedba i dokazi u CURRENT_STATE |
 | TASK-009 | Canonical score model, pure zbroj/grade i incomplete-config UX | P1 | FR-014, FR-015 | TASK-006, TASK-007 | Done — generic engine/config lokalno; real TASK-009C pending |
-| TASK-009C | Stvarni kolegiji/rules, complete configured grading | P1 | FR-004, FR-006, FR-015 | TASK-009 + korisnikovi izvori | Not started — čeka podatke |
+| TASK-009C | Stvarni kolegiji/rules, complete configured grading | P1 | FR-004, FR-006, FR-015 | TASK-009 + korisnikovi izvori | In progress — 5 stvarnih kolegija/174 termina upisano 2026-10-11; pravila dolaznosti/bodovanja čekaju izvore; SCHEDULE_IMPORT |
 | TASK-010 | Ručni export/validirani staged restore/recovery | P1 | FR-017 | TASK-002–009; ADR-004 Accepted 2026-10-10 | Done — lokalni export/restore/recovery; cloud smoke NOT RUN |
 | TASK-011 | Hardening, PWA install/update, accessibility i regresija | P1 | FR-001–018 | TASK-005–010; stvarni grade dokaz ovisi o TASK-009C | In progress — PWA/hardening lokalno; dependency/performance/device release gates otvoreni |
 | TASK-012 | Cloud priprema, objava i stvarni device/recovery smoke | P1 | FR-001, FR-016–018 | TASK-011 + korisnikovo odobrenje cloud/deploy koraka | In progress — prva testna verzija objavljena po korisnikovu nalogu; real owner/device/cross-device/recovery acceptance ostaje otvoren |
@@ -54,9 +56,13 @@ Tests TC-008–011/014/016 i nepovezani/project-linked task. DoD: isti task/resu
 
 ### TASK-008 — Rate i Početna
 
+2026-10-11 osobni unos: sve četiri rate po 645 EUR upisane u cloud uz backup/preconditions/readback (INSTALLMENTS_IMPORT.md); prva do 5.10.2026. plaćena, ostale neplaćene. In-app prozor 30/7 dana lokalno implementiran/provjeren; nije deployan. Mobile push po korisnikovu izboru samo Proposed u PUSH_REMINDERS_PROPOSAL.md, bez aktivacije naplate; implementacija infrastrukture čeka konkretnu odluku.
+
 Goal: dnevni/nadolazeći pregled. Steps: EUR cents/due dates/paid state; combine next 14 days + overdue/open tasks/current timetable bez povijesnog full scan. All nav sections one predictable access. Tests TC-012/013, responsive/empty/error. DoD: nema duplicate data u dashboardu, paid rata nije upcoming, late obaveze ostaju vidljive.
 
 ### TASK-009 / TASK-009C — Bodovanje
+
+2026-10-15 TASK-009C: stvarni izvori za pet kolegija obrađeni; informacije/linkovi upisani u pet postojećih cloud courses. Po suženom korisnikovu nalogu dodana četiri projects, dva BU assessments i šest scoreActivities s nepoznatim bodovima; bez prijava/Mendeley tasks ili inovacijskog/NoSQL projekta. Local domain/graph, genuine read-only plan, backup/preconditions/atomic commit i puni readback PASS. Opseg/nejasnoće u COURSE_SOURCE_REVIEW.md. Stvarna grading konfiguracija i brojčana dolaznost ostaju nepotpune gdje nedostaje ugovor izvora; TASK-009C nije full Done. Raspored/rate očuvani, nema code/deploy/commit/push/billing zahvata.
 
 Goal: pure deterministic engine za potvrđeni additive model, uz konfiguraciju. Steps: exact decimal parser/safe sum, canonical activities/attempts, incomplete flags, thresholds i official/calculated separation. Configure stvarne kolegije samo po izvorima; bounds/rounding/component/attempt izbor provjeriti.
 

@@ -64,6 +64,29 @@ describe('Planning SDK invariants', () => {
       ),
     ).rejects.toMatchObject({ category: 'offline' });
   });
+  it('extends only unpaid installment reads to 30 days without extending other deadlines', async () => {
+    for (const [id, dueOn, isPaid] of [
+      ['reminder', '2026-11-08', false],
+      ['outside', '2026-11-09', false],
+      ['paid', '2026-11-08', true],
+    ] as const)
+      await repo.save(scope, 'installments', id, { name: id, amountCents: 1, dueOn, isPaid }, null);
+    await work.save(
+      scope,
+      'tasks',
+      'future-task',
+      {
+        title: 'Later task',
+        dueOn: '2026-11-08',
+        isCompleted: false,
+        context: { type: 'none', id: null },
+      },
+      null,
+    );
+    const data = await repo.overview(scope, '2026-10-23', 50, '2026-11-08');
+    expect(data.installmentReminders.map((r) => r.id)).toEqual(['reminder']);
+    expect(data.deadlines).toEqual([]);
+  });
   it('queries all overdue and 14-day bounds, excludes paid/completed/archived, includes undated open tasks', async () => {
     for (const [id, dueOn, isPaid] of [
       ['old', '2025-01-01', false],
