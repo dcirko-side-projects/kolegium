@@ -1,5 +1,9 @@
 # Prompt za nastavak Kolegiuma
 
+## Posljednje izvršenje23.10. — commit/push i objava dovršeni
+
+Korisnik naknadno izričito zatražio „Commitaj pushaj i objavi online”. Source/test/docs checkpoint **00bdce9** pushan na postojeći potvrđeni privatni dcirko-side-projects/kolegium/main; zatim Hosting-only **08e81c515a7f1629ce7e** objavljen u kolegium-c8970. Hosted18ruta/cache/42asset SHA-256 i produkcijski login1440/390px PASS,43Hostingdatoteke. Dokumentacija o objavi također commitirana/pushana. Nema nove Rules/index/data/billing/visibility promjene ili privatnih/generiranih datoteka u Gitu. WebKit/native/grading/recovery gates ostaju otvoreni. CURRENT_STATE/DEPLOYMENT su autoritet; stariji pending/local-candidate navodi ispod su povijest. Daljnja objava treba novi konkretni nalog.
+
 ## Najnovije23.10.2026. — održavanje i završne provjere
 
 Završeno na korisnikovu „Polako privodi kraju”: konačni Chromium65PASS/1skip/0failed/0flaky;52unit/18Rules/34SDK/2releaseRules/2svježi privatni backup sandbox/static/build/PWA PASS. WebKit povremeni reload nije riješen: minimalni čist SDK reproducer bez Angulara ponovljeno prođe5readova pa šesti ostane pending; pagehide unsubscribe nije pomogao. Firebase12.19.0 je najnoviji12.x. Ne izmišljati puni WebKit/native/device PASS niti uvoditi slijepi SDK/Node major skok. Testni serveri zaustavljeni, nema deploy/commit/pusha/naplate;08e81c515a7f1629ce7e lokalni kandidat, online i dalje f1cf18a3673985c5f1fe. Daljnja objava traži konkretan nalog.

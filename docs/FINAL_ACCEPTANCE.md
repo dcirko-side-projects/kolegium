@@ -1,5 +1,7 @@
 # Završna provjera Kolegiuma — 19.10.2026.
 
+23.10.naknadno: odobreni Git checkpoint00bdce9 i Hosting-only08e81c515a7f1629ce7e izvršeni, hosted smoke PASS. Korisnik može učitati novu verziju na postojećem URL-u; candidate-not-published navodi ispod su povijest. WebKit/physical/cross-device/Outlook alarm i stvarni cloud restore ostaju zasebne provjere, bez novih privatnih upisa.
+
 23.10.2026.: korisnik potvrdio uvoz .ics datoteke u Outlook. Import više nije nepoznat; mobilni alarm/dozvole još treba potvrditi. Dodana je lokalna provjera vlastitog backupa i dodatna WebKit regresija; točni završni rezultati u CURRENT_STATE. Stvarni cloud restore nije izvođen jer mijenja aktivnu produkcijsku evidenciju; lokalni dokaz ne zatvara taj gate. Alatne zakrpe same nisu promijenile frontend; naknadni Tab fokus ispravak daje novi lokalni kandidat08e81c515a7f1629ce7e koji još nije objavljen.
 
 20.10.2026. — novi korisnički koraci nakon .ics/ispričnica: u Podsjetnicima preuzmi datoteku, uvezi u zaseban kalendar Kolegium te na stvarnom telefonu provjeri jedan nadolazeći alarm i dozvole kalendara. Nakon promjene roka/plaćanja/otkazivanja ručno zamijeni prethodni uvoz; izvoz nije pretplata. Odvojeno provjeri ispričnicu s opcionalnom napomenom nakon refresha na drugom uređaju i uklanjanje napomene pri promjeni oznake. Treba najprije učitati novu PWA verziju koja poznaje excused. Popis zapisanih faza i ograničenja sada je i u aplikaciji na Podsjetnici → Zapisane sljedeće faze i poznata ograničenja. Sandbox/ICS byte testovi ne zamjenjuju fizičku isporuku alarma.

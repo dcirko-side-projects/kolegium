@@ -2,7 +2,11 @@
 
 ## Odobren Git checkpoint i Hosting objava —23.10.2026.
 
-Korisnik izričito zatražio „Commitaj pushaj i objavi online”. Repo metadata potvrđuje privatni dcirko-side-projects/kolegium/main; origin ispravan, fetch prije commita HEAD/origin-main0/0. Pripremljen Hosting-only release08e81c515a7f1629ce7e s postojećim konačnim Chromium/unit/Rules/SDK/backup/static/build/PWA dokazima. Obuhvat commita su aktualni izvorni kod, testovi i dokumentacija; privatni backupi/credentials/source privitci/generirani artefakti ostaju ignorirani. Ovo je konkretno odobrenje, bez nove Rules/index/data/billing/visibility promjene ili trajnog automatskog deploya. Ishod commita/pusha/objave evidentira se nakon izvršenja; stariji navodi čekanja odobrenja ispod su povijest.
+Korisnik izričito zatražio „Commitaj pushaj i objavi online”. Repo metadata potvrđuje privatni dcirko-side-projects/kolegium/main; origin ispravan, fetch prije commita HEAD/origin-main0/0. **Commit00bdce9 i push main PASS**,101projektna datoteka, source/test/docs checkpoint19.–23.10. Staged provjera:0credential signatures/0privatnih ili generiranih datoteka; privatni backupi/credentials/source privitci/generirani artefakti ostaju ignorirani. Izvorni kod i provjere iz prethodnog odlomka objavljeni uz odobreni Hosting-only nalog. Nema nove Rules/index/data/billing/visibility promjene ili trajnog automatskog deploya.
+
+**Hosting objava PASS:** kolegium-c8970, release **08e81c515a7f1629ce7e**,43Hostingdatoteke/42PWAassets. Hosted read-only smoke PASS:18ruta/cache provjera na firebaseapp.com i web.app, byte-identičan lokalni worker na oba origina, svih42assets SHA-256 odgovara provjerenom buildu, produkcijski projectID/Google login bez mock gumba i bez overflowa na1440/390px. Dokazi/snimke u ignoriranom artifacts/release/hardening-2026-10-23. Bez nove owner prijave ili privatnih data upisa; WebKit/native/grading/recovery ograničenja ostaju otvorena. Dokumentacija o izvršenoj objavi spremljena je zasebnim release-evidence commitom u istom odobrenom nalogu.
+
+Online: https://kolegium-c8970.firebaseapp.com. U postojećem tabu/PWA spremiti unos pa odabrati Učitaj novu verziju ako se ponudi. Stariji navodi čekanja odobrenja/kandidata ispod su povijest i ne označavaju trenutačni release.
 
 ## Završno održavanje i dodatne provjere —23.10.2026.
 
