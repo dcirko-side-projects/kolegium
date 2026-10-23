@@ -1,5 +1,9 @@
 # Feature Specification — Dolaznost
 
+20.10.2026. — odobren excused: zaseban broj/badge Ispričani izostanak i opcionalna napomena max500, ne povećava present niti mijenja official total/minimum. Poništi/Prisutan/Odsutan/Otkazano uklanjaju napomenu, nadoknada je novi neoznačeni termin bez kopirane ispričnice. Uređivanje čuva original revision dok server refresh može pokazati novu oznaku, pa stale save daje konflikt. ScheduleStore sada pri offline zadržava zadnje učitane retke umjesto uništavanja otvorene note forme; auth/scope reset i dalje čiste retke. Rules i backup roundtrip opcionalnog polja pokriveni lokalnim testovima. Napomena nije u ICS izvozu.
+
+20.10.2026. — Odabir kolegija u Dolaznosti sada se primjenjuje gumbom Pretraži; izbor u selectu ne prebacuje evidenciju. Raspored ima Dan/Tjedan/Mjesec i otvaranje dnevne SessionRow evidencije iz mreže. Za arhivsku korekciju postoji reverzibilni Uredi arhivu/Zaključaj arhivu toggle. Nastavne jedinice, prisutan/odsutan/neoznačen, canceled snapshot, minima i revision ugovori nisu mijenjani. Sandbox browser provjera pokriva selekciju prije/poslije Pretraži; puni rezultati u CURRENT_STATE.
+
 **Feature ID:** ATTENDANCE  
 **Status:** Implemented locally — TASK-004/005; real OAuth/device/cloud NOT RUN  
 **Owner:** Vlasnik aplikacije  

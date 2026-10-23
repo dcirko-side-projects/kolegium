@@ -10,9 +10,13 @@ import { eurosToCents, installmentInput } from '../../domain/grading';
   imports: [ReactiveFormsModule],
   providers: [PlanningStoreService],
   template: `
-    <h1>Rate fakulteta</h1>
-    <p>Iznos u EUR, rok i evidencija plaćanja.</p>
-    <button class="primary" (click)="start()" [disabled]="!store.canWrite()">Dodaj ratu</button>
+    <div class="page-heading">
+      <div>
+        <h1>Rate fakulteta</h1>
+        <p class="hint">Iznos u EUR, rok i evidencija plaćanja.</p>
+      </div>
+      <button class="primary" (click)="start()" [disabled]="!store.canWrite()">Dodaj ratu</button>
+    </div>
     @if (store.loading()) {
       <p role="status">Učitavam rate…</p>
     }
@@ -52,30 +56,39 @@ import { eurosToCents, installmentInput } from '../../domain/grading';
         </div>
       </form>
     }
-    @for (row of store.rows(); track row.id) {
-      <article class="panel" [attr.aria-label]="row.name">
-        <h2>{{ row.name }}</h2>
-        <p>
-          {{ money(row.amountCents) }} · Rok: {{ row.dueOn }} ·
-          {{
-            row.isPaid
-              ? 'Plaćeno'
-              : row.dueOn < store.today()
-                ? 'Zakašnjelo — neplaćeno'
-                : 'Neplaćeno'
-          }}
-        </p>
-        <div class="actions">
-          <button (click)="toggle(row)" [disabled]="!store.canWrite()">
-            {{ row.isPaid ? 'Označi neplaćeno' : 'Označi plaćeno' }}</button
-          ><button (click)="start(row)" [disabled]="!store.canWrite()">Uredi ratu</button>
-        </div>
-      </article>
-    } @empty {
-      @if (!store.loading() && !store.error()) {
-        <p>Nema unesenih rata.</p>
+    <div class="record-list">
+      @for (row of store.rows(); track row.id) {
+        <article
+          class="panel record-row installment-row"
+          [class.is-complete]="row.isPaid"
+          [attr.aria-label]="row.name"
+        >
+          <div class="installment-info">
+            <h2>{{ row.name }}</h2>
+            <p>
+              Rok: {{ row.dueOn }} ·
+              {{
+                row.isPaid
+                  ? 'Plaćeno'
+                  : row.dueOn < store.today()
+                    ? 'Zakašnjelo — neplaćeno'
+                    : 'Neplaćeno'
+              }}
+            </p>
+          </div>
+          <strong class="installment-amount">{{ money(row.amountCents) }}</strong>
+          <div class="actions">
+            <button (click)="toggle(row)" [disabled]="!store.canWrite()">
+              {{ row.isPaid ? 'Označi neplaćeno' : 'Označi plaćeno' }}</button
+            ><button (click)="start(row)" [disabled]="!store.canWrite()">Uredi ratu</button>
+          </div>
+        </article>
+      } @empty {
+        @if (!store.loading() && !store.error()) {
+          <p>Nema unesenih rata.</p>
+        }
       }
-    }
+    </div>
     @if (store.more()) {
       <button (click)="store.count.update(increase)" [disabled]="store.loading()">
         Učitaj još rata

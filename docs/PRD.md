@@ -1,5 +1,11 @@
 # Product Requirements Document
 
+20.10.2026. — novi nalog i odgovori korisnika: podsjetnici za To-do, projekte, rate, današnja predavanja/vježbe i kolokvije/ispite. Korisnik odabrao **besplatni privatni .ics izvoz** s alarmima u kalendar mobitela, uz pregled u aplikaciji; bez aktivacije naplate i bez novog push backenda. Ručni izvoz nije kalendarska sinkronizacija. FR-019: objedinjeni podsjetnici i privatni kalendarski izvoz s vidljivim alarmima, rasponom, paging zaštitom, isključenim obavljenim/plaćenim/otkazanim/arhiviranim stavkama i uputom provjere na telefonu.
+
+FR-005/006 korisnik potvrdio zaseban **ispričani izostanak**, opcionalnu napomenu i odvojeni broj; nije prisutnost, ne mijenja službeni fond/minimum i ne izmišlja institucijska pravila. FR-003: informacije o kolegiju preglednije po postojećim naslovima, bez uklanjanja sadržaja i s dostupnim cjelovitim izvornim tekstom. Jednokratna korisnikova evidencija: svi završeni neotkazani termini do trenutka pregleda kao izostanci, osim predavanja/vježbi BU 9.10. i NoSQL 10.10. kao prisutnost. Konkretan atomic/readback dokaz u CURRENT_STATE.
+
+Update 20.10.2026. — korisnik izričito zatražio moderniji kalendar s dnevnim, tjednim i mjesečnim prikazom te pregled/popravak filtara i arhive. FR-004 uključuje mjesečnu mrežu, navigaciju i otvaranje dnevnih detalja; nema kalendarske sinkronizacije. Filtri rasporeda, provjera/projekata i To-do primjenjuju se gumbom Pretraži, uz Poništi filtre; Dolaznost ima potvrdu odabira kolegija. Arhiva ostaje sačuvana povijest s odvojenim pregledom i izričitim uključivanjem/zaključavanjem korekcija.
+
 **Projekt:** Kolegium (radni naziv)  
 **Datum:** 2026-10-07  
 **Status:** Bootstrap baseline; konkretna pravila kolegija čekaju korisnikove izvore.
@@ -50,7 +56,7 @@ Offline unos/sinkronizacija, opći push/e-mail podsjetnici (za rate vrijedi gore
 | FR-001 | Privatni pristup Google prijavom | MUST | Samo odobreni UID može čitati/pisati; prijava se zadržava na vlastitom uređaju |
 | FR-002 | Semestri i arhiva | MUST | Aktualni semestar je glavni kontekst; arhiva zadržava povijest uz izričito uređivanje |
 | FR-003 | Kolegiji i informacije | MUST | Unos naziva, informacija i linkova; povezani sadržaji bez dupliciranja |
-| FR-004 | Tjedni raspored | MUST | Dan/tjedan, vrsta nastave, vrijeme i opcionalna lokacija; ponavljanje ograničeno datumima semestra |
+| FR-004 | Kalendar rasporeda | MUST | Dan/tjedan/mjesec, vrsta nastave, vrijeme i opcionalna lokacija; ponavljanje ograničeno datumima semestra |
 | FR-005 | Evidencija dolaznosti | MUST | Predavanja/vježbe odvojeno; prisutan/odsutan/neoznačen; naknadni ispravak; jedan zapis po terminu |
 | FR-006 | Pregled uvjeta dolaznosti | MUST | Broj dolazaka, službeni ukupni broj i minimum; preostali dolasci uz upozorenje na neoznačene termine |
 | FR-007 | Iznimke nastave | MUST | Otkazano nije izostanak; nadoknada zaseban termin; budući raspored ne mijenja povijest |
@@ -92,6 +98,8 @@ Offline unos/sinkronizacija, opći push/e-mail podsjetnici (za rate vrijedi gore
 - Za puni stvarni obračun ocjena moraju biti dostavljena i validirana pravila kolegija. Bez njih može biti spreman generički dio i unos; FR-015 za stvarne kolegije ostaje djelomično verificiran.
 
 ## 7. Open questions i assumptions
+
+- Dopuna 19.10.2026.: inovacije imaju seminar FoodLoop i vježbe utorkom 17:30–19:00, predavanja četvrtkom; PHP put AutoDnevnik + REST vs SOAP izričito oslobađa korisnika predavanja/vježbi; Bihevioralno radna tema Toksično okruženje u tvrtkama. Primijenjene su sadržajne i buduće rasporedne korekcije uz očuvanje prošlosti (COURSE_SOURCE_REVIEW). Nedostajuća brojčana pravila, rokovi i konačno odobrenje radnog naslova nisu pretpostavljeni. Za FR-004/007 otkazani termini početno se skrivaju iz aktivnog rasporeda i ostaju dostupni kroz eksplicitni pregled povijesti.
 
 - Pet aktualnih kolegija i stvarni raspored dostavljeni/upisani 2026-10-11 (SCHEDULE_IMPORT.md). Nastavni izvori zaprimljeni/obrađeni 2026-10-15 i informacije upisane u postojeće kolegije: odabrani Web veliki projekt+seminar s iznimkom dolaznosti, RMA vlastiti projekt, BU timski seminar i dva datirana kolokvija. Bez prijave/Mendeley taskova prema korisniku. COURSE_SOURCE_REVIEW navodi poznate postotke i otvorene bodovne/dolaznosne ugovore; potpun stvarni FR-015 još nije potvrđen. Podaci za dva buduća kolegija čekaju izvore. Datumima rasporeda nije potvrđen cijeli službeni akademski kalendar.
 - Izbor pokušaja trenutačno nije korisnikov prioritet; ostaje otvoren samo za obračun koji o njemu ovisi.

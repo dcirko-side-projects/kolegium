@@ -3,7 +3,7 @@ const version = __VERSION__;
 const assets = __ASSETS__;
 const cacheName = 'kolegium-shell-' + version;
 const routes =
-  /^(?:\/|\/(?:login|schedule|attendance|courses|assessments|projects|todo|thesis|installments|settings)(?:\/[^?#]*)?)$/;
+  /^(?:\/|\/(?:login|schedule|attendance|courses|assessments|projects|todo|thesis|installments|settings|reminders)(?:\/[^?#]*)?)$/;
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {

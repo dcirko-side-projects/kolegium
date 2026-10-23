@@ -108,9 +108,10 @@ service cloud.firestore {
     }
     function sessionShape(uid, ds, d, id) {
       return d.keys().hasAll(['id','revision','updatedAt','courseId','templateId','scheduledOn','startsAt','endsAt','kind','location','isCancelled','attendance','replacementForId'])
-        && d.keys().hasOnly(['id','revision','updatedAt','courseId','templateId','scheduledOn','startsAt','endsAt','kind','location','isCancelled','attendance','replacementForId'])
+        && d.keys().hasOnly(['id','revision','updatedAt','courseId','templateId','scheduledOn','startsAt','endsAt','kind','location','isCancelled','attendance','replacementForId','absenceNote'])
         && common(d,id) && validId(d.courseId) && existsAfter(entityPath(uid,ds,'courses',d.courseId)) && teaching(d) && validDate(d.scheduledOn)
-        && d.isCancelled is bool && d.attendance in ['unmarked','present','absent'] && (!d.isCancelled || d.attendance == 'unmarked')
+        && d.isCancelled is bool && d.attendance in ['unmarked','present','absent','excused'] && (!d.isCancelled || d.attendance == 'unmarked')
+        && (!('absenceNote' in d) || (d.attendance == 'excused' && d.absenceNote is string && nullableText(d.absenceNote,500)))
         && (d.templateId == null || validId(d.templateId))
         && (d.replacementForId == null || (d.templateId == null && validId(d.replacementForId) && d.replacementForId != id
           && getAfter(entityPath(uid,ds,'sessions',d.replacementForId)).data.courseId == d.courseId
@@ -252,7 +253,7 @@ service cloud.firestore {
             && request.resource.data.revision == 1 && (stagingMutation(uid,ds) || request.resource.data.templateId == null || templateSnapshot(uid,ds,request.resource.data,id));
           allow update: if owner(uid) && unlockedMutation(uid,ds) && sessionShape(uid,ds,request.resource.data,id)
             && request.resource.data.revision == resource.data.revision + 1
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attendance','isCancelled','revision','updatedAt']);
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attendance','absenceNote','isCancelled','revision','updatedAt']);
           allow delete: if false;
         }
         match /assessments/{id} {

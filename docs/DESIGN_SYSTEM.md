@@ -1,5 +1,13 @@
 # Design System
 
+23.10.2026. — Preskoči na sadržaj ima izričit tabindex=0 radi WebKit zadane navigacije koja preskače native linkove bez eksplicitnog tab stopa. Nema pozitivnog tabindexa ili promjene redoslijeda; Enter vodi do postojećeg main-content fokusa. Pogođeni browser keyboard scenarij sada pokriva i desktop WebKit. Glavni sadržaj označava aria-busy tijekom početnog učitavanja/refresha/mutacije, bez mijenjanja fokusa ili uklanjanja otvorenog obrasca.
+
+20.10.2026. — Podsjetnici koriste postojeće panel/status-badge/actions/token obrasce, tekstualni status Danas/Sutra/ZaN dana/Rok je prošao i izravni link izvora. Izvoz ostaje vidljivo odvojen od in-app pregleda, s jasnim rasponom/satnicom i uputama; nema skrivenog traženja notifikacijskih dozvola. Informacije kolegija dobivaju tekstualni indeks cjelina i naslove iz postojećeg plain texta; izvorni tekst dostupan u native details. SessionRow ima dostupnu označenu formu ispričnice, stanja potvrde/offline/konflikta i zasebni status/broj, bez oslanjanja samo na boju.
+
+20.10.2026. — Kalendar koristi postojeće boje/tokenizirane razmake: sedam stupaca, odabrani Dan/Tjedan/Mjesec s aria-pressed, Danas s aria-current=date, predavanja plava, vježbe Ice Glass i tekst vrste, otkazano tekstom i isprekidanom granicom. Datumi su 44px ciljevi; događaji dostupni tipkovnicom. Na uskoj širini označena fokusabilna regija ima vlastiti vodoravni scroll. Dnevni detalji ponovno koriste SessionRow; nema nove biblioteke niti promjene podatkovne sheme.
+
+Update 2026-10-19 — cjeloviti redizajn prema korisnikovu nalogu: tamnoplavi sidebar #102A56, srednje plava #1B4385, svijetloplava #EDF3FF i blue border #B8CBED proširuju potvrđeni Quantum Blue/Ice Glass. Input border #8191AB odvojen je od dekorativnog #D7E1EF. Bijela ostaje glavna površina; bez gradijenata, emojija i novih dependencies. Radijusi 4/6/8 px; panel padding 32 px desktop / 20 px mobile; razmaci 4/8/12/16/20/24/32/40/48. Navigacija prelazi na donji prikaz ispod 1024 px, dvostupčane forme ispod 768 px. Page heading ima sekcijsku granicu; record-list/record-row služe zadacima i obavezama, session-time vremenu nastave, status-badge tekstualnom stanju, metadata-grid osnovnim podacima. Form grid naslovi/akcije protežu se preko oba stupca. Detaljni nalazi i implementacija u UI_REDESIGN.md; dokazne granice u CURRENT_STATE.
+
 TASK-002/003 update 2026-10-08: shared/styles/_forms.scss daje reusable panel, form grid, field, action, error/success i conflict obrasce. Form inputi imaju 16px font i najmanje 44px visinu; checkbox label proširuje cilj, vidljiv keyboard focus ostaje. Semestri/kolegiji koriste iste tokene i potvrđenu paletu, bez novog branding odluke. Axe i 320px overflow provjereni su na novim formama; stvarni iPhone/Android ostaju NOT RUN.
 
 Datum: 2026-10-07. Planning baseline. Paleta potvrđena; ostali tokeni su početni izvedbeni izbori za provjeru u UI-ju, ne zasebna branding potvrda.
@@ -18,7 +26,7 @@ Praktičan, čist, brz i pregledan. Dolaznost se unosi odmah iz termina. Podaci 
 | color-surface | #FFFFFF | Kartice/forme |
 | color-text | #14213D | Glavni tekst |
 | color-text-muted | #4B5A73 | Pomoćni tekst, verificirati kontrast |
-| color-border | #CAD4E4 | Dekorativne granice; za input/focus koristiti jači kontrast |
+| color-border | #D7E1EF | Dekorativne granice; za input/focus koristiti jači kontrast |
 | color-success | #166534 | Uspjeh uz tekst/ikonu |
 | color-warning | #854D0E | Nepotpunost/rok uz tekst |
 | color-error | #B91C1C | Pogreška uz poruku |
@@ -27,14 +35,14 @@ Primary button: bijeli tekst na Quantum Blue. Ice Glass nije boja teksta na bije
 
 Font: system sans stack (system-ui, Segoe UI, sans-serif), bez vanjskog font servisa. Body 16px/1.5; small 14px/1.4; heading 24/32px prema kontekstu; minimum input font 16px na mobitelu. Weights 400/600/700.
 
-Spacing 4/8/12/16/24/32/48; radius 8/12/16; shadow suptilan samo za elevated surfaces/dialog. CSS custom properties centralno. Ne uvoditi nasumične hex/padding vrijednosti po featureima.
+Spacing 4/8/12/16/24/32/48; radius 4/6/8; shadow suptilan samo za elevated surfaces/dialog. CSS custom properties centralno. Ne uvoditi nasumične hex/padding vrijednosti po featureima.
 
 ## 3. Layout i responsive
 
 - Mobile padding 16px, desktop 24–32px; max content 1440px.
 - Početni breakpointi 768px (širi sadržaj), 1024px (sidebar/tjedna mreža); layout se prilagođava prostoru, ne nazivima uređaja.
 - Mobile bottom nav uvažava safe-area-inset-bottom; sadržaj nikad ispod navigacije.
-- Desktop sidebar 240px, glavna područja sa jasnim section headingom. Mobile cards imaju iste radnje kao tablice.
+- Desktop sidebar 248px, glavna područja sa jasnim section headingom. Mobile cards imaju iste radnje kao tablice.
 - Target površine dodira minimalno 44x44px. Hover nije jedini ulaz. Pozitivna/negativna attendance akcija mora imati label, ne samo boju.
 
 ## 4. Reusable components

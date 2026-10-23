@@ -20,7 +20,9 @@ const approvedDeploy =
   args.includes('--config') &&
   args[args.indexOf('--config') + 1] === 'firebase.release.json' &&
   args.includes('--only') &&
-  ['firestore:rules,firestore:indexes', 'hosting'].includes(args[args.indexOf('--only') + 1]);
+  ['firestore:rules', 'firestore:rules,firestore:indexes', 'hosting'].includes(
+    args[args.indexOf('--only') + 1],
+  );
 if (
   ![
     'login',

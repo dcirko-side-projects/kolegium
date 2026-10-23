@@ -29,15 +29,25 @@
 }
 <div class="actions">
   <button class="primary" (click)="start()" [disabled]="!store.canWrite()">Dodaj zadatak</button>
-  <button
-    (click)="store.archiveEditing.set(!store.archiveEditing())"
-    [attr.aria-pressed]="store.archiveEditing()"
-  >
-    Uredi arhivu
-  </button>
+  @if (store.archivedIds().size > 0) {
+    <button
+      (click)="store.archiveEditing.set(!store.archiveEditing())"
+      [attr.aria-pressed]="store.archiveEditing()"
+    >
+      {{ store.archiveEditing() ? 'Zaključaj arhivu' : 'Uredi arhivu' }}
+    </button>
+    <p class="hint">
+      Zadaci arhiviranih kolegija i projekata ostaju vidljivi. Uređivanje uključi samo za korekciju
+      povijesti.
+    </p>
+  }
 </div>
 @if (!embedded()) {
-  <div class="panel form-grid">
+  <form
+    class="panel form-grid"
+    (submit)="$event.preventDefault(); applyFilters()"
+    aria-label="Filtri zadataka"
+  >
     <div>
       <label for="task-filter-type">Filtriraj kontekst</label
       ><select
@@ -102,7 +112,17 @@
         </select>
       </div>
     }
-  </div>
+    <div class="actions">
+      <button class="primary" [disabled]="store.academic.busy() || store.loading()">Pretraži</button
+      ><button
+        type="button"
+        (click)="applyFilters(true)"
+        [disabled]="store.academic.busy() || store.loading()"
+      >
+        Poništi filtre
+      </button>
+    </div>
+  </form>
 }
 @if (editing()) {
   <form class="panel" [formGroup]="form" (ngSubmit)="submit()">
@@ -178,24 +198,32 @@
     </div>
   </form>
 }
-@for (row of visible(); track row.id) {
-  <article class="panel" [attr.aria-label]="row.title">
-    <h3>{{ row.title }}</h3>
-    <p>
-      {{ description(row) }} · Rok: {{ row.dueOn ?? 'nije zadan' }} ·
-      {{ row.isCompleted ? 'Dovršeno' : 'Otvoreno' }}
-    </p>
-    <div class="actions">
-      <button (click)="toggle(row)" [disabled]="!store.canEdit(row.id)">
-        {{ row.isCompleted ? 'Ponovno otvori zadatak' : 'Dovrši zadatak' }}</button
-      ><button (click)="start(row)" [disabled]="!store.canEdit(row.id)">Uredi zadatak</button>
-    </div>
-  </article>
-} @empty {
-  @if (!store.loading()) {
-    <p>Nema zadataka u ovom pregledu.</p>
+<div class="record-list">
+  @for (row of visible(); track row.id) {
+    <article
+      class="panel record-row task-row"
+      [class.is-complete]="row.isCompleted"
+      [attr.aria-label]="row.title"
+    >
+      <div class="record-content">
+        <h3>{{ row.title }}</h3>
+        <p>
+          {{ description(row) }} · Rok: {{ row.dueOn ?? 'nije zadan' }} ·
+          {{ row.isCompleted ? 'Dovršeno' : 'Otvoreno' }}
+        </p>
+      </div>
+      <div class="actions">
+        <button (click)="toggle(row)" [disabled]="!store.canEdit(row.id)">
+          {{ row.isCompleted ? 'Ponovno otvori zadatak' : 'Dovrši zadatak' }}</button
+        ><button (click)="start(row)" [disabled]="!store.canEdit(row.id)">Uredi zadatak</button>
+      </div>
+    </article>
+  } @empty {
+    @if (!store.loading()) {
+      <p>Nema zadataka u ovom pregledu.</p>
+    }
   }
-}
+</div>
 @if (store.more()) {
   <button (click)="store.loadMore()" [disabled]="store.loading()">Učitaj još zadataka</button>
 }

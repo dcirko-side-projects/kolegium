@@ -1,6 +1,6 @@
 import { DestroyRef, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { AcademicStoreService } from './academic-store.service';
-import { FirebaseContextService } from '../../data/firebase-context.service';
+import { FirestoreContextService } from '../../data/firestore-context.service';
 import { ScheduleRepository } from '../../data/schedule.repository';
 import { AcademicRepository } from '../../data/academic.repository';
 import {
@@ -19,7 +19,7 @@ import { importCalendar } from '../../data/calendar-import';
 @Injectable()
 export class ScheduleStoreService {
   readonly academic = inject(AcademicStoreService);
-  private readonly context = inject(FirebaseContextService);
+  private readonly context = inject(FirestoreContextService);
   private request = 0;
   readonly from = signal(localNow().date);
   readonly now = signal(localNow());
@@ -30,6 +30,8 @@ export class ScheduleStoreService {
   readonly rows = signal<Occurrence[]>([]);
   readonly templates = signal<ScheduleTemplate[]>([]);
   readonly loading = signal(false);
+  readonly dataRevision = signal<number | null>(null);
+  readonly loadedDatasetId = signal<string | null>(null);
   readonly busy = signal(false);
   readonly error = signal<ApplicationError | null>(null);
   readonly success = signal<string | null>(null);
@@ -60,10 +62,15 @@ export class ScheduleStoreService {
       this.fullCourseHistory();
       untracked(() => {
         if (scope && ready && online) void this.refresh();
-        else {
+        else if (!scope) {
           this.request++;
           this.rows.set([]);
           this.templates.set([]);
+          this.loading.set(false);
+          this.dataRevision.set(null);
+          this.loadedDatasetId.set(null);
+        } else if (!online) {
+          this.request++;
           this.loading.set(false);
         }
       });
@@ -94,6 +101,8 @@ export class ScheduleStoreService {
         return;
       }
       const templates = data.flatMap((d) => d.templates);
+      this.dataRevision.set(after.dataRevision);
+      this.loadedDatasetId.set(scope.datasetId);
       this.templates.set(templates);
       this.rows.set(
         occurrences(
@@ -161,12 +170,12 @@ export class ScheduleStoreService {
       repo.saveTemplate(this.academic.scope()!, id, input, old, effective),
     );
   }
-  mark(row: Occurrence, attendance: Attendance): Promise<void> {
+  mark(row: Occurrence, attendance: Attendance, absenceNote: string | null = null): Promise<void> {
     if (row.scheduledOn > localNow().date)
       return Promise.reject(
         new ApplicationError('validation', 'Dolaznost se unosi za današnje i prošle termine.'),
       );
-    return this.saveSession(row, { ...row, attendance });
+    return this.saveSession(row, { ...row, attendance, absenceNote });
   }
   saveSession(row: Occurrence, values: SessionInput): Promise<void> {
     return this.write(values.courseId, (repo) =>

@@ -53,6 +53,12 @@ export const navigationItems: readonly NavigationItem[] = [
     icon: 'wallet',
   },
   {
+    path: '/reminders',
+    label: 'Podsjetnici',
+    description: 'Rokovi, nastava i podsjetnici za kalendar mobitela.',
+    icon: 'calendar',
+  },
+  {
     path: '/settings',
     label: 'Postavke',
     description: 'Semestri, sigurnosna kopija i pristup.',

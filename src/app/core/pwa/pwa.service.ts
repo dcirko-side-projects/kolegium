@@ -1,6 +1,5 @@
 import { DestroyRef, Injectable, inject, isDevMode, signal } from '@angular/core';
 import { UnsavedChangesService } from '../forms/unsaved-changes.service';
-import { AcademicStoreService } from '../academic/academic-store.service';
 interface InstallPrompt extends Event {
   prompt(): Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
@@ -8,7 +7,7 @@ interface InstallPrompt extends Event {
 @Injectable({ providedIn: 'root' })
 export class PwaService {
   private readonly changes = inject(UnsavedChangesService);
-  private readonly academic = inject(AcademicStoreService);
+  private readonly updateBlockers = new Set<() => boolean>();
   readonly installable = signal(false);
   readonly updateReady = signal(false);
   readonly activated = signal(false);
@@ -73,13 +72,15 @@ export class PwaService {
         ),
       );
   }
+  registerUpdateBlocker(check: () => boolean): () => void {
+    this.updateBlockers.add(check);
+    return () => this.updateBlockers.delete(check);
+  }
   canUpdate(): boolean {
     return (
       navigator.onLine &&
       !this.changes.hasUnsafeChanges() &&
-      !this.academic.busy() &&
-      !this.academic.control()?.restoreToken &&
-      !this.academic.datasetChanged()
+      ![...this.updateBlockers].some((check) => check())
     );
   }
   async install(): Promise<void> {

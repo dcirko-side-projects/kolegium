@@ -1,5 +1,17 @@
 # Release evidencija — TASK-012
 
+Konačni23.10.: Chromium **65PASS/1namjerni mobile keyboard skip/0failed/0flaky**, unit52/Rules18/SDK34/releaseRules2/privatni svježi backup sandbox2 i static/build/oba PWA PASS. Read-only production Rules odgovaraju odobrenom izvoru; anonymous403. **WebKit reload ostaje OPEN**, reproduciran i na čistom SDK-u bez aplikacije u više prolaza, uključujući pagehide unsubscribe pokušaj; nema punog WebKit/Safari/device PASS. Lokalni kandidat08e81c515a7f1629ce7e nije objavljen. CURRENT_STATE/BUGS_AND_IMPROVEMENTS čuvaju granice i sljedeći korak.
+
+23.10.2026.: lokalne alatne zakrpe i dodatne provjere po nalogu „dovrši sve što možeš”. Runtime audit0, puni5moderate/0high/critical; build i oba PWA smokea PASS. Prvotni alatni artefakt bio je identičan online objavi; naknadni Tab fokus ispravak/emulator transport daju novi lokalni kandidat08e81c515a7f1629ce7e,42assets. Online ostaje f1cf18a3673985c5f1fe, bez novog deploya. Aktualni cloud backup root28 read-only validiran; lokalni oporavak i dodatni WebKit rezultati u CURRENT_STATE, ne zatvaraju fizički/cloud restore gate. Korisnik potvrdio Outlook import, alarm još ne.
+
+Najnovija objava 20.10.2026.: izričito odobreni owner Firestore Rules za excused/absenceNote i Hosting aplikacije **f1cf18a3673985c5f1fe**, oba deploya PASS. Pre-release backup root26/188sessions validiran; Rules readback odgovara lokalnom izvoru, anonimni root403. Podsjetnici svih pet vrsta s privatnim .ics izvozom, ispričnice i preglednije informacije su online. Nema promjene indeksa, novog data upisa pri deployu, naplate ili Git commit/pusha. Fizički kalendarski import/alarmi i postojeći device/cross-device/grading/recovery gates ostaju otvoreni; ovo nije zatvaranje cijelog TASK-012.
+
+Završni javni smoke najnovije objave PASS:18ruta/cache provjera,42assets SHA-256 identično releaseu, produkcijski login1440/390px bez overflowa/testnog gumba. Worker na oba origina odgovara f1cf18a3673985c5f1fe. Početni mrežni reseti i load timeout nisu aplikacijski PASS; završni puni javni run nakon ograničenih retryja/domcontentloaded provjere PASS. CURRENT_STATE navodi točne granice.
+
+Ranija konkretna objava 20.10.2026.: po nalogu „objavi online” Hosting-only release **26a5b1aedb998aa9f514** s kalendarom Dan/Tjedan/Mjesec i filtrima/arhivom objavljen. Release build/PWA PASS bez warninga; 16 HTTP/cache provjera na oba origina, svih 40 javnih datoteka SHA-256 identično buildu i produkcijski login 1440/390px PASS. Bez Rules/index/data/billing/Git promjene. Prethodni otvoreni stvarni device/cross-device/grading/recovery gates nisu zatvoreni tom objavom.
+
+Aktualno 19.10.2026.: owner Google OAuth, course/project server-confirmed writes, preuzeti/validirani cloud backup i desktop PWA waiting-update→nova objavljena verzija opaženi u stvarnom Chromeu na Windowsu. Novi utorci, PHP izuzeće i FoodLoop upisani uz backup/atomic preconditions/full readback; TASK-009C ostaje djelomičan zbog nepoznatih brojčanih pravila. Po zasebnom nalogu iz paralelnog rada frontend 276da58dcec7220b4701 već je online. Initial 361.07 kB bez 500 kB warninga; runtime audit 0, puni CLI audit 11 (7 high/4 moderate) nakon ciljane re2 zakrpe. Real physical/cross-device/conflict/offline, native install, mid-range performance, Safari i cloud restore gates ostaju otvoreni. FINAL_ACCEPTANCE navodi korisničke završne korake. Stariji gate redci ispod treba čitati uz ovu dopunu i CURRENT_STATE.
+
 Najnovije 2026-10-15: korisnik potvrdio „Faza 1 gotova, sve radi” za predloženu Google prijavu i pregled podataka na mobitelu/laptopu. PASS — korisnička potvrda owner pristupa/pregleda, bez agentova neposrednog opažanja ili popisa OS/browser verzija. Cross-device mutacije/refresh/reopen, other UID, PWA native install/update i recovery i dalje čekaju zasebne dokaze. Stariji NOT RUN zapisi o owner pristupu opisuju stanje prije te potvrde.
 
 Stanje 2026-10-10: korisnik potvrdio da Firebase projekt još nije napravljen. Ovo je lokalna priprema, bez objave i naplate. Projekt od početka ostaje Spark, preferirano 0 EUR, ukupni odobreni limit 5 EUR/mjesečno ne dopušta automatski Blaze upgrade.
@@ -11,17 +23,17 @@ Naknadni update: korisnik kreirao projekt i dostavio ID `kolegium-c8970` te web 
 | Lokalni build i testovi | PASS lokalno | Završni brojevi u CURRENT_STATE |
 | Production pristup zatvoren | PASS lokalno | Unconfigured environment i deny-all production Rules |
 | Firebase projekt / EU lokacija baze | PASS projekt/baza | CLI ACTIVE, default Standard/Native europe-west3/freeTier=true; Spark korisnik potvrdio |
-| Google Auth / approved UID | PASS owner — korisnička potvrda | 15.10. korisnik potvrdio fazu prijave/pregleda na svojim uređajima; other UID i session edge cases još otvoreni, nije agent-observed |
-| Web konfiguracija / isti auth domain | NOT RUN | Public web config, bez service-account ključa; OAuth redirect provjeriti na Hosting domeni |
+| Google Auth / approved UID | PASS owner podskup | Korisnička potvrda 15.10.; agent-observed Chrome/Windows owner Google login i course/project writes 19.10. Other UID/session edge cases na stvarnom cloudu otvoreni |
+| Web konfiguracija / isti auth domain | PARTIAL real | Hosting OAuth popup i rezervirani helper rade na firebaseapp.com; Safari/mobile redirect provjera još otvorena |
 | Production Rules i indeksi | PARTIAL cloud | Rules compile/deploy PASS; cloud indeksi READY 10/10. Owner Rules emulator PASS 2/2, anonymous cloud 403; real owner/other Google data test otvoren |
 | CSP / Hosting headers | PARTIAL cloud | HTTPS/app/auth-helper/worker/manifest HTTP smoke PASS; HTML no-cache ispravljen i potvrđen. CSP Report-Only, OAuth enforcement još otvoren |
 | Runtime dependencies | PASS snapshot 0 | DEPENDENCY_REVIEW; nije potpuna sigurnosna revizija |
-| Dev/deploy dependencies | OPEN | CLI nalazi nisu riješeni; procjena kompatibilne zakrpe prije deploya |
-| Stvarni kolegiji / grading | NOT RUN | TASK-009C čeka izvore; app ih ne izmišlja |
+| Dev/deploy dependencies | OPEN 5 moderate | 23.10. kompatibilne alatne zakrpe: 0 high/critical, runtime0; preostalih5moderate u CLI Pub/Sub/OpenTelemetry i gaxios/uuid lancima, DEPENDENCY_REVIEW |
+| Stvarni kolegiji / grading | PARTIAL | Izvori i teme/raspored primijenjeni 15./19.10.; puna brojčana konfiguracija TASK-009C još nedostaje |
 | Fizički Android/iPhone/Windows | NOT RUN | Browser + instalirani prikaz, login/logout, današnja dolaznost, unos i update |
-| Cloud write/read / drugi uređaj / backup | NOT RUN | Testni zapisi odvojeno od stvarne evidencije, potvrditi povrat i oporavak |
-| Mobile performance / kvote | NOT RUN | Reprezentativni uređaj i potrošnja; bundle warning ostaje |
-| Objava / URL | PASS prva testna objava | Korisnik odobrio 2026-10-10; Rules/indeksi/Hosting objavljeni. Primarni URL kolegium-c8970.firebaseapp.com; device/private-data acceptance još otvoren |
+| Cloud write/read / drugi uređaj / backup | PARTIAL real | Desktop owner UI writes/read/export i admin atomic/readback PASS 19.10.; physical cross-device i cloud restore/recovery otvoreni |
+| Mobile performance / kvote | NOT RUN physical | Initial 361.07 kB bez starog warninga; stvarni reprezentativni uređaj/3 s i potrošnja još nisu izmjereni |
+| Objava / URL | PASS aktualna objava | Zasebno odobreni Rules + Hosting deploy 20.10., f1cf18a3673985c5f1fe; primarni URL kolegium-c8970.firebaseapp.com. Buduće objave traže novi nalog |
 
 ## Redoslijed povezivanja
 

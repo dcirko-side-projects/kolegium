@@ -1,6 +1,6 @@
 import { DestroyRef, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { AcademicStoreService } from './academic-store.service';
-import { FirebaseContextService } from '../../data/firebase-context.service';
+import { FirestoreContextService } from '../../data/firestore-context.service';
 import { PlanningRepository } from '../../data/planning.repository';
 import { WorkRepository } from '../../data/work.repository';
 import { ApplicationError, asApplicationError } from '../errors/application-error';
@@ -10,14 +10,18 @@ import { installmentReminder } from '../../domain/installment-reminders';
 @Injectable()
 export class PlanningStoreService {
   readonly academic = inject(AcademicStoreService);
-  private readonly context = inject(FirebaseContextService);
+  private readonly context = inject(FirestoreContextService);
   readonly kind = signal<'installments' | 'overview' | 'grading'>('installments');
   readonly count = signal(50);
+  readonly daysAhead = signal(14);
+  readonly installmentDaysAhead = signal(30);
   readonly rows = signal<Installment[]>([]);
   readonly deadlines = signal<Deadline[]>([]);
   readonly tasks = signal<import('../../domain/work.models').Task[]>([]);
   readonly more = signal(false);
   readonly loading = signal(false);
+  readonly dataRevision = signal<number | null>(null);
+  readonly loadedDatasetId = signal<string | null>(null);
   readonly error = signal<ApplicationError | null>(null);
   readonly success = signal<string | null>(null);
   readonly today = signal(localNow().date);
@@ -50,6 +54,8 @@ export class PlanningStoreService {
       this.kind();
       this.count();
       this.today();
+      this.daysAhead();
+      this.installmentDaysAhead();
       untracked(() => {
         if (scope && ready && online && this.kind() !== 'grading') void this.refresh();
         else if (!scope) {
@@ -73,12 +79,14 @@ export class PlanningStoreService {
       if (this.kind() === 'overview') {
         const data = await this.repository().overview(
           scope,
-          addDays(this.today(), 14),
+          addDays(this.today(), this.daysAhead()),
           this.count(),
-          addDays(this.today(), 30),
+          addDays(this.today(), this.installmentDaysAhead()),
         );
         if (request !== this.request) return;
         this.deadlines.set(data.deadlines);
+        this.dataRevision.set(data.dataRevision);
+        this.loadedDatasetId.set(scope.datasetId);
         this.tasks.set(data.tasks);
         this.reminderRows.set(data.installmentReminders);
         this.more.set(data.more);

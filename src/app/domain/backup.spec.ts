@@ -46,6 +46,31 @@ export function sampleBackup(): BackupEnvelope {
   };
 }
 describe('Complete backup envelope and graph', () => {
+  it('roundtrips optional excused notes while accepting legacy sessions and rejecting foreign metadata', () => {
+    const b = sampleBackup();
+    b.collections.sessions = [
+      {
+        id: 's1',
+        courseId: 'c1',
+        templateId: null,
+        scheduledOn: '2026-10-09',
+        startsAt: '08:00',
+        endsAt: '09:00',
+        kind: 'lecture',
+        location: null,
+        isCancelled: false,
+        attendance: 'excused',
+        absenceNote: 'Potvrda',
+        replacementForId: null,
+      },
+    ];
+    expect(parseBackup(serializeBackup(b)).collections.sessions[0]['absenceNote']).toBe('Potvrda');
+    delete b.collections.sessions[0]['absenceNote'];
+    b.collections.sessions[0]['attendance'] = 'absent';
+    expect(parseBackup(serializeBackup(b)).collections.sessions[0]['attendance']).toBe('absent');
+    b.collections.sessions[0]['absenceNote'] = 'Ne pripada običnom izostanku';
+    expect(() => validateBackup(b)).toThrow();
+  });
   it('exports a valid near-limit UTF-8 file that can be imported again without whitespace overhead', () => {
     const b = sampleBackup();
     b.collections.courses = Array.from({ length: 505 }, (_, i) => ({

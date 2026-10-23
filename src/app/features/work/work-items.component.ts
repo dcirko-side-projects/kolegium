@@ -39,6 +39,16 @@ export class WorkItemsComponent {
   protected readonly old = signal<Assessment | Project | null>(null);
   protected readonly error = signal<ApplicationError | null>(null);
   protected readonly showArchived = signal(false);
+  protected readonly filters = inject(FormBuilder).nonNullable.group({
+    courseId: '',
+    status: 'all',
+    search: '',
+  });
+  protected readonly appliedStatus = signal('all');
+  protected readonly appliedSearch = signal('');
+  protected readonly hasArchive = computed(
+    () => this.store.archivedIds().size > 0 || this.detailArchived(),
+  );
   protected readonly form = inject(FormBuilder).nonNullable.group({
     name: '',
     courseId: '',
@@ -56,7 +66,12 @@ export class WorkItemsComponent {
   protected readonly detailId = computed(() => this.params()?.get('id') ?? null);
   protected readonly displayRows = computed(() =>
     this.rows()
-      .filter((r) => this.showArchived() || !this.store.archivedIds().has(r.id))
+      .filter(
+        (r) =>
+          (this.showArchived() || !this.store.archivedIds().has(r.id)) &&
+          (this.appliedStatus() === 'all' || r.isCompleted === (this.appliedStatus() === 'done')) &&
+          r.name.toLocaleLowerCase('hr').includes(this.appliedSearch().toLocaleLowerCase('hr')),
+      )
       .sort((a, b) => this.date(a).localeCompare(this.date(b)) || a.name.localeCompare(b.name)),
   );
   protected readonly canEditDetail = computed(
@@ -76,8 +91,7 @@ export class WorkItemsComponent {
         });
     });
     effect(() => {
-      const courses = this.store.academic.courses(),
-        filter = this.query()?.get('courseId'),
+      const filter = this.query()?.get('courseId'),
         ready = this.store.academic.ready(),
         semester = this.store.academic.selectedSemesterId();
       untracked(() => {
@@ -90,7 +104,8 @@ export class WorkItemsComponent {
           this.courseInitialized = true;
           this.lastCourseQuery = filter;
           this.lastSemester = semester;
-          this.store.courseId.set(filter ?? (this.isAssessment ? (courses[0]?.id ?? null) : null));
+          this.store.courseId.set(filter ?? null);
+          this.filters.controls.courseId.setValue(filter ?? '');
         }
       });
     });
@@ -176,10 +191,15 @@ export class WorkItemsComponent {
       if (request === this.request) this.error.set(asApplicationError(e));
     }
   }
-  protected changeCourse(id: string) {
+  protected applyFilters(reset = false) {
     if (!this.changes.confirm()) return;
-    this.store.courseId.set(id || null);
+    if (reset) this.filters.reset();
+    const value = this.filters.getRawValue();
+    this.store.courseId.set(value.courseId || null);
     this.store.count.set(50);
+    this.appliedStatus.set(value.status);
+    this.appliedSearch.set(value.search.trim());
+    this.store.archiveEditing.set(false);
   }
   protected start(row: Assessment | Project | null = null) {
     if (!this.changes.confirm()) return;
@@ -187,7 +207,12 @@ export class WorkItemsComponent {
     this.id = row?.id ?? crypto.randomUUID();
     this.form.reset({
       name: row?.name ?? '',
-      courseId: row ? (row.courseId ?? '') : (this.store.courseId() ?? ''),
+      courseId: row
+        ? (row.courseId ?? '')
+        : (this.store.courseId() ??
+          (this.isAssessment
+            ? (this.store.academic.courses().find((c) => !c.isArchived)?.id ?? '')
+            : '')),
       type: row && 'type' in row ? row.type : 'quiz',
       scheduledOn: row && 'scheduledOn' in row ? row.scheduledOn : '',
       scheduledAt: row && 'scheduledAt' in row ? (row.scheduledAt ?? '') : '',

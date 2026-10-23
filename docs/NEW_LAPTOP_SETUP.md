@@ -1,5 +1,11 @@
 # Nastavak Kolegiuma na novom laptopu
 
+Aktualizacija23.10.2026.: lokalno zakrpani build/CLI21.2.28, Vitest4.1.12 i Firebase CLI15.34.1; Node minimum22.22.2 i runtime/compiler21.2.25 nepromijenjeni. Svježi audit0runtime/5moderateCLI, bez high/critical. WebKit i privatni backup sandbox test dostupni opt-in prema README; testni suiteovi i dalje strogo sekvencijalni. Tab skip-link fokus popravljen izričitim tabindex0, emulator koristi long-polling/5s idle radi WebKit/Windows stream kompatibilnosti, production transport nije promijenjen. Konačni lokalni kandidat08e81c515a7f1629ce7e nije objavljen; online f1cf18a3673985c5f1fe već sadrži podsjetnike/ICS i excused. Snapshot23.10.root28/188sessions/2tasks je read-only dokaz, ne seed nalog. Najnoviji rezultati u CURRENT_STATE; izmjene još nisu commitirane/pushane.
+
+Aktualizacija 19.10.2026.: Node minimum je **22.22.2** radi sigurnosne re2 zakrpe (verificirano 22.23.3). U cloudu je nakon korisnikovih korekcija **188 sessions uključujući otkazane i 5 projekata**; FoodLoop, nove vježbe inovacija utorkom i PHP izuzeće već su primijenjeni. Ne ponavljati seed. Nova frontend verzija 276da58dcec7220b4701 objavljena je po zasebnom nalogu; postojeći in-app reminder UI uključen, mobile push ostaje odgođen. Točne provjere i preostali završni koraci su u CURRENT_STATE/FINAL_ACCEPTANCE. Snapshoti od 18.10. ispod su povijest prijenosa.
+
+Online update 2026-10-19: korisnik izričito odobrio i provedena je Hosting-only objava cijelog aktualnog frontenda s redizajnom i postojećim in-app podsjetnicima. Release 276da58dcec7220b4701; build/release PWA/hosted HTTP i desktop/mobile login smoke PASS. Raniji navodi da je UI/reminder samo lokalan opisuju stanje prije ove objave. Bez mobile push aktivacije, data/Rules migracije, naplate ili Git commit/pusha. Dokazi i granice u CURRENT_STATE/DEPLOYMENT.
+
 Datum: 2026-10-18. Privatni repozitorij: https://github.com/dcirko-side-projects/kolegium. Ovaj dokument i NEXT_CHAT_PROMPT prenose projektni kontekst; ne predstavljaju izvoz razgovora ili lokalnih privatnih datoteka.
 
 ## 1. Preuzimanje projekta i konteksta
@@ -35,7 +41,7 @@ Buduće osobne izmjene u aplikaciji ne vide se u Gitu; Firestore je izvor aktual
 
 ## 3. Razvojno okruženje
 
-Slijedi postojeći README/package.json: Node 22.x, najmanje 22.13 (prethodno verificirano 22.20.0), npm 11, Git i Java JDK 21 za emulatore. `JAVA_HOME` treba pokazivati na JDK; provjeri `node --version`, `npm.cmd --version`, `java -version` i `git --version`. Ne nadograđivati framework/dependencies samo zbog novog laptopa.
+Slijedi postojeći README/package.json: Node 22.x, najmanje 22.22.2 (verificirano 22.23.3; sigurnosna zakrpa re2), npm 11, Git i Java JDK 21 za emulatore. `JAVA_HOME` treba pokazivati na JDK; provjeri `node --version`, `npm.cmd --version`, `java -version` i `git --version`. Ne nadograđivati framework/dependencies samo zbog novog laptopa.
 
 Instalacija zaključanih dependencies, kao u README-u:
 

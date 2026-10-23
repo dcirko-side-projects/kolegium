@@ -1,0 +1,103 @@
+.overview-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-6);
+  padding-bottom: var(--space-6);
+  margin-bottom: var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+}
+.eyebrow {
+  color: var(--color-blue-dark);
+  text-transform: capitalize;
+  font-size: 0.875rem;
+  letter-spacing: 0;
+  margin-bottom: var(--space-3);
+}
+h1 {
+  margin-bottom: var(--space-3);
+}
+.intro {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-6);
+  background: var(--color-ice);
+  border-left: 4px solid var(--color-primary);
+  padding: var(--space-8);
+  margin-bottom: var(--space-8);
+}
+.label {
+  color: var(--color-blue-dark);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+.hero h2 {
+  margin-block: var(--space-3);
+  font-size: 1.5rem;
+}
+.hero p {
+  color: var(--color-text-muted);
+  max-width: 50ch;
+  margin: 0;
+}
+.cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+.overview-section {
+  border-top: 3px solid var(--color-blue-dark);
+}
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.section-heading h2 {
+  margin: 0;
+}
+.section-heading a {
+  color: var(--color-blue-dark);
+  font-size: 0.875rem;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.empty {
+  padding: var(--space-8) 0;
+  border-top: 1px solid var(--color-border);
+}
+.empty h3 {
+  margin-bottom: var(--space-2);
+}
+.empty p {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  margin: 0;
+}
+@media (max-width: 1199px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 767px) {
+  .overview-heading,
+  .hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+  .hero {
+    padding: var(--space-6);
+  }
+}

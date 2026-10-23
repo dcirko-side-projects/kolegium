@@ -1,5 +1,6 @@
 import { CourseGradingComponent } from '../grading/course-grading.component';
-import { Component, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
+import { courseInformationSections } from '../../domain/course-information';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -22,8 +23,12 @@ export class CourseDetailComponent {
   private readonly changes = inject(UnsavedChangesService);
   private readonly parameters = toSignal(inject(ActivatedRoute).paramMap);
   protected readonly course = signal<Course | null>(null);
+  protected readonly informationSections = computed(() =>
+    courseInformationSections(this.course()?.information ?? ''),
+  );
   protected readonly semester = signal<Semester | null>(null);
   protected readonly editing = signal(false);
+  protected readonly sourceTextOpen = signal(false);
   protected readonly loading = signal(false);
   protected readonly error = signal<ApplicationError | null>(null);
   protected readonly success = signal<string | null>(null);

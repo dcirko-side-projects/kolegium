@@ -51,15 +51,65 @@ p {
 }
 
 h1 {
-  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-size: clamp(1.75rem, 3vw, 2.125rem);
   line-height: 1.2;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.035em;
+  color: var(--color-navy);
+  margin-bottom: var(--space-6);
+  overflow-wrap: anywhere;
 }
 
 h2 {
-  font-size: 1.125rem;
+  font-size: 1.1875rem;
   line-height: 1.4;
   letter-spacing: -0.02em;
+}
+
+h3 {
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 600;
+}
+p {
+  margin-bottom: var(--space-4);
+}
+h2,
+h3,
+p,
+a {
+  overflow-wrap: anywhere;
+}
+main a:not(.button-link):not(.course-card) {
+  text-underline-offset: 4px;
+}
+main a:not([class]) {
+  color: var(--color-blue-dark);
+}
+app-tasks,
+app-result-history,
+app-course-work,
+app-course-grading,
+app-backup {
+  display: block;
+  min-width: 0;
+}
+.panel article:not(.panel) {
+  padding-block: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+.panel article:not(.panel) h3 {
+  margin-bottom: var(--space-2);
+}
+.panel article:not(.panel) > :last-child {
+  margin-bottom: 0;
+}
+.panel .panel {
+  border-radius: var(--radius-sm);
+  background: var(--color-background);
+  margin-top: var(--space-6);
+}
+.panel .panel .panel {
+  background: var(--color-surface);
 }
 
 .eyebrow {

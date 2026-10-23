@@ -1,6 +1,6 @@
 import { DestroyRef, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { AcademicStoreService } from './academic-store.service';
-import { FirebaseContextService } from '../../data/firebase-context.service';
+import { FirestoreContextService } from '../../data/firestore-context.service';
 import { WorkRepository } from '../../data/work.repository';
 import { AcademicRepository } from '../../data/academic.repository';
 import { Assessment, Project, Task, Thesis } from '../../domain/work.models';
@@ -9,7 +9,7 @@ import { ApplicationError, asApplicationError } from '../errors/application-erro
 @Injectable()
 export class WorkStoreService {
   readonly academic = inject(AcademicStoreService);
-  private readonly context = inject(FirebaseContextService);
+  private readonly context = inject(FirestoreContextService);
   readonly assessments = signal<Assessment[]>([]);
   readonly projects = signal<Project[]>([]);
   readonly tasks = signal<Task[]>([]);

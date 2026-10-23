@@ -11,39 +11,23 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink, SessionRowComponent],
   providers: [ScheduleStoreService, PlanningStoreService],
   template: `
-    <p class="eyebrow">{{ today }}</p>
-    <h1>Tvoj fakultet.<br /><span>Na jednom mjestu.</span></h1>
-    <p class="intro">Nastava, zadaci i rokovi — pregled koji prati tvoj dan.</p>
-    <section class="panel" aria-labelledby="installment-reminders-title">
-      <h2 id="installment-reminders-title">Podsjetnici za rate</h2>
-      <p>Neplaćene rate prikazuju se 30 dana prije roka, uz upozorenje u zadnjih 7 dana.</p>
-      <a routerLink="/installments">Otvori rate fakulteta</a>
-      @if (planning.loading()) {
-        <p role="status">Učitavam podsjetnike…</p>
-      }
-      @if (planning.error()) {
-        <p role="alert">Podsjetnici nisu osvježeni. {{ planning.error()?.message }}</p>
-        <button (click)="planning.refresh()">Osvježi podsjetnike</button>
-      }
-      @if (!planning.academic.online()) {
-        <p>Nema internetske veze — prikazani podsjetnici su zadnje učitani podaci.</p>
-      }
-      @for (row of planning.installmentReminders(); track row.id) {
-        <article [attr.aria-label]="row.name">
-          <h3>{{ row.name }}</h3>
-          <p>{{ row.message }} Rok: {{ row.dueOn }} · {{ money(row.amountCents) }}</p>
-        </article>
-      } @empty {
-        @if (!planning.loading() && !planning.error() && planning.academic.online()) {
-          <p>Nema neplaćenih rata s rokom u idućih 30 dana u učitanom prikazu.</p>
-        }
-      }
-      @if (planning.more()) {
-        <p>Pregled ima dodatne stranice. Učitaj ih za potpuni prikaz podsjetnika.</p>
-        <button (click)="planning.count.update(increase)" [disabled]="planning.loading()">
-          Učitaj još podsjetnika
-        </button>
-      }
+    <div class="overview-heading">
+      <div>
+        <p class="eyebrow">{{ today }}</p>
+        <h1>Tvoj dan u Kolegiumu</h1>
+        <p class="intro">Nastava, zadaci i rokovi na jednom mjestu.</p>
+      </div>
+      <a class="text-link" routerLink="/schedule"
+        >Otvori raspored <span aria-hidden="true">→</span></a
+      >
+    </div>
+    <section class="panel">
+      <h2>Podsjetnici za tvoje obaveze</h2>
+      <p>
+        Zadaci, projekti, rate, predavanja/vježbe i kolokviji/ispiti — pregled na jednom mjestu i
+        besplatni izvoz u kalendar mobitela.
+      </p>
+      <a class="button-link" routerLink="/reminders">Otvori podsjetnike i preuzimanje za mobitel</a>
     </section>
     @if (store.courses().length === 0) {
       <section class="hero" aria-labelledby="start-title">
@@ -58,8 +42,8 @@ import { RouterLink } from '@angular/router';
       </section>
     }
     <div class="cards">
-      <section class="card" aria-labelledby="classes-title">
-        <div class="card-heading">
+      <section class="panel overview-section" aria-labelledby="classes-title">
+        <div class="section-heading">
           <h2 id="classes-title">Današnja nastava</h2>
           <a routerLink="/schedule">Raspored</a>
         </div>
@@ -77,14 +61,13 @@ import { RouterLink } from '@angular/router';
           <app-session-row [row]="row" [name]="courseName(row.courseId)" />
         } @empty {
           <div class="empty">
-            <span aria-hidden="true">◷</span>
             <h3>Dan još nema raspored</h3>
             <p>Ovdje će biti nastava iz tvog tjednog rasporeda.</p>
           </div>
         }
       </section>
-      <section class="card" aria-labelledby="tasks-title">
-        <div class="card-heading">
+      <section class="panel overview-section" aria-labelledby="tasks-title">
+        <div class="section-heading">
           <h2 id="tasks-title">Nadolazeće obaveze</h2>
           <a routerLink="/todo">To-do</a>
         </div>
@@ -118,9 +101,40 @@ import { RouterLink } from '@angular/router';
         }
       </section>
     </div>
+    <section class="panel" aria-labelledby="installment-reminders-title">
+      <h2 id="installment-reminders-title">Podsjetnici za rate</h2>
+      <p>Neplaćene rate prikazuju se 30 dana prije roka, uz upozorenje u zadnjih 7 dana.</p>
+      <a class="text-link" routerLink="/installments">Otvori rate fakulteta</a>
+      @if (planning.loading()) {
+        <p role="status">Učitavam podsjetnike…</p>
+      }
+      @if (planning.error()) {
+        <p role="alert">Podsjetnici nisu osvježeni. {{ planning.error()?.message }}</p>
+        <button (click)="planning.refresh()">Osvježi podsjetnike</button>
+      }
+      @if (!planning.academic.online()) {
+        <p>Nema internetske veze — prikazani podsjetnici su zadnje učitani podaci.</p>
+      }
+      @for (row of planning.installmentReminders(); track row.id) {
+        <article [attr.aria-label]="row.name">
+          <h3>{{ row.name }}</h3>
+          <p>{{ row.message }} Rok: {{ row.dueOn }} · {{ money(row.amountCents) }}</p>
+        </article>
+      } @empty {
+        @if (!planning.loading() && !planning.error() && planning.academic.online()) {
+          <p>Nema neplaćenih rata s rokom u idućih 30 dana u učitanom prikazu.</p>
+        }
+      }
+      @if (planning.more()) {
+        <p>Pregled ima dodatne stranice. Učitaj ih za potpuni prikaz podsjetnika.</p>
+        <button (click)="planning.count.update(increase)" [disabled]="planning.loading()">
+          Učitaj još podsjetnika
+        </button>
+      }
+    </section>
     <section class="panel">
       <h2>Otvoreni zadaci</h2>
-      <a routerLink="/todo">Otvori To-do</a>
+      <a class="text-link" routerLink="/todo">Otvori To-do</a>
       @for (task of planning.tasks(); track task.id) {
         <article [attr.aria-label]="task.title">
           <h3>
@@ -135,128 +149,7 @@ import { RouterLink } from '@angular/router';
       }
     </section>
   `,
-  styles: `
-    .eyebrow {
-      color: var(--color-text-muted);
-      text-transform: capitalize;
-      font-size: 14px;
-      margin: 0 0 16px;
-    }
-    h1 {
-      line-height: 1.12;
-      margin: 0;
-      letter-spacing: -1.5px;
-    }
-    h1 span {
-      color: var(--color-primary);
-    }
-    .intro {
-      color: var(--color-text-muted);
-      margin: 16px 0 32px;
-    }
-    .hero {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 24px;
-      background: var(--color-ice);
-      border-radius: 16px;
-      padding: 32px;
-      margin-bottom: 32px;
-    }
-    .label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: var(--color-primary);
-    }
-    .hero h2 {
-      margin: 12px 0;
-      font-size: 22px;
-    }
-    .hero p {
-      color: var(--color-text-muted);
-      max-width: 480px;
-      margin: 0;
-      line-height: 1.6;
-    }
-    .button-link {
-      white-space: nowrap;
-    }
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 24px;
-    }
-    .card {
-      border: 1px solid var(--color-border);
-      border-radius: 16px;
-      background: var(--color-surface);
-      padding: 24px;
-    }
-    .card-heading {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-    }
-    .card h2 {
-      font-size: 17px;
-      margin: 0;
-    }
-    .card a {
-      font-size: 13px;
-      display: inline-flex;
-      align-items: center;
-      min-height: 44px;
-    }
-    .empty {
-      text-align: center;
-      padding: 40px 8px 24px;
-    }
-    .empty > span {
-      font-size: 30px;
-      color: var(--color-primary);
-      background: var(--color-background);
-      display: inline-grid;
-      place-items: center;
-      width: 56px;
-      height: 56px;
-      border-radius: 16px;
-    }
-    .empty h3 {
-      font-size: 15px;
-      margin: 20px 0 8px;
-    }
-    .empty p {
-      color: var(--color-text-muted);
-      font-size: 14px;
-      line-height: 1.6;
-      margin: 0;
-    }
-    .footnote {
-      color: var(--color-text-muted);
-      font-size: 12px;
-      margin-top: 24px;
-    }
-    @media (max-width: 1000px) {
-      .hero {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-    }
-    @media (max-width: 767px) {
-      .hero {
-        padding: 24px;
-      }
-      .cards {
-        grid-template-columns: 1fr;
-      }
-      h1 {
-        letter-spacing: -1px;
-      }
-    }
-  `,
+  styleUrl: './overview.component.scss',
 })
 export class OverviewComponent {
   private readonly changes = inject(UnsavedChangesService);

@@ -6,7 +6,7 @@ import { IconComponent } from '../../shared/ui/icon/icon.component';
 @Component({
   selector: 'app-sections',
   imports: [RouterLink, IconComponent],
-  template: `<h1>Sve sekcije</h1>
+  template: `<div class="page-heading"><h1>Sve sekcije</h1></div>
     <p class="intro">Sve što ti treba za fakultet, lako dostupno.</p>
     <div class="grid">
       @for (item of navigation; track item.path) {
@@ -28,15 +28,15 @@ import { IconComponent } from '../../shared/ui/icon/icon.component';
     .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
+      gap: var(--space-6);
     }
     a {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: var(--space-6);
       border: 1px solid var(--color-border);
-      border-radius: 12px;
-      padding: 24px;
+      border-radius: var(--radius-sm);
+      padding: var(--space-6);
       background: var(--color-surface);
       color: var(--color-text);
       text-decoration: none;
@@ -47,6 +47,9 @@ import { IconComponent } from '../../shared/ui/icon/icon.component';
     }
     app-icon {
       color: var(--color-primary);
+      background: var(--color-blue-soft);
+      padding: var(--space-3);
+      border-radius: var(--radius-sm);
     }
     h2 {
       font-size: 16px;

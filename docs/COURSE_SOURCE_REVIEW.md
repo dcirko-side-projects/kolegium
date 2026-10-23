@@ -1,5 +1,16 @@
 # TASK-009C — pregled nastavnih izvora 15.10.2026.
 
+## Dopuna korisnika 19.10.2026. — primijenjeno
+
+- Projektiranje inovacija: seminar **FoodLoop – predviđanje i smanjenje bacanja hrane**. Sustav za restorane, pekarnice, menze i trgovine spaja predviđanje potražnje s pravovremenom prodajom ili donacijom viškova; cilj su manji financijski gubici, manje otpada i održivije poslovanje. Opis je spremljen u postojeći kolegij i dodan jedan projekt/seminar bez izmišljenog roka ili bodova.
+- Vježbe inovacija ubuduće su utorkom **17:30–19:00**; četvrtkom ostaju postojeća predavanja. Druge buduće grupe vježbi otkazane su. Četrnaest novih termina prati postojeće nastavne tjedne (20.10.–15.12. i 5.1.–2.2.); pauze nisu popunjene, učionica je nepoznata. Prošli termini ostaju neizmijenjeni.
+- PHP/Web: postojeći **AutoDnevnik** i individualni seminar **REST vs SOAP** ostaju isti izvori. Korisnik izričito potvrđuje oslobođenje od predavanja i vježbi. Time je za njegov odabrani put razriješena ranija nejasnoća opće odredbe dolaznosti; buduća PHP nastava otkazana je, bez izmišljanja brojčanog minimuma 0.
+- Bihevioralno: postojeći seminar preimenovan u **Toksično okruženje u tvrtkama** (radna tema; tim 4); usklađen naziv iste canonical aktivnosti. To nije potvrda nastavnice o konačnom naslovu.
+
+Izvedba: stvarna browser Google prijava i course/project spremanja; zatim izričito odobren administrativni pristup konkretnom Firebase projektu, validirani backup i jedan atomic commit s root/document updateTime preconditions, revizijama i server timestamps. Dva PHP termina prethodno otkazana kroz UI, preostala 52 buduća termina otkazana atomarno uz 14 novih i jednu name-only izmjenu scoreActivity. Puni readback svih kolekcija/payloadova/revizija i nepromijenjenih zapisa PASS; dataRevision=17. Završni read-only plan: 0 operacija. Evidencija sada ima 188 sessions (uključuje sačuvane otkazane), 5 projekata, 2 assessments i 6 scoreActivities. Privatni dokazi/backupi u ignoriranom artifacts/completion-2026-10-19/. Nema schema/Rules/deploy promjene, novih pokušaja, ocjena ili zadataka.
+
+Brojčana pravila bodovanja i preostali attendance ugovori i dalje nedostaju: TASK-009C nije puni Done. Ostatak dokumenta opisuje izvore od 15.10.; ova dopuna ima prednost gdje se podaci razlikuju.
+
 Status: **sadržaj upisan u cloud i puni readback potvrđen** 15.10.2026. nakon korisnikova suženja opsega. Pet course updates + 12 novih domain zapisa (četiri projects, dva assessments, šest scoreActivities), bez tasks. Automatska provjera isprva je odbila miješanu plan/write skriptu; zatim je dopušten zaseban stvarno read-only plan te konkretna --apply write akcija za suženi nalog. Ovo nije OAuth/device dokaz niti odobrenje deploya.
 
 ## Izvori i pregled

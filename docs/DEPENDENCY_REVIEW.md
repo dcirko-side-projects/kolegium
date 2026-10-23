@@ -1,5 +1,21 @@
 # Pregled ovisnosti — 2026-10-08
 
+## Aktualna provjera i zakrpe 23.10.2026.
+
+Svježi početni audit postojećeg lockfilea: **16 nalaza (8 high / 7 moderate / 1 low)**, runtime bez nalaza. Primijenjene kompatibilne razvojne zakrpe: @angular/build i @angular/cli **21.2.28**, vitest **4.1.12**, firebase-tools **15.34.1**; ip-address **10.7.4** osvježen unutar postojećeg transitive semver ugovora. Angular runtime/compiler 21.2.25, Firebase SDK 12.19.0 i Node22 baseline ostaju isti. Instalacija s ignore-scripts; postojeći re2 native ABI load PASS na22.23.3. Nema force fixa, major overridea ili novog dependencyja.
+
+Konačni registry snapshot: **0 runtime; 5 moderate razvojnih nalaza, 0 high/critical/low**. Preostalo: @google-cloud/pubsub → @opentelemetry/core1.x i gaxios6.x → uuid9.x te propagirani firebase-tools nalaz. Registry predlaže Firebase major downgrade, ne kompatibilnu zakrpu; ne forsirati. Browser runtime ne uključuje CLI lance. Preostali gate je dokumentiran OPEN5moderate, nije potpuni audit PASS. Izvještaji prije/nakon u ignoriranom artifacts/audit-*-2026-10-23.json.
+
+Izvori: službeni npm registry package metadata za navedene točne verzije i audit; [Vitest maintainerova zakrpa](https://github.com/vitest-dev/vitest/releases/tag/v4.1.12), [ip-address advisory i zakrpa10.7.4](https://github.com/advisories/GHSA-rxp7-6hxx-x8q5). Sastavljanje/testovi navedeni u CURRENT_STATE. Prvi artefakt samo s alatnim zakrpama bio je content-identičan objavljenom f1cf18a3673985c5f1fe (42SHA-256 usporedbe). Naknadno otkriveni i popravljeni Tab fokus te emulator transport stvaraju novi lokalni release **08e81c515a7f1629ce7e**, build/PWA PASS; nije objavljen u ovom nalogu.
+
+## Aktualna zakrpa i provjera 19.10.2026.
+
+Scoped override `superstatic → re2 1.26.1` zatvara četiri re2 advisories iz prethodne 1.24.1 verzije. [Maintainerova zakrpa i opis UTF-8 over-read greške](https://github.com/uhop/node-re2/security/advisories/GHSA-j4r3-hg7j-8chg) navode 1.26.1 kao popravljenu verziju. Nije promijenjen Angular, Firebase SDK ili CLI major. Zaključan pripadajući razvojni native-build lanac; njegov Node minimum je 22.22.2 unutar 22.x, verificirano 22.23.3. `allowScripts` dopušta samo točno `re2@1.26.1`; nisu blanket omogućene instalacijske skripte. Native compile/load i regresija skraćenog UTF-8 Buffera PASS na Node 22; pri rebuild-u PATH mora prvo sadržavati isti Node zbog ABI-ja, ne sistemski Node 24.
+
+Svježi registry snapshot: `npm audit --omit=dev` **0**; puni audit **11 (7 high / 4 moderate)**, svi preostali nalazi u razvojnom Firebase CLI lancu. Izvještaji prije/poslije u ignoriranom artifacts/completion-2026-10-19/. Nema `audit fix --force`, major downgradea ili neprovjerenog major overridea. Preostali braces/basic-ftp/OpenTelemetry/uuid i propagirani CLI nalazi nisu označeni riješenima; puni dependency gate ostaje otvoren. Browser/runtime build ne uključuje te CLI pakete. Postojeća procjena ograničenih vlastitih Hosting/emulator inputa ostaje ograničena procjena, ne dokaz potpune nedostižnosti ranjivosti.
+
+Initial default/release bundle sada **361.07 kB / približno 99.3 kB transfer**, ispod nepromijenjenog 500 kB warning budgeta. Lazy shell i odvojeni Auth/Firestore context uklanjaju rani database download/parse iz prijavnog entry grafa. PWA worker i dalje cacheira javne lazy assets; ukupna veličina aplikacije i stvarni mid-range cilj nisu time automatski dokazani. Mobile mjerenje ostaje zaseban acceptance. Stariji brojevi ispod su povijest.
+
 TASK-002/003, Windows Node 22.20.0. Firebase SDK 12.19.0, CLI 15.33.0 i Rules testing 5.0.2 su pinned; lockfile je autoritet. Firebase 13 odbijen je zbog zahtjeva novijeg Node runtimea, bez mijenjanja potvrđenog foundationa.
 
 Runtime gRPC advisory riješen je scoped overrideom @firebase/firestore → @grpc/grpc-js 1.14.5. SDK transakcije i Rules provjerene su na toj instalaciji; nije promijenjen Firebase major. `npm audit --omit=dev` sada prijavljuje **0** ranjivosti. To je registry snapshot, ne potpuna sigurnosna revizija.

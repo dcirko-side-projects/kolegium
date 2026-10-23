@@ -1,16 +1,17 @@
 @if (auth.status() === 'allowed') {
-  <a class="skip-link" href="#main-content">Preskoči na sadržaj</a>
+  <a class="skip-link" href="#main-content" tabindex="0">Preskoči na sadržaj</a>
   <aside class="sidebar">
     <a class="brand" routerLink="/" aria-label="Kolegium — početna"
       ><img src="/icons/kolegium.svg" alt="" width="36" height="36" />Kolegium</a
     >
     <p class="tagline">Tvoj studentski prostor</p>
+    <p class="nav-label">RADNI PROSTOR</p>
     <nav aria-label="Glavna navigacija">
       @for (item of navigation; track item.path) {
         <a
           [routerLink]="item.path"
           routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"
+          [routerLinkActiveOptions]="{ exact: item.path === '/' }"
           ariaCurrentWhenActive="page"
           ><app-icon [name]="item.icon" />{{ item.label }}</a
         >
@@ -20,11 +21,18 @@
   </aside>
   <div class="workspace">
     <header>
-      <a class="mobile-brand" routerLink="/">Kolegium</a
-      ><span class="preview">{{ auth.isLocal ? 'Lokalni emulator' : 'Privatni prostor' }}</span>
+      <a class="mobile-brand" routerLink="/">Kolegium</a>
+      <div class="context">
+        <span class="preview">{{ auth.isLocal ? 'Lokalni emulator' : 'Privatni prostor' }}</span>
+        <strong>{{ store.selectedSemester()?.name ?? 'Tvoja akademska evidencija' }}</strong>
+      </div>
       <button (click)="logout()" [disabled]="store.busy()">Odjava</button>
     </header>
-    <main id="main-content" tabindex="-1">
+    <main
+      id="main-content"
+      tabindex="-1"
+      [attr.aria-busy]="store.loading() || store.busy() || !store.ready()"
+    >
       <app-data-status /><app-pwa-status />
       @if (store.datasetChanged()) {
         <section class="panel" role="alert">

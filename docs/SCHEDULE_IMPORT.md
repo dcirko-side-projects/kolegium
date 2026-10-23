@@ -1,5 +1,11 @@
 # TVZ raspored — 2026-10-11
 
+## Korekcija 19.10.2026.
+
+Korisnik je potvrdio vježbe Projektiranja inovacija utorkom 17:30–19:00 i nepromijenjena predavanja četvrtkom te izuzeće od PHP predavanja/vježbi. Od 19.10. nadalje otkazano je 26 PHP termina i 28 starih termina vježbi inovacija (2 kroz UI, 52 u jednom administrativnom commitu). Dodano 14 pojedinačnih vježbi utorkom, dva dana prije postojećih četvrtaka; zadržane nastavne pauze, location=null. Snapshotovi prošle nastave i evidentirana dolaznost nisu promijenjeni. Canceled nije absent; 188 sessions uključuje i otkazane zapise. Detalji i puni readback u COURSE_SOURCE_REVIEW/CURRENT_STATE.
+
+Novi UI početno skriva otkazane termine; Upravljanje rasporedom → Prikaži otkazane termine otvara sačuvanu povijest i vraćanje. U starom cacheiranom prikazu skrivanje se bira ručno; odobrena Hosting objava iz paralelnog rada 19.10. sadrži novi default. Ova podatkovna korekcija nije deploy ni ponovni ICS seed.
+
 Korisnik je dostavio `C:/Users/domag/Downloads/Raspored_PROGING_Sem3_2026.ics` i zatražio izostavljanje svih termina kolegija **Modeliranje i administracija baza podataka**, unos preostalog rasporeda i mogućnost dodavanja/uklanjanja termina. To odobrava ograničeni ručni TVZ ICS uvoz uz postojeće FR-004/007; nije odobrenje za calendar sync ili novu automatsku objavu.
 
 ## Pregled izvora

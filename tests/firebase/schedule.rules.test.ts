@@ -121,4 +121,25 @@ describe('Schedule Rules boundary', () => {
       category: 'restoreInProgress',
     });
   });
+  it('permits bounded excused notes and rejects notes attached to present/cancelled sessions', async () => {
+    const row = {
+      courseId: 'c1',
+      templateId: null,
+      scheduledOn: '2026-10-09',
+      startsAt: '08:00',
+      endsAt: '09:00',
+      kind: 'lecture',
+      location: null,
+      isCancelled: false,
+      attendance: 'excused',
+      absenceNote: 'Potvrda',
+      replacementForId: null,
+    };
+    await raw('sessions', 'excused', row);
+    await assertFails(raw('sessions', 'invalid-present', { ...row, attendance: 'present' }));
+    await assertFails(raw('sessions', 'invalid-cancelled', { ...row, isCancelled: true }));
+    await assertFails(raw('sessions', 'invalid-long', { ...row, absenceNote: 'x'.repeat(501) }));
+    await assertFails(raw('sessions', 'invalid-empty', { ...row, absenceNote: '   ' }));
+    await assertFails(raw('sessions', 'invalid-state', { ...row, attendance: 'approved' }));
+  });
 });

@@ -1,5 +1,21 @@
 # App Flow
 
+23.10.2026.: prva poveznica privatnog shella Preskoči na sadržaj izričito je dostupna Tabom i u WebKit default navigaciji (tabindex0); Enter premješta fokus na glavni sadržaj. Main semantički označava aria-busy pri početnom učitavanju/refresha/mutaciji. Nema promjene ruta ili data toka.
+
+20.10.2026. — /reminders (Podsjetnici u navigaciji/Sve sekcije i poveznica na Početnoj): prikaz svih pet izvora, odabir vrste + Pretraži/Poništi; današnja nastava, zakašnjeli rokovi, ostali rokovi7dana/rate30dana. Raspon izvoza30/90/180/365dana i sat za date-only rokove (početno09:00 Europe/Zagreb). Preuzmi .ics traži potpun/svjež online prikaz bez paging/courses ostatka i s istim dataset/revision snapshotom. Nastava alarm60min prije; provjera sa satnicom1dan/60min, datum bez satnice/zadatak/projekt1dan/dan roka, rata30/7/dan roka. Prošli alarmi/obavljene/plaćene/arhivirane/otkazane stavke izostavljene. Upute izričito traže zaseban kalendar i provjeru alarma na mobitelu, ručnu zamjenu nakon promjene; nema push dozvole ili sinkronizacije.
+
+SessionRow na Početnoj/Rasporedu/Dolaznosti: Ispričaj izostanak → opcionalna napomena → Spremi ispričnicu; odvojeni badge/broj, Uredi ispričnicu, Poništi/Prisutan/Odsutan čiste napomenu. Dirty forma štiti navigaciju/update i ostaje pri offline; snimka revizije na početku uređivanja štiti od tihog prepisivanja nakon root refresha. Izvorni/course tekst razdvojen je po zatečenim naslovima, sadržajna navigacija vodi do cjeline, Cjelovit izvorni tekst zadržava sve podatke.
+
+20.10.2026. — Raspored: Dan / Tjedan / Mjesec, prethodno/sljedeće razdoblje, Danas i datum. Tjedan/mjesec imaju sedam stupaca od ponedjeljka; na uskom ekranu mreža se pomiče unutar označene regije bez širenja stranice. Datum/termin otvara dnevne SessionRow radnje; tjedan zadržava detaljnu agendu. Ponavljanja su u sklopivom pregledu. Učitava se samo odabrani dnevni/tjedni/mjesečni prozor (mjesec uključuje rubne tjedne).
+
+Raspored, provjere, projekti i To-do: odabir filtra ne pokreće pretragu dok korisnik ne odabere Pretraži; Poništi filtre odmah vraća početni izbor i rezultate. Provjere početno uključuju sve kolegije; novi unos zasebno predlaže prvi aktivni kolegij. Projekti/provjere imaju kolegij, status i naziv; status/naziv filtriraju učitane stranice uz vidljivu napomenu i Učitaj još. Dolaznost potvrđuje izbor kolegija gumbom Pretraži. Gumbi za jednostavni prikaz vrste nastave ostaju izravne radnje.
+
+Prikaži arhivu uključuje povijesne stavke u listu; Sakrij arhivu ih skriva. Uredi arhivu privremeno dopušta korekcije, Zaključaj arhivu ponovno štiti zapise. U provjerama/projektima/To-do te se kontrole nude kada postoji učitani arhivirani sadržaj. Povezani taskovi/rezultati se ne brišu. Odabir filtara ponovno zaključava arhivu.
+
+2026-10-19 FR-004/007: novi lokalni Raspored početno skriva otkazane termine. Upravljanje rasporedom → Prikaži otkazane termine otvara povijest i Vrati u održano; nema brisanja ili gubitka snapshotova. Za aktivni raspored ponovno Sakrij otkazane termine. PHP izuzeće i nove utorke inovacija uređuju postojeći sessions, bez dodatnog tipa prisutnosti. Finalni device/cross-device koraci u FINAL_ACCEPTANCE.
+
+2026-10-19 vizualni redizajn: Početna daje prednost današnjoj nastavi i nadolazećim obavezama; postojeći podsjetnici i zadaci ostaju dostupni niže. Tjedni raspored grupira iste termine po datumu, ističe Danas i odvaja datum pregleda, pomak tjedna i izbor dan/tjedan. Sekundarne akcije dodavanja pojedinačnog termina, ICS uvoza, skrivanja otkazanih i pomoć o otkazivanju dostupni su kroz native details Upravljanje rasporedom. Desktop zadržava stalnu tamnoplavu navigaciju, aktivnu i na detail rutama; ispod 1024 px tablet/mobitel koristi donju navigaciju i Sve sekcije. Stranice, data/UX statusi i dostupne radnje ostaju isti. Detalji u UI_REDESIGN.md i DESIGN_SYSTEM.md.
+
 2026-10-11 rate: Početna → Podsjetnici za rate → Rate fakulteta. Zaseban online prikaz neplaćenih rata od 30 dana prije roka; poruka zadnjih 7 dana i na dueOn, paid odmah nestaje nakon server refresha. Dodatne stranice imaju Učitaj još podsjetnika; error/offline označavaju zadnje učitane podatke. Ostale obaveze ostaju u 14-day rasponu. Prikaz je lokalno provjeren, nije deployan; mobile push još Proposed, bez permission prompta ili zakazanog slanja.
 
 Update 2026-10-11: Raspored → Uvezi TVZ raspored → lokalni ICS preview → odabir grupa/datum/učionica → potvrda u izabranom semestru. Predavanja su početno odabrana; vježbe korisnik uključuje. Nedostajući semestar dodaje se kroz Postavke. Import može stati djelomično; vidljivi potvrđeni napredak i retry preskaču postojeće. Dodaj pojedinačni termin ima kolegij/lecture-exercise/datum/vrijeme/lokaciju. Otkaži termin + Sakrij otkazane uklanja iz aktivnog prikaza uz sačuvanu povijest; Prikaži otkazane + Vrati u održano vraća neoznačen termin. Detaljni source/operativni ugovor u SCHEDULE_IMPORT.md.
@@ -19,7 +35,7 @@ Laptop: stalna bočna navigacija. Mobitel: Početna, Raspored, To-do, Sve sekcij
 | SCR-001 | /login | Google prijava i odbijen pristup | FR-001 |
 | SCR-002 | / | Današnja nastava i obaveze | FR-013 |
 | SCR-003 | /courses; /courses/:id | Kolegiji, informacije, rezultati/uvjeti i povezani sadržaji | FR-003, FR-014, FR-015 |
-| SCR-004 | /schedule | Dan/tjedan i uređivanje ponavljanja | FR-004, FR-007 |
+| SCR-004 | /schedule | Dan/tjedan/mjesec i uređivanje ponavljanja | FR-004, FR-007 |
 | SCR-005 | /attendance | Pregled kolegija i odvojene evidencije predavanja/vježbi | FR-005, FR-006 |
 | SCR-006 | /assessments; /assessments/:id | Provjere, svi pokušaji i rezultati | FR-008, FR-014 |
 | SCR-007 | /projects; /projects/:id | Projekti, zadaci i rezultat | FR-009, FR-014 |

@@ -7,6 +7,7 @@ test('export/preview/restore/reload retains canonical data and blocks a stale fo
   page,
   browser,
 }) => {
+  test.setTimeout(120000);
   await addSemester(page);
   await addCourse(page);
   const courseUrl = page.url();
@@ -21,12 +22,14 @@ test('export/preview/restore/reload retains canonical data and blocks a stale fo
   const context = await browser.newContext(),
     second = await context.newPage();
   try {
+    await second.bringToFront();
     await login(second);
     await second.goto(courseUrl);
     await second.getByRole('button', { name: 'Uredi kolegij', exact: true }).click();
     await second
       .getByLabel('Informacije o kolegiju (opcionalno)')
       .fill('Nespremljen unos prije povrata');
+    await page.bringToFront();
     await page
       .getByLabel('Odaberi sigurnosnu kopiju (JSON, do 5 MiB)')
       .setInputFiles({ name: 'backup.json', mimeType: 'application/json', buffer: bytes });
@@ -35,7 +38,8 @@ test('export/preview/restore/reload retains canonical data and blocks a stale fo
     await page.getByRole('button', { name: 'Potvrdi povrat cijele evidencije' }).click();
     await expect(
       page.getByText('Povrat je dovršen i potvrđen. Učitaj obnovljene podatke.', { exact: true }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 60000 });
+    await second.bringToFront();
     await expect(
       second.getByRole('heading', { name: 'Podatkovna kopija je promijenjena' }),
     ).toBeVisible();
@@ -45,6 +49,7 @@ test('export/preview/restore/reload retains canonical data and blocks a stale fo
     await expect(second.getByLabel('Informacije o kolegiju (opcionalno)')).toHaveValue(
       'Nespremljen unos prije povrata',
     );
+    await page.bringToFront();
     await page.getByRole('button', { name: 'Učitaj obnovljene podatke' }).click();
     await expect(page.getByRole('button', { name: 'Preuzmi prethodnu kopiju' })).toBeEnabled();
     await page.goto(courseUrl);

@@ -68,12 +68,18 @@ export function templateInput(v: TemplateInput): TemplateInput {
 export function sessionInput(v: SessionInput): SessionInput {
   if (
     typeof v.isCancelled !== 'boolean' ||
-    !['unmarked', 'present', 'absent'].includes(v.attendance) ||
+    !['unmarked', 'present', 'absent', 'excused'].includes(v.attendance) ||
     (v.isCancelled && v.attendance !== 'unmarked')
   )
     throw new ApplicationError(
       'validation',
       'Otkazani termin ne može imati evidentiranu dolaznost.',
+    );
+  const absenceNote = v.absenceNote == null ? null : plainText(v.absenceNote, 500);
+  if (absenceNote && v.attendance !== 'excused')
+    throw new ApplicationError(
+      'validation',
+      'Napomena ispričnice pripada samo ispričanom izostanku.',
     );
   return {
     courseId: recordId(v.courseId),
@@ -82,6 +88,7 @@ export function sessionInput(v: SessionInput): SessionInput {
     ...times(v),
     isCancelled: v.isCancelled,
     attendance: v.attendance,
+    ...(absenceNote ? { absenceNote } : {}),
     replacementForId: v.replacementForId === null ? null : recordId(v.replacementForId),
   };
 }
@@ -148,10 +155,12 @@ export function attendanceSummary(
   );
   const present = relevant.filter((r) => r.attendance === 'present').length,
     absent = relevant.filter((r) => r.attendance === 'absent').length,
+    excused = relevant.filter((r) => r.attendance === 'excused').length,
     unmarked = relevant.filter((r) => r.attendance === 'unmarked').length;
   return {
     present,
     absent,
+    excused,
     unmarked,
     remaining: rule.minimum === null ? null : Math.max(0, rule.minimum - present),
     percentOfOfficial:

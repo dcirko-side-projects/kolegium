@@ -72,6 +72,7 @@ describe('Schedule and attendance invariants', () => {
     expect(summary).toEqual({
       present: 1,
       absent: 1,
+      excused: 0,
       unmarked: 1,
       remaining: null,
       percentOfOfficial: null,
@@ -118,5 +119,29 @@ describe('Schedule and attendance invariants', () => {
     expect(() => templateInput({ ...t, weekday: 0 })).toThrow();
     const row = occurrences([t], [], '2026-10-01', '2026-10-31')[0];
     expect(() => sessionInput({ ...row, isCancelled: true, attendance: 'present' })).toThrow();
+  });
+  it('records excused absence separately, preserves the official denominator and validates its note', () => {
+    const rows = occurrences([t], [], '2026-10-01', '2026-10-31');
+    rows[0].attendance = 'excused';
+    rows[1].attendance = 'present';
+    const result = attendanceSummary(
+      rows,
+      'lecture',
+      { total: 4, minimum: 3 },
+      { date: '2026-11-01', time: '12:00' },
+    );
+    expect(result.excused).toBe(1);
+    expect(result.present).toBe(1);
+    expect(result.absent).toBe(0);
+    expect(result.remaining).toBe(2);
+    expect(result.percentOfOfficial).toBe(25);
+    expect(sessionInput({ ...rows[0], absenceNote: ' Liječnička potvrda ' }).absenceNote).toBe(
+      'Liječnička potvrda',
+    );
+    expect(() => sessionInput({ ...rows[0], isCancelled: true })).toThrow();
+    expect(() => sessionInput({ ...rows[0], absenceNote: 'x'.repeat(501) })).toThrow();
+    expect(() =>
+      sessionInput({ ...rows[0], attendance: 'present', absenceNote: 'razlog' }),
+    ).toThrow();
   });
 });

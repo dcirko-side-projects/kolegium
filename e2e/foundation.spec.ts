@@ -68,7 +68,8 @@ test('keyboard skip link reaches the main content', async ({ page, isMobile }) =
 test('narrow screens retain all section links', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
   await page.goto('/sections');
-  await expect(page.getByRole('main').getByRole('link')).toHaveCount(10);
+  await expect(page.getByRole('main').getByRole('link')).toHaveCount(11);
+  await expect(page.getByRole('main').getByRole('link', { name: /Podsjetnici/ })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );

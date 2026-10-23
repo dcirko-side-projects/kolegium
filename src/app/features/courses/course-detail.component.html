@@ -110,26 +110,52 @@
       </form>
     </section>
   } @else {
-    <section class="panel">
-      <h2>Informacije</h2>
-      <p class="information">{{ row.information || 'Informacije o kolegiju još nisu unesene.' }}</p>
-    </section>
-    <section class="panel">
-      <h2>Poveznice</h2>
-      @if (!row.links.length) {
-        <p class="hint">Nema unesenih poveznica.</p>
-      }
-      @for (link of row.links; track $index) {
-        <a
-          class="text-link external-link"
-          [href]="link.url"
-          target="_blank"
-          rel="noopener noreferrer"
-          >{{ link.label }} <span aria-hidden="true">↗</span
-          ><span class="sr-only"> (otvara se u novoj kartici)</span></a
-        >
-      }
-    </section>
+    <div class="course-information-grid">
+      <section class="panel course-information">
+        <h2>Informacije</h2>
+        @if (informationSections().length > 1) {
+          <nav class="information-index" aria-label="Sadržaj informacija o kolegiju">
+            @for (section of informationSections(); track $index) {
+              <a [routerLink]="[]" [fragment]="'course-info-' + $index">{{ section.title }}</a>
+            }
+          </nav>
+        }
+        @for (section of informationSections(); track $index) {
+          <section class="information-section" [id]="'course-info-' + $index">
+            <h3>{{ section.title }}</h3>
+            @for (paragraph of section.paragraphs; track $index) {
+              <p class="information">{{ paragraph }}</p>
+            }
+          </section>
+        } @empty {
+          <p>Informacije o kolegiju još nisu unesene.</p>
+        }
+        @if (row.information) {
+          <details #sourceText (toggle)="sourceTextOpen.set(sourceText.open)">
+            <summary>Cjelovit izvorni tekst</summary>
+            @if (sourceTextOpen()) {
+              <p class="information">{{ row.information }}</p>
+            }
+          </details>
+        }
+      </section>
+      <section class="panel">
+        <h2>Poveznice</h2>
+        @if (!row.links.length) {
+          <p class="hint">Nema unesenih poveznica.</p>
+        }
+        @for (link of row.links; track $index) {
+          <a
+            class="text-link external-link"
+            [href]="link.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            >{{ link.label }} <span aria-hidden="true">↗</span
+            ><span class="sr-only"> (otvara se u novoj kartici)</span></a
+          >
+        }
+      </section>
+    </div>
   }
   <section class="panel">
     <h2>Uvjeti dolaznosti</h2>

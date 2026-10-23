@@ -40,8 +40,16 @@ import { TasksComponent } from '../todo/tasks.component';
     @if (!editing()) {
       <section class="panel">
         <h2>Osnovne informacije</h2>
-        <p>Tema: {{ store.thesis()?.topic ?? 'još nije poznata' }}</p>
-        <p>Mentor: {{ store.thesis()?.mentor ?? 'još nije poznat' }}</p>
+        <dl class="metadata-grid">
+          <div>
+            <dt>Tema</dt>
+            <dd>{{ store.thesis()?.topic ?? 'još nije poznata' }}</dd>
+          </div>
+          <div>
+            <dt>Mentor</dt>
+            <dd>{{ store.thesis()?.mentor ?? 'još nije poznat' }}</dd>
+          </div>
+        </dl>
         <p class="information">{{ store.thesis()?.information ?? 'Nema bilješki.' }}</p>
         <button (click)="start()" [disabled]="!store.canWrite()">
           {{ store.thesis() ? 'Uredi diplomski' : 'Dodaj osnovnu evidenciju' }}

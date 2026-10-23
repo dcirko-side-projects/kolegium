@@ -1,5 +1,10 @@
 # Prijedlog mobilnih podsjetnika za rate
 
+## Odluka za ovu verziju —20.10.2026.
+
+Korisnik odabrao besplatni .ics izvoz s alarmima u kalendar mobitela, uz podsjetnike u aplikaciji za sve vrste obaveza. FCM/Blaze/scheduler/vanjski backend nisu odobreni niti aktivirani; ovaj raniji prijedlog ostaje Proposed za eventualni automatski push. Ručni izvoz nije push ili sinkronizacija. App prikazuje satnicu alarma i upute; importer/obavijesti ovise o konkretnom kalendaru i trebaju fizički smoke. Tehnička podloga: [RFC5545](https://www.rfc-editor.org/rfc/rfc5545), [Google ICS uvoz na računalu](https://support.google.com/calendar/answer/37118), [Apple kalendari](https://support.apple.com/guide/iphone/iph3d1110d4/ios). Cjenici ponovo provjereni20.10.: [Firebase](https://firebase.google.com/pricing) razlikuje besplatni FCM od Functions na Blaze; [Cloudflare limiti](https://developers.cloudflare.com/workers/platform/limits/) i [GitHub schedule](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule) imaju zasebne limite/odgode i zahtijevaju novu infrastrukturnu odluku. Ne predstavljati besplatni allowance kao jamstvo troška/dostave.
+
+
 Datum: 2026-10-11. Status: **Proposed**, korisnik zatražio prijedlog bez aktivacije naplate. Ovo nije odobrenje Blaze plana, novog backend sustava, schema/Rules promjene ili deploya. Lokalni podsjetnici na Početnoj već su zasebno implementirani; mobilni push nije implementiran niti aktiviran.
 
 ## Predloženo ponašanje

@@ -1,0 +1,182 @@
+<div class="page-heading">
+  <div>
+    <h1>Podsjetnici</h1>
+    <p class="hint">Zadaci, projekti, rate, nastava i provjere znanja.</p>
+  </div>
+  <button
+    (click)="refresh()"
+    [disabled]="planning.loading() || schedule.loading() || !academic.online()"
+  >
+    Osvježi podsjetnike
+  </button>
+</div>
+@if (planning.loading() || schedule.loading()) {
+  <p role="status">Učitavam podsjetnike…</p>
+}
+@if (planning.error() || schedule.error()) {
+  <p role="alert">{{ planning.error()?.message ?? schedule.error()?.message }}</p>
+}
+@if (!academic.online()) {
+  <p role="status">
+    Bez internetske veze prikazuju se zadnje učitani podaci. Za novi izvoz poveži se i osvježi.
+  </p>
+}
+@if (message()) {
+  <p class="success-message" role="status">{{ message() }}</p>
+}
+@if (error()) {
+  <p class="error-message" role="alert">{{ error() }}</p>
+}
+<section class="panel" aria-labelledby="reminder-export-title">
+  <h2 id="reminder-export-title">Podsjetnici na mobitelu — besplatni kalendar</h2>
+  <p>
+    Preuzmi .ics datoteku i uvezi je u kalendar mobitela. Kalendar šalje obavijesti i kada je
+    Kolegium zatvoren, ako podržava uvezene alarme i ima dopuštenje za obavijesti.
+  </p>
+  <form class="export-settings" [formGroup]="settings" (ngSubmit)="applySettings()">
+    <div class="field">
+      <label for="reminder-range">Raspon izvoza</label
+      ><select id="reminder-range" formControlName="days">
+        <option value="30">Sljedećih 30 dana</option>
+        <option value="90">Sljedećih 90 dana</option>
+        <option value="180">Sljedećih 180 dana</option>
+        <option value="365">Sljedećih godinu dana</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="reminder-time">Vrijeme za rokove bez satnice</label
+      ><input id="reminder-time" type="time" formControlName="dailyTime" required />
+    </div>
+    <button
+      type="submit"
+      [disabled]="!academic.online() || planning.loading() || schedule.loading()"
+    >
+      Primijeni raspon
+    </button>
+  </form>
+  <p class="hint">
+    Primijenjeno: {{ days() }} dana. Za termine nastave samo iz odabranog semestra. Svi rokovi
+    ostaju datumi; vrijeme alarma je Europe/Zagreb.
+  </p>
+  <button
+    class="primary"
+    (click)="download()"
+    [disabled]="
+      !canExport() ||
+      settings.controls.days.value !== '' + days() ||
+      !settings.controls.dailyTime.value
+    "
+  >
+    Preuzmi podsjetnike za mobitel (.ics)
+  </button>
+  <p class="hint">
+    Najviše {{ futureCount() }} budućih događaja u učitanom prikazu. Završena nastava, plaćene rate,
+    obavljene i arhivirane obaveze ne izvoze se. Zadaci i projekti bez datuma nemaju vremenski
+    podsjetnik.
+  </p>
+  @if (planning.more()) {
+    <p>Za cjelovit izvoz najprije učitaj preostale obaveze.</p>
+    <button (click)="planning.count.update(increase)" [disabled]="planning.loading()">
+      Učitaj još obaveza
+    </button>
+  }
+  @if (academic.moreCourses()) {
+    <button (click)="academic.loadMore('courses')" [disabled]="academic.loading()">
+      Učitaj još kolegija
+    </button>
+  }
+  <details>
+    <summary>Vrijeme alarma i upute za mobitel</summary>
+    <ul>
+      <li>Nastava: 60 minuta prije početka.</li>
+      <li>
+        Kolokvij/ispit sa satnicom: dan prije i 60 minuta prije. Bez satnice: dan prije i na datum
+        provjere u odabrano vrijeme.
+      </li>
+      <li>Zadatak/projekt: dan prije i na datum roka u odabrano vrijeme.</li>
+      <li>Neplaćena rata: 30 i 7 dana prije, te na datum roka u odabrano vrijeme.</li>
+      <li>Već prošli alarmi preskaču se; zakašnjele obaveze ostaju u pregledu aplikacije.</li>
+    </ul>
+    <p>
+      iPhone: otvori preuzetu datoteku i dodaj događaje u Kalendar ako preglednik ponudi tu opciju.
+      Android/Google Kalendar: ako mobitel ne nudi uvoz, Google Kalendar → Postavke → Uvoz i izvoz
+      na računalu ili u prikazu web-stranice za računalo. Nakon uvoza provjeri postavke alarma i
+      obavijesti na telefonu.
+    </p>
+    <p>
+      Ovo je snimka trenutačnih podataka, bez automatske sinkronizacije. Nakon promjene roka,
+      otkazivanja ili dovršavanja napravi novi izvoz. Za izbjegavanje starih događaja i duplikata
+      koristi zaseban kalendar Kolegium i zamijeni njegov prethodni uvoz. Datoteka sadrži nazive
+      obaveza i termine; čuvaj je privatno.
+    </p>
+  </details>
+</section>
+<section aria-labelledby="active-reminders-title">
+  <h2 id="active-reminders-title">Danas i uskoro</h2>
+  <p class="hint">
+    Današnja nastava, svi zakašnjeli rokovi, rokovi u idućih 7 dana i rate u idućih 30 dana. Za
+    nastavu iz drugog semestra promijeni odabrani semestar.
+  </p>
+  <form (submit)="$event.preventDefault(); category.set(filter.value)" class="panel">
+    <label for="reminder-category">Vrsta podsjetnika</label
+    ><select id="reminder-category" #filter>
+      <option value="all">Sve vrste</option>
+      <option value="task">Zadaci</option>
+      <option value="project">Projekti</option>
+      <option value="installment">Rate</option>
+      <option value="session">Predavanja i vježbe</option>
+      <option value="assessment">Kolokviji i ispiti</option>
+    </select>
+    <div class="actions">
+      <button type="submit">Pretraži</button
+      ><button type="button" (click)="filter.value = 'all'; category.set('all')">
+        Poništi filtre
+      </button>
+    </div>
+  </form>
+  @for (row of activeItems(); track row.id) {
+    <article
+      class="panel"
+      [class.overdue]="row.date < schedule.today()"
+      [class.today]="row.date === schedule.today()"
+      [attr.aria-label]="row.name"
+    >
+      <div class="reminder-heading">
+        <span class="status-badge">{{ row.label }}</span>
+        <h2>
+          <a [routerLink]="row.route">{{ row.name }}</a>
+        </h2>
+      </div>
+      <p class="reminder-status">{{ description(row) }}</p>
+      <p class="reminder-meta">
+        {{ row.date }}{{ row.time ? ' · ' + row.time : ''
+        }}{{ row.location ? ' · ' + row.location : '' }}
+      </p>
+    </article>
+  } @empty {
+    @if (!planning.loading() && !schedule.loading()) {
+      <p class="panel">Nema podsjetnika za odabranu vrstu u ovom rasponu.</p>
+    }
+  }
+</section>
+<details class="panel">
+  <summary>Zapisane sljedeće faze i poznata ograničenja</summary>
+  <ul>
+    <li>
+      Provjere spremanja, osvježavanja, konflikta i rada bez mreže između stvarnog mobitela i
+      računala.
+    </li>
+    <li>
+      PWA instalacija i ažuriranje na stvarnom Androidu/iPhoneu; Safari i mjerenje brzine na
+      telefonu.
+    </li>
+    <li>
+      Dovršavanje brojčanih pravila bodovanja i dolaznosti kada budu dostupni službeni izvori.
+    </li>
+    <li>Provjera oporavka stvarne cloud sigurnosne kopije u zasebno dogovorenom postupku.</li>
+    <li>
+      Automatski push i sinkronizacija mobilnog kalendara ostaju zasebna buduća odluka. Trenutačno
+      je odabran ručni .ics izvoz bez naplate.
+    </li>
+  </ul>
+</details>

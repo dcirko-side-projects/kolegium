@@ -31,4 +31,5 @@ export interface Deadline {
   date: string;
   route: string;
   kind: string;
+  scheduledAt?: string | null;
 }

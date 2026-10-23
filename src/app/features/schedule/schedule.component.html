@@ -8,24 +8,30 @@
     Dodaj ponavljanje
   </button>
 </div>
-<div class="actions">
-  <button
-    (click)="open(null, true)"
-    [disabled]="!store.canWrite() || !store.academic.selectedSemester()"
-  >
-    Dodaj pojedinačni termin
-  </button>
-  <button (click)="importing.set(!importing())" [disabled]="store.busy() || store.academic.busy()">
-    {{ importing() ? 'Zatvori uvoz' : 'Uvezi TVZ raspored' }}
-  </button>
-  <button (click)="hideCancelled.set(!hideCancelled())">
-    {{ hideCancelled() ? 'Prikaži otkazane termine' : 'Sakrij otkazane termine' }}
-  </button>
-</div>
-<p class="hint">
-  Za uklanjanje nastave odaberi Otkaži termin, a zatim Sakrij otkazane termine. Evidencija ostaje
-  sačuvana; otkazano nije izostanak.
-</p>
+<details class="schedule-management">
+  <summary>Upravljanje rasporedom</summary>
+  <div class="actions schedule-tools">
+    <button
+      (click)="open(null, true)"
+      [disabled]="!store.canWrite() || !store.academic.selectedSemester()"
+    >
+      Dodaj pojedinačni termin
+    </button>
+    <button
+      (click)="importing.set(!importing())"
+      [disabled]="!store.academic.online() || store.busy() || store.academic.busy()"
+    >
+      {{ importing() ? 'Zatvori uvoz' : 'Uvezi TVZ raspored' }}
+    </button>
+    <button (click)="hideCancelled.set(!hideCancelled())">
+      {{ hideCancelled() ? 'Prikaži otkazane termine' : 'Sakrij otkazane termine' }}
+    </button>
+  </div>
+  <p class="hint">
+    Otkazani termini početno su skriveni. Za pregled povijesti ili vraćanje termina odaberi Prikaži
+    otkazane termine. Evidencija ostaje sačuvana; otkazano nije izostanak.
+  </p>
+</details>
 @if (importing()) {
   <app-calendar-import />
 }
@@ -34,25 +40,120 @@
   {{ store.academic.selectedSemester()?.name ?? 'odaberi semestar' }}.
   <a routerLink="/courses">Kolegiji i semestar</a>
 </p>
-<div class="actions">
-  <button (click)="moveWeek(-1)" [disabled]="store.busy() || store.academic.busy()">
-    Prethodni tjedan</button
-  ><label for="schedule-date">Datum pregleda</label
-  ><input
-    id="schedule-date"
-    [disabled]="store.busy() || store.academic.busy()"
-    type="date"
-    [value]="selectedDate()"
-    #date
-    (change)="changeDate(date.value)"
-  /><button (click)="moveWeek(1)" [disabled]="store.busy() || store.academic.busy()">
-    Sljedeći tjedan</button
-  ><button (click)="changeDate(store.from())">Početak tjedna</button
-  ><button (click)="dayOnly.set(!dayOnly())">
-    {{ dayOnly() ? 'Prikaži tjedan' : 'Prikaži dan' }}
-  </button>
-</div>
-<p>{{ store.from() }} — {{ store.until() }}</p>
+<section class="calendar-toolbar" aria-label="Navigacija kalendara">
+  <div class="calendar-title">
+    <h2>{{ periodLabel() }}</h2>
+    <span>{{ rows().length }} termina · Europe/Zagreb</span>
+  </div>
+  <div class="calendar-switch" role="group" aria-label="Prikaz kalendara">
+    <button
+      (click)="setView('day')"
+      [attr.aria-pressed]="view() === 'day'"
+      [disabled]="!store.academic.online() || store.busy() || store.academic.busy()"
+    >
+      Dan
+    </button>
+    <button
+      (click)="setView('week')"
+      [attr.aria-pressed]="view() === 'week'"
+      [disabled]="!store.academic.online() || store.busy() || store.academic.busy()"
+    >
+      Tjedan
+    </button>
+    <button
+      (click)="setView('month')"
+      [attr.aria-pressed]="view() === 'month'"
+      [disabled]="!store.academic.online() || store.busy() || store.academic.busy()"
+    >
+      Mjesec
+    </button>
+  </div>
+  <div class="calendar-movement">
+    <button
+      (click)="moveWeek(-1)"
+      [disabled]="!store.academic.online() || store.busy() || store.academic.busy()"
+    >
+      {{
+        view() === 'month'
+          ? 'Prethodni mjesec'
+          : view() === 'day'
+            ? 'Prethodni dan'
+            : 'Prethodni tjedan'
+      }}
+    </button>
+    <button
+      (click)="changeDate(store.today())"
+      [disabled]="!store.academic.online() || store.busy() || store.academic.busy()"
+    >
+      Danas
+    </button>
+    <button
+      (click)="moveWeek(1)"
+      [disabled]="!store.academic.online() || store.busy() || store.academic.busy()"
+    >
+      {{
+        view() === 'month'
+          ? 'Sljedeći mjesec'
+          : view() === 'day'
+            ? 'Sljedeći dan'
+            : 'Sljedeći tjedan'
+      }}
+    </button>
+  </div>
+  <div class="schedule-date-field">
+    <label for="schedule-date">Datum pregleda</label
+    ><input
+      id="schedule-date"
+      type="date"
+      [value]="selectedDate()"
+      #date
+      (change)="changeDate(date.value)"
+      [disabled]="!store.academic.online() || store.busy() || store.academic.busy()"
+    />
+  </div>
+</section>
+<form
+  class="calendar-filters"
+  [formGroup]="filterForm"
+  (ngSubmit)="applyFilters()"
+  aria-label="Filtri rasporeda"
+>
+  <div>
+    <label for="calendar-course-filter">Kolegij u rasporedu</label
+    ><select id="calendar-course-filter" formControlName="courseId">
+      <option value="">Svi kolegiji</option>
+      @for (c of store.courses(); track c.id) {
+        <option [value]="c.id">{{ c.name }}</option>
+      }
+    </select>
+  </div>
+  <div>
+    <label for="calendar-kind-filter">Vrsta nastave u rasporedu</label
+    ><select id="calendar-kind-filter" formControlName="kind">
+      <option value="all">Sve vrste</option>
+      <option value="lecture">Predavanja</option>
+      <option value="exercise">Vježbe</option>
+    </select>
+  </div>
+  <div class="actions">
+    <button
+      class="primary"
+      [disabled]="
+        store.loading() || !store.academic.online() || store.busy() || store.academic.busy()
+      "
+    >
+      Pretraži</button
+    ><button
+      type="button"
+      (click)="applyFilters(true)"
+      [disabled]="
+        store.loading() || !store.academic.online() || store.busy() || store.academic.busy()
+      "
+    >
+      Poništi filtre
+    </button>
+  </div>
+</form>
 @if (store.academic.moreCourses()) {
   <p class="hint">Prikaz uključuje učitane kolegije; učitaj ostatak prije potpunog pregleda.</p>
   <button (click)="store.academic.loadMore('courses')">Učitaj još kolegija</button>
@@ -61,7 +162,15 @@
   <p role="status">Spremam promjenu…</p>
 }
 @if (store.hasArchive()) {
-  <button (click)="store.archiveEditing.set(true)">Uredi arhivu</button>
+  <p class="hint">
+    Arhivirani kolegiji i semestri čuvaju povijest. Uređivanje uključi samo za korekciju.
+  </p>
+  <button
+    (click)="store.archiveEditing.set(!store.archiveEditing())"
+    [attr.aria-pressed]="store.archiveEditing()"
+  >
+    {{ store.archiveEditing() ? 'Zaključaj arhivu' : 'Uredi arhivu' }}
+  </button>
 }
 @if (store.loading()) {
   <p role="status">Učitavam raspored…</p>
@@ -156,7 +265,7 @@
         }
       }
     </div>
-    <div class="actions">
+    <div class="actions schedule-tools">
       <button type="submit" [disabled]="!store.canWrite()">
         {{ single() ? 'Spremi termin' : 'Pregledaj termine' }}</button
       ><button type="button" (click)="cancelForm()">Odustani</button>
@@ -166,7 +275,7 @@
         {{ list.length }} termina: {{ list[0]?.scheduledOn ?? 'nema termina' }} —
         {{ list[list.length - 1]?.scheduledOn ?? '' }}. Jedan blok je jedna jedinica dolaznosti.
       </p>
-      <div class="actions">
+      <div class="actions schedule-tools">
         <button type="button" class="primary" (click)="save()" [disabled]="!store.canWrite()">
           Potvrdi raspored
         </button>
@@ -196,26 +305,94 @@
         ><input id="replacement-location" formControlName="location" maxlength="200" />
       </div>
     </div>
-    <div class="actions">
+    <div class="actions schedule-tools">
       <button type="submit" class="primary" [disabled]="!store.canWrite()">Spremi nadoknadu</button
       ><button type="button" (click)="cancelForm()">Odustani</button>
     </div>
   </form>
 }
-@for (row of rows(); track row.id) {
-  <app-session-row
-    [row]="row"
-    [name]="name(row.courseId)"
-    [details]="true"
-    (replacement)="openReplacement($event)"
-  />
-} @empty {
-  @if (!store.loading()) {
-    <p class="panel">Nema nastave u ovom prikazu. Dodaj ponavljanje ili odaberi drugi tjedan.</p>
-  }
+@if (view() !== 'day') {
+  <div class="calendar-scroll" tabindex="0" role="region" aria-label="Mreža kalendara">
+    <div class="calendar-grid" [class.month-grid]="view() === 'month'">
+      @for (day of days; track day) {
+        <div class="calendar-weekday">{{ day }}</div>
+      }
+      @for (day of calendarDays(); track day.date) {
+        <section
+          class="calendar-cell"
+          [class.outside-month]="view() === 'month' && day.outside"
+          [class.is-today]="day.date === store.today()"
+        >
+          <button
+            class="calendar-day"
+            (click)="openDay(day.date)"
+            [attr.aria-label]="'Otvori dan ' + day.date"
+            [attr.aria-current]="day.date === store.today() ? 'date' : null"
+            [disabled]="!store.academic.online() || store.busy() || store.academic.busy()"
+          >
+            {{ day.number }}
+          </button>
+          @for (row of day.rows; track row.id) {
+            <button
+              class="calendar-event"
+              [class.exercise]="row.kind === 'exercise'"
+              [class.cancelled]="row.isCancelled"
+              (click)="openDay(day.date)"
+              [disabled]="!store.academic.online() || store.busy() || store.academic.busy()"
+            >
+              <strong>{{ row.startsAt }}–{{ row.endsAt }}</strong
+              ><span>{{ name(row.courseId) }}</span
+              ><small
+                >{{ row.isCancelled ? 'Otkazano' : row.kind === 'lecture' ? 'Predavanja' : 'Vježbe'
+                }}{{ row.location ? ' · ' + row.location : '' }}</small
+              >
+            </button>
+          }
+          @if (!day.rows.length && view() === 'week') {
+            <p class="calendar-free">Bez nastave</p>
+          }
+        </section>
+      }
+    </div>
+  </div>
+  <p class="hint">
+    Odaberi datum ili termin za dnevni pregled i evidenciju dolaznosti. Predavanja su plava, vježbe
+    imaju svijetlu podlogu i oznaku vrste.
+  </p>
 }
-<section>
-  <h2>Ponavljanja u ovom tjednu</h2>
+@if (view() !== 'month') {
+  <div class="schedule-agenda">
+    @for (group of dayGroups(); track group.date) {
+      <section class="agenda-day" [class.today]="group.date === store.today()">
+        <div class="day-heading">
+          <h2>{{ group.label }}</h2>
+          @if (group.date === store.today()) {
+            <span class="status-badge">Danas</span>
+          }
+        </div>
+        <div class="day-sessions">
+          @for (row of group.rows; track row.id) {
+            <app-session-row
+              [row]="row"
+              [name]="name(row.courseId)"
+              [details]="true"
+              (replacement)="openReplacement($event)"
+            />
+          }
+        </div>
+      </section>
+    } @empty {
+      @if (!store.loading()) {
+        <p class="empty-state">
+          Nema nastave u ovom prikazu. Dodaj ponavljanje ili odaberi drugi tjedan.
+        </p>
+      }
+    }
+  </div>
+}
+<details class="detail-section">
+  <summary>Ponavljanja u odabranom razdoblju</summary>
+  <h2>Ponavljanja u odabranom razdoblju</h2>
   @for (t of store.templates(); track t.id) {
     <article class="panel">
       <h3>{{ name(t.courseId) }}</h3>
@@ -228,4 +405,4 @@
       </button>
     </article>
   }
-</section>
+</details>

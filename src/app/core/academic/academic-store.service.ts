@@ -1,7 +1,7 @@
 import { DestroyRef, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { QueryDocumentSnapshot } from 'firebase/firestore';
 import { AuthService } from '../../data/auth.service';
-import { FirebaseContextService } from '../../data/firebase-context.service';
+import { FirestoreContextService } from '../../data/firestore-context.service';
 import { AcademicRepository } from '../../data/academic.repository';
 import {
   ActiveScope,
@@ -14,11 +14,12 @@ import {
 } from '../../domain/academic.models';
 import { ApplicationError, asApplicationError } from '../errors/application-error';
 import { UnsavedChangesService } from '../forms/unsaved-changes.service';
+import { PwaService } from '../pwa/pwa.service';
 
 @Injectable({ providedIn: 'root' })
 export class AcademicStoreService {
   private readonly auth = inject(AuthService);
-  private readonly context = inject(FirebaseContextService);
+  private readonly context = inject(FirestoreContextService);
   private readonly destroy = inject(DestroyRef);
   private repository?: AcademicRepository;
   private stopWatching?: () => void;
@@ -61,6 +62,11 @@ export class AcademicStoreService {
   );
   constructor() {
     this.destroy.onDestroy(inject(UnsavedChangesService).registerPending(() => this.busy()));
+    this.destroy.onDestroy(
+      inject(PwaService).registerUpdateBlocker(
+        () => this.busy() || this.locked() || this.datasetChanged(),
+      ),
+    );
     const offline = () => {
       this.online.set(false);
       this.stale.set(true);

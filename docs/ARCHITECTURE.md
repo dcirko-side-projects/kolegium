@@ -1,5 +1,9 @@
 # Arhitektura
 
+23.10.2026. — FirestoreContext koristi forced long-polling s najduljim idle odgovorom5s **samo u emulator modu** radi WebKit/Windows loopback stream zastoja. Production mode zadržava izvorne SDK transport defaults i memory-only cache; nema offline queue, UA grananja, backenda ili data ugovorne promjene. [Firebase transport opcije](https://firebase.google.com/docs/reference/js/firestore.firestoresettings) i [timeout ugovor](https://firebase.google.com/docs/reference/js/firestore.experimentallongpollingoptions). To je lokalna kompatibilnost, ne dokaz Safari/cloud performansi.
+
+20.10.2026. — /reminders je lazy feature nad postojećim page-scoped PlanningStore/ScheduleStore servisima. Pure domain/reminders pretvara provjerene deadline/session podatke u objedinjene view modele i RFC5545 tekst; UI samo preuzima Blob. Oba storea objavljuju loaded dataset/revision radi blokiranja izvoza iz različitih snapshotova. Nema backend/SDK poziva iz UI-ja, novog push servisa, sinkronizacije ili dependencies. Jedini additive data contract je excused/opcionalni absenceNote na sessions, prema DATABASE/SECURITY; deployment treba kompatibilni frontend i owner Rules.
+
 Datum: 2026-10-07  
 Status: bootstrap baseline za korisnikov pregled. Scope/stack potvrđeni; izvedbeni detalji i otvorene granice navedeni su ispod i u auditu.
 Update 2026-10-09, TASK-001–007: standalone/zoneless shell, Auth/Firestore data adapteri, pure domain validacija i semestar/kolegij/raspored/dolaznost UI implementirani su lokalno. Production konfiguracija i Rules zatvorene su do cloud faze. PWA manifest/ikone postoje; TASK-011 dodao je public-shell service worker i lokalni install/update smoke; native device dokaz još slijedi. Provjere/projekti/To-do/diplomski implementirani su lokalno kroz WorkRepository i page-scoped WorkStore. Rate, objedinjena Početna i generičko bodovanje imaju TASK-008/009 lokalnu provedbu; stvarne konfiguracije čekaju TASK-009C.
@@ -135,6 +139,8 @@ PlanningRepository je dedicated adapter za rate, bounded Početna queries i grad
 
 
 ## TASK-010/011 — izvedba
+
+Hardening 19.10.2026.: privatni AppShell učitava se lazy nakon guarda. FirebaseContextService zadržava konfiguracijske granice, Firebase app i Auth; FirestoreContextService učitava se s privatnim storeovima te zadržava memory-only cache i disable/enable network. Login/PwaService više ne uvlače Firestore/AcademicStore. AcademicStore registrira lifecycle update blocker u PwaService za pending/restore/stale dataset; dirty/pending zaštita ostaje u UnsavedChangesService. Time login nema ovisnost o privatnom database sloju, bez promjene auth/authorization, transakcija ili offline ugovora.
 
 Pure backup.ts validira envelope i puni graf reuse parserima bez SDK/UI. BackupRepository provodi consistent export, start/upload/freeze/readback/activate, abort i sigurni orphan cleanup. BackupService povezuje adapter s globalnim pending/auth/online stanjem; settings BackupComponent prikazuje preview/progress/recovery. Root generacija u AcademicStore blokira writes starog otvorenog klijenta do potvrđenog reloada, bez automatskog prepisivanja dirty forme.
 

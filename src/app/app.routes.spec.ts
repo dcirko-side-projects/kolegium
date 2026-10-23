@@ -37,6 +37,7 @@ describe('Authenticated shell routes', () => {
             ready: signal(false),
             courses: signal([]),
             selectedSemesterId: signal(null),
+            selectedSemester: signal(null),
             canWrite: () => false,
             moreCourses: () => false,
           },

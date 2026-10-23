@@ -130,11 +130,17 @@ test('thesis starts without topic/mentor and its tasks appear in the same To-do 
   await page.getByRole('button', { name: 'Dodaj osnovnu evidenciju', exact: true }).click();
   await page.getByRole('button', { name: 'Spremi diplomski', exact: true }).click();
   await saved(page);
-  await expect(page.getByText('Tema: još nije poznata', { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('definition').filter({ hasText: /^još nije poznata$/ }),
+  ).toBeVisible();
   await task(page, 'Pronađi temu');
   await page.goto('/todo');
   await task(page, 'Samostalna obaveza');
   await page.getByLabel('Filtriraj kontekst', { exact: true }).selectOption('thesis');
+  await expect(
+    page.getByRole('article', { name: 'Samostalna obaveza', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Pretraži', exact: true }).click();
   await expect(page.getByRole('article', { name: 'Pronađi temu', exact: true })).toBeVisible();
   await expect(
     page.getByRole('article', { name: 'Samostalna obaveza', exact: true }),
@@ -144,10 +150,17 @@ test('thesis starts without topic/mentor and its tasks appear in the same To-do 
     .getByRole('button', { name: 'Dovrši zadatak', exact: true })
     .click();
   await saved(page);
+  await expect(
+    page
+      .getByRole('article', { name: 'Pronađi temu', exact: true })
+      .getByRole('button', { name: 'Ponovno otvori zadatak', exact: true }),
+  ).toBeEnabled();
   await page.getByLabel('Status zadataka', { exact: true }).selectOption('open');
+  await page.getByRole('button', { name: 'Pretraži', exact: true }).click();
   await expect(page.getByRole('article', { name: 'Pronađi temu', exact: true })).not.toBeVisible();
   await page.reload();
   await page.getByLabel('Filtriraj kontekst', { exact: true }).selectOption('thesis');
+  await page.getByRole('button', { name: 'Pretraži', exact: true }).click();
   await expect(page.getByRole('article', { name: 'Pronađi temu', exact: true })).toContainText(
     'Dovršeno',
   );

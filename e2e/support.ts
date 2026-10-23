@@ -45,6 +45,7 @@ export async function login(page: Page): Promise<void> {
   await page.goto('/login');
   await page.getByRole('button', { name: 'Prijava testnim Google računom' }).click();
   await expect(page).toHaveTitle('Početna | Kolegium');
+  await expect(page.getByRole('main')).toHaveAttribute('aria-busy', 'false');
   await expect(page.getByText('Učitavam podatke…', { exact: true })).not.toBeVisible();
 }
 export async function addSemester(page: Page, name = 'Sintetički semestar'): Promise<void> {

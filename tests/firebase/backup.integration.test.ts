@@ -70,6 +70,20 @@ function fixture(): BackupEnvelope {
       replacementForId: null,
     },
   ];
+  collections.sessions.push({
+    id: 'excused-session',
+    courseId: 'c1',
+    templateId: null,
+    scheduledOn: '2026-10-02',
+    startsAt: '08:00',
+    endsAt: '09:00',
+    kind: 'exercise',
+    location: null,
+    isCancelled: false,
+    attendance: 'excused',
+    absenceNote: 'Sintetička potvrda',
+    replacementForId: null,
+  });
   collections.assessments = [
     {
       id: 'a1',

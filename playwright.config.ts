@@ -19,5 +19,21 @@ export default defineConfig({
   projects: [
     { name: 'desktop-chromium', use: { ...devices['Desktop Chrome'] } },
     { name: 'mobile-chromium', use: { ...devices['Pixel 7'] } },
+    ...(process.env['KOLEGIUM_E2E_WEBKIT'] === '1'
+      ? [
+          {
+            name: 'desktop-webkit',
+            timeout: 60000,
+            expect: { timeout: 10000 },
+            use: { ...devices['Desktop Safari'] },
+          },
+          {
+            name: 'mobile-webkit',
+            timeout: 60000,
+            expect: { timeout: 10000 },
+            use: { ...devices['iPhone 13'] },
+          },
+        ]
+      : []),
   ],
 });

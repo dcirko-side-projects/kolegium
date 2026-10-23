@@ -1,14 +1,6 @@
 import { Injectable } from '@angular/core';
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import { Auth, connectAuthEmulator, getAuth } from 'firebase/auth';
-import {
-  Firestore,
-  connectFirestoreEmulator,
-  initializeFirestore,
-  memoryLocalCache,
-  disableNetwork,
-  enableNetwork,
-} from 'firebase/firestore';
 import { appEnvironment } from '../core/config/app-environment';
 import { ApplicationError } from '../core/errors/application-error';
 
@@ -17,7 +9,6 @@ export class FirebaseContextService {
   readonly environment = appEnvironment;
   private app?: FirebaseApp;
   private authInstance?: Auth;
-  private firestoreInstance?: Firestore;
   get configured(): boolean {
     return this.environment.mode !== 'unconfigured';
   }
@@ -41,7 +32,6 @@ export class FirebaseContextService {
       throw new ApplicationError('validation', 'Produkcijska konfiguracija nije valjana.');
     this.app = initializeApp(this.environment.firebase);
     this.authInstance = getAuth(this.app);
-    this.firestoreInstance = initializeFirestore(this.app, { localCache: memoryLocalCache() });
     if (this.environment.mode === 'emulator') {
       const ports = this.environment.emulators;
       if (!ports)
@@ -49,20 +39,14 @@ export class FirebaseContextService {
       connectAuthEmulator(this.authInstance, `http://127.0.0.1:${ports.authPort}`, {
         disableWarnings: true,
       });
-      connectFirestoreEmulator(this.firestoreInstance, '127.0.0.1', ports.firestorePort);
     }
   }
   get auth(): Auth {
     this.initialize();
     return this.authInstance!;
   }
-  get firestore(): Firestore {
+  get firebaseApp(): FirebaseApp {
     this.initialize();
-    return this.firestoreInstance!;
-  }
-  async setOnline(online: boolean): Promise<void> {
-    if (!this.firestoreInstance) return;
-    if (online) await enableNetwork(this.firestoreInstance);
-    else await disableNetwork(this.firestoreInstance);
+    return this.app!;
   }
 }

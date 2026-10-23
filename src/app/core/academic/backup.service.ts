@@ -1,5 +1,5 @@
 import { DestroyRef, Injectable, effect, inject, signal } from '@angular/core';
-import { FirebaseContextService } from '../../data/firebase-context.service';
+import { FirestoreContextService } from '../../data/firestore-context.service';
 import { AuthService } from '../../data/auth.service';
 import { BackupRepository } from '../../data/backup.repository';
 import { BackupEnvelope, backupBytes, parseBackup, serializeBackup } from '../../domain/backup';
@@ -10,7 +10,7 @@ import { ApplicationError, asApplicationError } from '../errors/application-erro
 export class BackupService {
   readonly academic = inject(AcademicStoreService);
   private readonly auth = inject(AuthService);
-  private readonly context = inject(FirebaseContextService);
+  private readonly context = inject(FirestoreContextService);
   private readonly changes = inject(UnsavedChangesService);
   readonly busy = signal(false);
   readonly preview = signal<BackupEnvelope | null>(null);

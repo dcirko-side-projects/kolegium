@@ -7,6 +7,7 @@ const { chromium, devices, expect } = await import('@playwright/test');
 async function capture(page, options) {
   await expect(page.getByText(/^Učitavam/)).toHaveCount(0);
   await page.evaluate(() => document.activeElement?.blur());
+  if (options.fullPage) await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot(options);
 }
 const browser = await chromium.launch();
@@ -15,6 +16,7 @@ try {
   for (const [name, options] of [
     ['desktop', { viewport: { width: 1440, height: 1000 } }],
     ['mobile', devices['Pixel 7']],
+    ['tablet', { viewport: { width: 768, height: 1024 } }],
   ]) {
     const context = await browser.newContext(options);
     const page = await context.newPage();
@@ -161,7 +163,12 @@ try {
     );
     await capture(page, { path: `artifacts/academic/${name}-installments.png`, fullPage: false });
     await page.goto('http://127.0.0.1:4300/');
-    await expect(page.getByRole('article', { name: 'Sintetička rata', exact: true })).toBeVisible();
+    await expect(
+      page.locator('[aria-labelledby="installment-reminders-title"]').getByRole('article', {
+        name: 'Sintetička rata',
+        exact: true,
+      }),
+    ).toBeVisible();
     await capture(page, { path: `artifacts/academic/${name}-overview.png`, fullPage: false });
     await page.goto('http://127.0.0.1:4300/courses');
     await page

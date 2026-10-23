@@ -26,6 +26,7 @@ test('explicit calendar preview excludes databases, selects exercises, retries a
   page,
 }) => {
   await page.goto('/schedule');
+  await page.getByText('Upravljanje rasporedom', { exact: true }).click();
   await page.getByRole('button', { name: 'Uvezi TVZ raspored' }).click();
   const event = (name: string, kind: string, start: string, end: string) =>
     `BEGIN:VEVENT\r\nDESCRIPTION:${name} - ${kind}\\nSintetički profesor\r\nDTSTART:20261012T${start}00\r\nDTEND:20261012T${end}00\r\nLOCATION:Sintetička učionica\r\nEND:VEVENT\r\n`;
@@ -70,6 +71,8 @@ test('explicit calendar preview excludes databases, selects exercises, retries a
   await expect(single).toBeVisible();
   page.once('dialog', (d) => d.accept());
   await single.getByRole('button', { name: 'Otkaži termin' }).click();
+  await expect(single).not.toBeVisible();
+  await page.getByRole('button', { name: 'Prikaži otkazane termine' }).click();
   await expect(single.getByText('Otkazano', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Sakrij otkazane termine' }).click();
   await expect(single).not.toBeVisible();
@@ -123,6 +126,9 @@ test('cancel and replacement preserve original and official totals; invalid rule
   await session(page).getByRole('button', { name: 'Prisutan', exact: true }).click();
   page.once('dialog', (d) => d.accept());
   await session(page).getByRole('button', { name: 'Otkaži termin' }).click();
+  await expect(session(page)).not.toBeVisible();
+  await page.getByText('Upravljanje rasporedom', { exact: true }).click();
+  await page.getByRole('button', { name: 'Prikaži otkazane termine' }).click();
   await expect(session(page)).toContainText('Otkazano');
   await session(page).getByRole('button', { name: 'Dodaj nadoknadu' }).click();
   await page.getByLabel('Početak nadoknade').fill('12:00');
@@ -159,6 +165,7 @@ test('future recurrence change preserves recorded time and displays new future t
 }) => {
   await addTemplate(page);
   await session(page).getByRole('button', { name: 'Prisutan', exact: true }).click();
+  await page.getByText('Ponavljanja u odabranom razdoblju', { exact: true }).first().click();
   await page.getByRole('button', { name: 'Promijeni budući raspored' }).click();
   await page.getByLabel('Datum primjene promjene').fill(addDays(today, 1));
   await page.getByLabel('Početak nastave', { exact: true }).fill('12:00');

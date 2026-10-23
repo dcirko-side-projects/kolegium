@@ -42,31 +42,35 @@ import { backupCollections } from '../../domain/backup';
           Prekini povrat
         </button>
       } @else {
-        <label for="backup-file">Odaberi sigurnosnu kopiju (JSON, do 5 MiB)</label>
-        <input
-          id="backup-file"
-          type="file"
-          accept="application/json,.json"
-          (change)="choose($event)"
-          [disabled]="!backup.academic.canWrite() || backup.busy()"
-        />
-        @if (backup.preview(); as file) {
-          <h3>Pregled odabrane kopije</h3>
-          <p>Datum izvoza: {{ file.exportedAt }}. Ukupno zapisa: {{ count() }}.</p>
-          <p>
-            Semestri: {{ file.collections.semesters.length }} · Kolegiji:
-            {{ file.collections.courses.length }} · Pokušaji:
-            {{ file.collections.scoreAttempts.length }}
-          </p>
-          <p>Povrat obuhvaća cijelu evidenciju. Najprije preuzmi aktualnu sigurnosnu kopiju.</p>
-          <button
-            class="primary"
-            (click)="backup.restore()"
-            [disabled]="!backup.academic.canWrite() || backup.busy() || changes.hasUnsafeChanges()"
-          >
-            Potvrdi povrat cijele evidencije
-          </button>
-        }
+        <div class="detail-section">
+          <label for="backup-file">Odaberi sigurnosnu kopiju (JSON, do 5 MiB)</label>
+          <input
+            id="backup-file"
+            type="file"
+            accept="application/json,.json"
+            (change)="choose($event)"
+            [disabled]="!backup.academic.canWrite() || backup.busy()"
+          />
+          @if (backup.preview(); as file) {
+            <h3>Pregled odabrane kopije</h3>
+            <p>Datum izvoza: {{ file.exportedAt }}. Ukupno zapisa: {{ count() }}.</p>
+            <p>
+              Semestri: {{ file.collections.semesters.length }} · Kolegiji:
+              {{ file.collections.courses.length }} · Pokušaji:
+              {{ file.collections.scoreAttempts.length }}
+            </p>
+            <p>Povrat obuhvaća cijelu evidenciju. Najprije preuzmi aktualnu sigurnosnu kopiju.</p>
+            <button
+              class="primary"
+              (click)="backup.restore()"
+              [disabled]="
+                !backup.academic.canWrite() || backup.busy() || changes.hasUnsafeChanges()
+              "
+            >
+              Potvrdi povrat cijele evidencije
+            </button>
+          }
+        </div>
       }
       @if (changes.hasUnsafeChanges() && !backup.busy()) {
         <p>Prije povrata spremi ili odbaci otvorene izmjene.</p>

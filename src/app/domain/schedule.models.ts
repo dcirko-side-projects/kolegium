@@ -1,6 +1,6 @@
 import { VersionedRecord } from './academic.models';
 export type TeachingKind = 'lecture' | 'exercise';
-export type Attendance = 'unmarked' | 'present' | 'absent';
+export type Attendance = 'unmarked' | 'present' | 'absent' | 'excused';
 export interface TemplateInput {
   courseId: string;
   kind: TeachingKind;
@@ -22,6 +22,7 @@ export interface SessionInput {
   location: string | null;
   isCancelled: boolean;
   attendance: Attendance;
+  absenceNote?: string | null;
   replacementForId: string | null;
 }
 export interface Session extends SessionInput, VersionedRecord {}

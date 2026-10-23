@@ -1,5 +1,7 @@
 # Technical Requirements Document
 
+23.10.2026. — lokalni emulator adapter koristi forced long-polling/5s idle timeout nakon ponovljivih WebKit/Windows stream zastoja pri reloadu. Produkcijski transport/cache/authorization ostaju isti. Dodatni opt-in WebKit projekti imaju60s ukupni rok i10s assertion rok; višekoračni restore ima120s ukupno/60s aktivaciju. Ti testni rokovi nisu NFR-005 mjerni rezultat. Stvarni Safari/phone/cloud recovery i dalje zasebni.
+
 Datum: 2026-10-07. Zahtjevi, ne izvještaj o provedenim provjerama.
 
 Izvedbeni update 2026-10-08: TASK-002/003 dodaje izolirane dev/test Firebase demo projekte, server reads i revision/lock transakcije za semestre/kolegije, memory-only Firestore cache te network disable/enable pri offline/reconnect prije refresha. Firebase SDK 12.19.0 podržava Node 22 baseline. Production ostaje zatvoren i bez clouda. Aktualni dokazi su u CURRENT_STATE; dependency i bundle upozorenja u DEPENDENCY_REVIEW nisu puni release PASS.

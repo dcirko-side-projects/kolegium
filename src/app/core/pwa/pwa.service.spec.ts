@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { PwaService } from './pwa.service';
-import { AcademicStoreService } from '../academic/academic-store.service';
 import { UnsavedChangesService } from '../forms/unsaved-changes.service';
 describe('PWA protects work before update', () => {
   afterEach(() => TestBed.resetTestingModule());
@@ -11,12 +10,12 @@ describe('PWA protects work before update', () => {
       changed = signal(false),
       control = signal<{ restoreToken: string | null }>({ restoreToken: null });
     TestBed.configureTestingModule({
-      providers: [
-        { provide: UnsavedChangesService, useValue: { hasUnsafeChanges: () => unsafe } },
-        { provide: AcademicStoreService, useValue: { busy, datasetChanged: changed, control } },
-      ],
+      providers: [{ provide: UnsavedChangesService, useValue: { hasUnsafeChanges: () => unsafe } }],
     });
     const service = TestBed.inject(PwaService);
+    const unregister = service.registerUpdateBlocker(
+      () => busy() || changed() || control().restoreToken !== null,
+    );
     expect(service.canUpdate()).toBe(true);
     unsafe = true;
     expect(service.canUpdate()).toBe(false);
@@ -33,5 +32,8 @@ describe('PWA protects work before update', () => {
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
     expect(service.canUpdate()).toBe(false);
     vi.restoreAllMocks();
+    unregister();
+    changed.set(true);
+    expect(service.canUpdate()).toBe(true);
   });
 });

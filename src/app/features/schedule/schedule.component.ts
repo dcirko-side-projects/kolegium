@@ -4,24 +4,41 @@ import { RouterLink } from '@angular/router';
 import { ScheduleStoreService } from '../../core/academic/schedule-store.service';
 import { UnsavedChangesService } from '../../core/forms/unsaved-changes.service';
 import { ApplicationError, asApplicationError } from '../../core/errors/application-error';
-import { addDays, localNow, occurrences, templateInput, weekStart } from '../../domain/schedule';
+import { addDays, localNow, occurrences, templateInput } from '../../domain/schedule';
 import { Occurrence, ScheduleTemplate, TeachingKind } from '../../domain/schedule.models';
 import { SessionRowComponent } from '../../shared/ui/session-row/session-row.component';
 import { CalendarImportComponent } from './calendar-import.component';
+import { CalendarView, calendarWindow, moveCalendar } from '../../domain/calendar';
 
 @Component({
   selector: 'app-schedule',
   imports: [ReactiveFormsModule, RouterLink, SessionRowComponent, CalendarImportComponent],
   providers: [ScheduleStoreService],
   templateUrl: './schedule.component.html',
+  styleUrl: './schedule.component.scss',
 })
 export class ScheduleComponent {
   protected readonly store = inject(ScheduleStoreService);
   private readonly changes = inject(UnsavedChangesService);
   private readonly fb = inject(FormBuilder);
   protected readonly selectedDate = signal(localNow().date);
-  protected readonly dayOnly = signal(false);
-  protected readonly hideCancelled = signal(false);
+  protected readonly view = signal<CalendarView>('week');
+  protected readonly filterForm = inject(FormBuilder).nonNullable.group({
+    courseId: '',
+    kind: 'all',
+  });
+  protected readonly appliedKind = signal('all');
+  protected readonly window = computed(() => calendarWindow(this.selectedDate(), this.view()));
+  protected readonly periodLabel = computed(() =>
+    this.view() === 'month'
+      ? this.formatDate(this.selectedDate(), { month: 'long', year: 'numeric' })
+      : this.view() === 'day'
+        ? this.formatDate(this.selectedDate(), { weekday: 'long', day: 'numeric', month: 'long' })
+        : this.formatDate(this.window().from, { day: 'numeric', month: 'short' }) +
+          ' – ' +
+          this.formatDate(this.window().until, { day: 'numeric', month: 'short', year: 'numeric' }),
+  );
+  protected readonly hideCancelled = signal(true);
   protected readonly importing = signal(false);
   protected readonly single = signal(false);
   protected readonly rows = computed(() =>
@@ -29,11 +46,43 @@ export class ScheduleComponent {
       .rows()
       .filter(
         (r) =>
-          (!this.dayOnly() || r.scheduledOn === this.selectedDate()) &&
+          (this.appliedKind() === 'all' || r.kind === this.appliedKind()) &&
           (!this.hideCancelled() || !r.isCancelled),
       ),
   );
+  protected readonly calendarDays = computed(() => {
+    const { from, until } = this.window();
+    const days = [];
+    for (let date = from; date <= until; date = addDays(date, 1)) {
+      days.push({
+        date,
+        number: Number(date.slice(8)),
+        label: this.formatDate(date, { weekday: 'short', day: 'numeric', month: 'long' }),
+        outside: date.slice(0, 7) !== this.selectedDate().slice(0, 7),
+        rows: this.rows().filter((r) => r.scheduledOn === date),
+      });
+    }
+    return days;
+  });
   protected readonly formOpen = signal(false);
+  protected readonly dayGroups = computed(() => {
+    const groups = new Map<string, Occurrence[]>();
+    for (const row of this.rows()) {
+      const group = groups.get(row.scheduledOn) ?? [];
+      group.push(row);
+      groups.set(row.scheduledOn, group);
+    }
+    return [...groups].map(([date, rows]) => ({
+      date,
+      label: new Intl.DateTimeFormat('hr-HR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        timeZone: 'Europe/Zagreb',
+      }).format(new Date(date + 'T12:00:00Z')),
+      rows,
+    }));
+  });
   protected readonly editing = signal<ScheduleTemplate | null>(null);
   protected readonly preview = signal<Occurrence[] | null>(null);
   protected readonly replacement = signal<Occurrence | null>(null);
@@ -91,10 +140,10 @@ export class ScheduleComponent {
     }
     destroy.onDestroy(this.changes.register(() => this.form.dirty || this.replacementForm.dirty));
     effect(() => {
-      const date = this.selectedDate();
+      const window = this.window();
       untracked(() => {
-        this.store.from.set(weekStart(date));
-        this.store.until.set(addDays(weekStart(date), 6));
+        this.store.from.set(window.from);
+        this.store.until.set(window.until);
       });
     });
     const changed = this.form.valueChanges.subscribe(() => this.preview.set(null));
@@ -127,7 +176,28 @@ export class ScheduleComponent {
     if (value && this.changes.confirm()) this.selectedDate.set(value);
   }
   protected moveWeek(count: number): void {
-    this.changeDate(addDays(this.selectedDate(), count * 7));
+    this.changeDate(moveCalendar(this.selectedDate(), this.view(), count));
+  }
+  protected formatDate(date: string, options: Intl.DateTimeFormatOptions): string {
+    return new Intl.DateTimeFormat('hr-HR', { ...options, timeZone: 'Europe/Zagreb' }).format(
+      new Date(date + 'T12:00:00Z'),
+    );
+  }
+  protected setView(view: CalendarView): void {
+    if (this.changes.confirm()) this.view.set(view);
+  }
+  protected openDay(date: string): void {
+    if (!this.changes.confirm()) return;
+    this.selectedDate.set(date);
+    this.view.set('day');
+  }
+  protected applyFilters(reset = false): void {
+    if (!this.changes.confirm()) return;
+    if (reset) this.filterForm.reset();
+    const value = this.filterForm.getRawValue();
+    this.store.courseId.set(value.courseId || null);
+    this.appliedKind.set(value.kind);
+    this.store.archiveEditing.set(false);
   }
   protected open(old: ScheduleTemplate | null = null, single = false): void {
     if (!this.changes.confirm()) return;
@@ -270,6 +340,7 @@ export class ScheduleComponent {
         isCancelled: false,
         attendance: 'unmarked',
         replacementForId: source.id,
+        absenceNote: null,
       };
       await this.store.saveSession(row, row);
       this.replacementForm.markAsPristine();

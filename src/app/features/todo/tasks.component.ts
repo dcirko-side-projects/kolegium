@@ -39,6 +39,7 @@ export class TasksComponent {
   protected readonly filterType = signal('all');
   protected readonly filterId = signal('');
   protected readonly filterStatus = signal('all');
+  protected readonly appliedFilters = signal({ type: 'all', id: '', status: 'all' });
   protected readonly visible = computed(() => this.store.tasks());
   private id: string = crypto.randomUUID();
   private draftRestored = false;
@@ -56,6 +57,7 @@ export class TasksComponent {
     if (courseId) {
       this.filterType.set('course');
       this.filterId.set(courseId);
+      this.appliedFilters.set({ type: 'course', id: courseId, status: 'all' });
     }
     const destroy = inject(DestroyRef);
     destroy.onDestroy(this.changes.register(() => this.form.dirty));
@@ -70,9 +72,7 @@ export class TasksComponent {
     effect(() => {
       const fixed = this.fixedType(),
         id = this.fixedId(),
-        type = this.filterType(),
-        filterId = this.filterId(),
-        status = this.filterStatus();
+        { type, id: filterId, status } = this.appliedFilters();
       untracked(() => {
         this.store.contextFilter.set(
           fixed
@@ -120,10 +120,19 @@ export class TasksComponent {
     );
   }
   protected changeFilters(type: string, id: string, status: string) {
-    if (!this.changes.confirm()) return;
     this.filterType.set(type);
     this.filterId.set(id);
     this.filterStatus.set(status);
+  }
+  protected applyFilters(reset = false) {
+    if (!this.changes.confirm()) return;
+    if (reset) this.changeFilters('all', '', 'all');
+    this.appliedFilters.set({
+      type: this.filterType(),
+      id: this.filterId(),
+      status: this.filterStatus(),
+    });
+    this.store.archiveEditing.set(false);
   }
   protected start(row: Task | null = null) {
     if (!this.changes.confirm()) return;

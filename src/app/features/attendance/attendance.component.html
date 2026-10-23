@@ -1,4 +1,4 @@
-<h1>Dolaznost</h1>
+<div class="page-heading"><h1>Dolaznost</h1></div>
 @if (store.academic.moreCourses()) {
   <button (click)="store.academic.loadMore('courses')">Učitaj još kolegija</button>
 }
@@ -9,9 +9,15 @@
   Predavanja i vježbe vode se odvojeno. Neoznačeno nije izostanak; otkazani termini ne ulaze u
   evidenciju održane nastave.
 </p>
-<div class="panel">
+<form class="panel" (submit)="$event.preventDefault(); select(courseSelect)">
   <label for="attendance-course">Kolegij za pregled dolaznosti</label
-  ><select id="attendance-course" #courseSelect (change)="select(courseSelect)">
+  ><select
+    id="attendance-course"
+    #courseSelect
+    [disabled]="
+      !store.academic.online() || store.busy() || store.academic.busy() || store.loading()
+    "
+  >
     <option value="" [selected]="store.courseId() === null">Odaberi kolegij</option>
     @for (c of store.courses(); track c.id) {
       <option [value]="c.id" [selected]="store.courseId() === c.id">
@@ -19,11 +25,19 @@
       </option>
     }
   </select>
+  <button
+    class="primary"
+    [disabled]="
+      !store.academic.online() || store.busy() || store.academic.busy() || store.loading()
+    "
+  >
+    Pretraži
+  </button>
   <p>
     <a routerLink="/courses">Promijeni semestar / kolegije</a> ·
     <a routerLink="/schedule">Raspored i nadoknade</a>
   </p>
-</div>
+</form>
 @if (store.loading()) {
   <p role="status">Učitavam dolaznost…</p>
 }
@@ -44,15 +58,21 @@
 @if (course(); as c) {
   @if (c.isArchived || store.academic.selectedSemester()?.isArchived) {
     <p>Pregled arhive. Za korekciju odaberi izričito uređivanje.</p>
-    <button (click)="store.archiveEditing.set(true)">Uredi arhivu</button>
+    <button
+      (click)="store.archiveEditing.set(!store.archiveEditing())"
+      [attr.aria-pressed]="store.archiveEditing()"
+    >
+      {{ store.archiveEditing() ? 'Zaključaj arhivu' : 'Uredi arhivu' }}
+    </button>
   }
-  <div class="form-grid">
+  <div class="form-grid attendance-summary">
     @for (kind of kinds; track kind) {
       <section class="panel">
         <h2>{{ kind === 'lecture' ? 'Predavanja' : 'Vježbe' }}</h2>
         @let s = summary(kind);
-        <p>
-          Prisutni: {{ s.present }} · Odsutni: {{ s.absent }} · Neoznačeni prošli termini:
+        <p class="attendance-counts">
+          Prisutni: {{ s.present }} · Odsutni: {{ s.absent }} · Ispričani: {{ s.excused }} ·
+          Neoznačeni prošli termini:
           {{ s.unmarked }}
         </p>
         <p>
@@ -79,7 +99,7 @@
         Unesi službeni fond i minimum prema izvoru. Prazno znači nepoznato, 0 znači poznata nula.
         Otkazivanje ne mijenja fond.
       </p>
-      <div class="form-grid">
+      <div class="form-grid attendance-summary">
         <div class="field">
           <label for="lecture-total">Predavanja — ukupan broj</label
           ><input id="lecture-total" inputmode="numeric" formControlName="lectureTotal" />

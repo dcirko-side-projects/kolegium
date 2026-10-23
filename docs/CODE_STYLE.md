@@ -4,6 +4,12 @@ Foundation baseline 2026-10-07, update 2026-10-08. Shell, domain validacija i Fi
 
 ## 1. Tooling i identifiers
 
+23.10.2026.: zakrpe build/CLI21.2.28, Vitest4.1.12 i Firebase CLI15.34.1 zaključane uz nepromijenjene runtime/compiler21.2.25 i Node22 ugovore. Opt-in KOLEGIUM_E2E_WEBKIT=1 dodaje dva WebKit browser projekta; standardni suite ostaje Chromium. WebKit timeout60s/expect10s i višekoračni restore120s/aktivacija60s su bounded testni rokovi, ne stvarni performance rezultat. Aplikacijski izvori ostaju zamrznuti tijekom runa radi HMR-a. `test:backup-file` zahtijeva lokalnu KOLEGIUM_BACKUP_VERIFY_FILE varijablu, koristi samo postojeći fiksni testni emulator i čisti privatne podatke. Ne pokretati istodobno s drugim data-bearing suiteovima.
+
+Aktualno 19.10.2026.: minimalni Node **22.22.2** unutar 22.x, verificirano **22.23.3**, npm 11. Sigurnosni scoped override `superstatic → re2 1.26.1` zakrpava postojeću development ovisnost; njezin native/build lanac zahtijeva taj Node patch. Framework i runtime dependencies nisu mijenjani. Raniji 22.13/22.20 navodi ispod su povijesni dokazi, ne aktualni install minimum. Firebase/Firestore context odvojeni su radi lazy učitavanja; PWA update blockers odjavljuju se preko DestroyRef.
+
+Prettier sada koristi `endOfLine: auto` kako standardni format:check radi na Windows checkoutu s CRLF i na LF checkoutu, bez masovnog prepisivanja netaknutih datoteka. Ostala pravila i obuhvat provjere ostaju ista. `test:release-rules` nakon završetka uvijek vraća originalna local-owner Rules na fiksnom demo-kolegium-tests emulatoru prije idućeg suitea; restoration failure daje neuspješan izlaz, ne tihi PASS. Nema pristupa dev/cloud bazi.
+
 TypeScript strict i Angular strictTemplates. Prettier za formatiranje, ESLint + angular-eslint za lint. Versions pinati pri foundationu i čuvati lockfile. English identifiers/code comments kada objašnjavaju tehničku namjeru; hrvatski UI i projektna dokumentacija.
 
 PascalCase models/classes, camelCase functions/fields, kebab-case datoteke uz Angular suffixe (.component/.service/.spec). Firestore camelCase prema DATABASE. Bez any za domenske rezultate/backup; unknown na boundaryju i typed parsing.

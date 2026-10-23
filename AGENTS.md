@@ -1,5 +1,9 @@
 # Upute AI coding agentima
 
+## Najnoviji nalog23.10.2026. — commit, push i online objava
+
+Korisnik izričito zatražio „Commitaj pushaj i objavi online”. Nalog obuhvaća aktualni izvorni kod, testove i projektnu dokumentaciju iz ovog checkouta u postojećem privatnom dcirko-side-projects/kolegium repozitoriju te Hosting-only objavu provjerenog kandidata08e81c515a7f1629ce7e u kolegium-c8970. Privatne kopije, credentials, privitci i generirani artefakti ostaju izvan Gita. Postojeća cloud Rules potvrđena readbackom i ne trebaju novi rollout; nema upisa produkcijskih podataka, seeda, cloud restorea, promjene vidljivosti ili naplate. Dokazi izvršenja u CURRENT_STATE/DEPLOYMENT imaju prednost pred starijim navodima da objava/commit čeka nalog. WebKit reload nalaz i stvarni device/grading/recovery gates ostaju otvoreni.
+
 ## Najnoviji nastavak 2026-10-18 — prijenos na novi laptop
 
 Korisnik izričito naložio commit i push svih aktualnih projektnih izmjena u postojeći privatni repozitorij radi nastavka na novom laptopu. GitHub je pri pushu potvrdio preseljenje s dcirko/kolegium na dcirko-side-projects/kolegium; canonical origin i nove handoff upute koriste novu adresu. Nalog obuhvaća ovaj checkpoint izvornog koda/testova/dokumentacije, ne privatne privitke, source PDF/ZIP/ICS, lokalne backupe, credentials ili generirane artefakte. Ne mijenjati vidljivost repozitorija niti deployati/aktivirati naplatu. Za nastavak pročitati docs/NEXT_CHAT_PROMPT.md i docs/NEW_LAPTOP_SETUP.md; putanja novog checkouta može biti drukčija.

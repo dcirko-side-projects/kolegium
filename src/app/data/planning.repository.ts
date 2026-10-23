@@ -278,6 +278,7 @@ export class PlanningRepository {
                     ? '/installments'
                     : '/' + name + '/' + d.id,
               kind: label,
+              ...(name === 'assessments' ? { scheduledAt: v['scheduledAt'] as string | null } : {}),
             });
         }
         loaded += page.size;
@@ -326,6 +327,7 @@ export class PlanningRepository {
       );
     return {
       installmentReminders,
+      dataRevision: after.dataRevision,
       deadlines: deadlines.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id)),
       tasks,
       more,

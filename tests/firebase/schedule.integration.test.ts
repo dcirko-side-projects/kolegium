@@ -59,6 +59,24 @@ describe('Schedule SDK transactions', () => {
     const d = await repo.window(scope, 'c1', '2026-10-01', '2027-02-01');
     return occurrences(d.templates, d.sessions, '2026-10-01', '2027-02-01');
   }
+  it('preserves excused notes across server reads, idempotent retry and stale conflict', async () => {
+    const original = (await rows())[0];
+    const input = { ...original, attendance: 'excused' as const, absenceNote: 'Potvrda' };
+    await repo.saveSession(scope, original, input);
+    const revision = (await academic.readControl(uid)).dataRevision;
+    await repo.saveSession(scope, original, input);
+    expect((await academic.readControl(uid)).dataRevision).toBe(revision);
+    const saved = (await rows())[0];
+    expect(saved.attendance).toBe('excused');
+    expect(saved.absenceNote).toBe('Potvrda');
+    await expect(
+      repo.saveSession(scope, original, { ...original, attendance: 'absent' }),
+    ).rejects.toMatchObject({ category: 'conflict' });
+    await repo.saveSession(scope, saved, { ...saved, attendance: 'present', absenceNote: null });
+    const cleared = (await rows())[0];
+    expect(cleared.attendance).toBe('present');
+    expect(cleared.absenceNote).toBeUndefined();
+  });
   it('calendar import preserves recorded/cancelled history, skips virtual duplicates and retries a partial import', async () => {
     const term = await academic.semester(scope, 's1');
     const original = (await rows())[0];

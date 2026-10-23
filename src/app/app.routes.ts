@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { AppShellComponent } from './core/layout/app-shell.component';
 import { navigationItems } from './core/navigation/navigation';
 import { authGuard } from './core/auth/auth.guard';
 import { unsavedChangesGuard } from './core/forms/unsaved-changes.service';
@@ -12,7 +11,8 @@ export const routes: Routes = [
   },
   {
     path: '',
-    component: AppShellComponent,
+    loadComponent: () =>
+      import('./core/layout/app-shell.component').then((m) => m.AppShellComponent),
     canActivate: [authGuard],
     canActivateChild: [authGuard],
     children: [
@@ -44,6 +44,7 @@ export const routes: Routes = [
               '/todo',
               '/thesis',
               '/installments',
+              '/reminders',
             ].includes(item.path),
         )
         .map((item) => ({
@@ -65,6 +66,12 @@ export const routes: Routes = [
             import('./features/work/work-items.component').then((m) => m.WorkItemsComponent),
         })),
       ),
+      {
+        path: 'reminders',
+        title: 'Podsjetnici | Kolegium',
+        loadComponent: () =>
+          import('./features/reminders/reminders.component').then((m) => m.RemindersComponent),
+      },
       {
         path: 'installments',
         title: 'Rate fakulteta | Kolegium',

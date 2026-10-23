@@ -31,34 +31,76 @@
       {{ isAssessment ? 'Dodaj provjeru' : 'Dodaj projekt' }}
     </button>
   }
-  <button
-    (click)="store.archiveEditing.set(!store.archiveEditing())"
-    [attr.aria-pressed]="store.archiveEditing()"
-  >
-    Uredi arhivu
-  </button>
-  @if (!detailId()) {
-    <button (click)="showArchived.set(!showArchived())" [attr.aria-pressed]="showArchived()">
-      Prikaži arhivu
+  @if (hasArchive()) {
+    <button
+      (click)="store.archiveEditing.set(!store.archiveEditing())"
+      [attr.aria-pressed]="store.archiveEditing()"
+    >
+      {{ store.archiveEditing() ? 'Zaključaj arhivu' : 'Uredi arhivu' }}
     </button>
+    @if (!detailId()) {
+      <button (click)="showArchived.set(!showArchived())" [attr.aria-pressed]="showArchived()">
+        {{ showArchived() ? 'Sakrij arhivu' : 'Prikaži arhivu' }}
+      </button>
+    }
   }
 </div>
-@if (!detailId() && isAssessment) {
-  <div class="form-field">
-    <label for="assessment-filter">Kolegij za pregled provjera</label
-    ><select
-      id="assessment-filter"
-      #courseFilter
-      [value]="store.courseId() ?? ''"
-      (change)="changeCourse(courseFilter.value)"
-    >
-      <option value="">Svi kolegiji</option>
-      @for (c of store.academic.courses(); track c.id) {
-        <option [value]="c.id">{{ c.name }}</option>
-      }
-    </select>
-    <p class="hint">Kolegiji iz odabranog semestra. Promjena semestra dostupna je u Kolegijima.</p>
-  </div>
+@if (hasArchive()) {
+  <p class="hint">
+    Prikaži arhivu uključuje sačuvane arhivirane stavke u listu. Uredi arhivu privremeno dopušta
+    njihove korekcije; Zaključaj arhivu vraća zaštitu. Arhiviranje ne briše zadatke ni rezultate.
+  </p>
+}
+@if (!detailId()) {
+  <form
+    class="panel form-grid"
+    [formGroup]="filters"
+    (ngSubmit)="applyFilters()"
+    aria-label="Filtri obaveza"
+  >
+    <div>
+      <label for="assessment-filter">{{
+        isAssessment ? 'Kolegij za pregled provjera' : 'Kolegij za pregled projekata'
+      }}</label
+      ><select id="assessment-filter" formControlName="courseId">
+        <option value="">Svi kolegiji</option>
+        @for (c of store.academic.courses(); track c.id) {
+          <option [value]="c.id">{{ c.name }}{{ c.isArchived ? ' — arhiva' : '' }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label for="work-status-filter">Status obaveza</label
+      ><select id="work-status-filter" formControlName="status">
+        <option value="all">Svi statusi</option>
+        <option value="open">Otvoreno</option>
+        <option value="done">Obavljeno</option>
+      </select>
+    </div>
+    <div>
+      <label for="work-search">Naziv sadrži</label
+      ><input id="work-search" type="search" formControlName="search" />
+    </div>
+    <div class="actions">
+      <button class="primary" [disabled]="store.loading() || store.academic.busy()">Pretraži</button
+      ><button
+        type="button"
+        (click)="applyFilters(true)"
+        [disabled]="store.loading() || store.academic.busy()"
+      >
+        Poništi filtre
+      </button>
+    </div>
+    <p class="hint">
+      Odaberi uvjete pa pritisni Pretraži. Status i naziv filtriraju učitane stavke; za daljnje
+      rezultate koristi Učitaj još stavki.
+    </p>
+    @if (store.academic.moreCourses()) {
+      <button type="button" (click)="store.academic.loadMore('courses')">
+        Učitaj još kolegija
+      </button>
+    }
+  </form>
 }
 @if (editing()) {
   <form class="panel" [formGroup]="form" (ngSubmit)="submit()">
@@ -158,25 +200,33 @@
     <p>Stavka se učitava. Ako nije dostupna, vrati se na listu.</p>
   }
 } @else {
-  @for (row of displayRows(); track row.id) {
-    <article class="panel" [attr.aria-label]="row.name">
-      <h2>
-        <a [routerLink]="path(row.id)">{{ row.name }}</a>
-      </h2>
-      <p>
-        {{ typeLabel(row) }} · Datum / rok: {{ dateLabel(row) }} ·
-        {{ row.isCompleted ? 'Obavljeno' : 'Otvoreno' }}
-      </p>
-      <p>{{ row.courseId ? (store.courseNames()[row.courseId] ?? 'Kolegij') : 'Bez kolegija' }}</p>
-      <button (click)="toggle(row)" [disabled]="!store.canEdit(row.id)">
-        {{ row.isCompleted ? 'Ponovno otvori stavku' : 'Označi obavljeno' }}
-      </button>
-    </article>
-  } @empty {
-    @if (!store.loading()) {
-      <p>Nema stavki u ovom pregledu.</p>
+  <div class="record-list">
+    @for (row of displayRows(); track row.id) {
+      <article
+        class="panel record-row"
+        [class.is-complete]="row.isCompleted"
+        [attr.aria-label]="row.name"
+      >
+        <h2>
+          <a [routerLink]="path(row.id)">{{ row.name }}</a>
+        </h2>
+        <p>
+          {{ typeLabel(row) }} · Datum / rok: {{ dateLabel(row) }} ·
+          {{ row.isCompleted ? 'Obavljeno' : 'Otvoreno' }}
+        </p>
+        <p>
+          {{ row.courseId ? (store.courseNames()[row.courseId] ?? 'Kolegij') : 'Bez kolegija' }}
+        </p>
+        <button (click)="toggle(row)" [disabled]="!store.canEdit(row.id)">
+          {{ row.isCompleted ? 'Ponovno otvori stavku' : 'Označi obavljeno' }}
+        </button>
+      </article>
+    } @empty {
+      @if (!store.loading()) {
+        <p>Nema stavki u ovom pregledu.</p>
+      }
     }
-  }
+  </div>
   @if (store.more()) {
     <button (click)="store.loadMore()" [disabled]="store.loading()">Učitaj još stavki</button>
   }
