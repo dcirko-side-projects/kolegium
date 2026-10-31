@@ -1,5 +1,10 @@
 # Deployment i environments
 
+## GitHub checkpoint — 31.10.2026.
+
+Po naknadnom izričitom nalogu „commitaj i pushaj promjene na github ako već nisi” izvorni kod, testovi, javne aplikacijske ikone i dokumentacija redizajna/objave commitirani su kao **6bc1cb1** (`Redesign interface and unify today's schedule`) i uspješno poslani na `main` postojećeg privatnog **dcirko-side-projects/kolegium** repozitorija. Remote/Private metadata potvrđeni prije slanja; fetch je potvrdio HEAD/origin-main0/0. Staged provjera64datoteke:0credential signatures/0privatnih ili generiranih datoteka. Privatni backupi, privitci, CLI store, node_modules, dist i testni artefakti ostaju ignorirani. Ova dopuna dokumentacije bilježi ostvareni source checkpoint; njezin završni commit/push provjerava se Git poviješću. Nema nove objave, Rules/data/billing/visibility promjene niti promjene testiranog/objavljenog kandidata **2d05521c7c64e5c60e82**.
+
+
 ## Objavljen UX redizajn — 31.10.2026.
 
 Po naknadnom izričitom nalogu korisnika **„Objavi online”** izvršen je Hosting-only deploy provjerenog kandidata **2d05521c7c64e5c60e82** u postojeći **kolegium-c8970**. Firebase CLI `deploy --project kolegium-c8970 --config firebase.release.json --only hosting --non-interactive` PASS:45Hosting datoteka/44PWAassets. Integritet kandidata neposredno prije objave potvrđen ponovnim SHA-256 izračunom. Nema nove Rules/index/schema/data/billing promjene, seeda, migracije, Git commita ili pusha.
