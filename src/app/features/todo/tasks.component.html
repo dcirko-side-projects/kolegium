@@ -1,6 +1,6 @@
 @if (!embedded()) {
   <div class="page-heading">
-    <h1>To-do</h1>
+    <h1><app-icon name="list" /> To-do</h1>
     <a routerLink="/sections">Pogledaj sve sekcije</a>
   </div>
   <p>Jedna lista zadataka: samostalni, za kolegij, projekt ili diplomski.</p>
@@ -14,7 +14,7 @@
   <p role="alert">{{ store.error()?.message }}</p>
   <button (click)="store.refresh()">Osvježi zadatke</button>
 }
-@if (error()) {
+@if (error() && !editing()) {
   <p role="alert" class="error-message">{{ error()?.message }}</p>
   @if (error()?.category === 'conflict') {
     <p>Server verzija: {{ serverDescription() }}</p>
@@ -125,105 +125,148 @@
   </form>
 }
 @if (editing()) {
-  <form class="panel" [formGroup]="form" (ngSubmit)="submit()">
-    <h2>{{ old() ? 'Uredi zadatak' : 'Novi zadatak' }}</h2>
-    <div class="form-field">
-      <label [attr.for]="'task-title-' + (fixedId() ?? 'all')">Naziv zadatka</label
-      ><input [id]="'task-title-' + (fixedId() ?? 'all')" maxlength="200" formControlName="title" />
-    </div>
-    <div class="form-field">
-      <label [attr.for]="'task-date-' + (fixedId() ?? 'all')">Rok zadatka (opcionalno)</label
-      ><input [id]="'task-date-' + (fixedId() ?? 'all')" type="date" formControlName="dueOn" />
-    </div>
-    @if (!fixedType()) {
+  <app-editor-dialog
+    title="Zadatak"
+    (dismiss)="cancel()"
+    [error]="error()"
+    [conflictDescription]="serverDescription()"
+    (restore)="replaceWithServer()"
+    restoreLabel="Učitaj novu verziju zadatka"
+  >
+    <form class="panel" [formGroup]="form" (ngSubmit)="submit()">
+      <h2>{{ old() ? 'Uredi zadatak' : 'Novi zadatak' }}</h2>
       <div class="form-field">
-        <label for="task-context-type">Kontekst zadatka</label
-        ><select id="task-context-type" formControlName="contextType" (change)="contextChanged()">
-          <option value="none">Samostalni</option>
-          <option value="course">Kolegij</option>
-          <option value="project">Projekt</option>
-          <option value="thesis">Diplomski</option>
-        </select>
+        <label [attr.for]="'task-title-' + (fixedId() ?? 'all')">Naziv zadatka</label
+        ><input
+          [id]="'task-title-' + (fixedId() ?? 'all')"
+          maxlength="200"
+          formControlName="title"
+        />
       </div>
-      @if (form.controls.contextType.value === 'course') {
+      <div class="form-field">
+        <label [attr.for]="'task-date-' + (fixedId() ?? 'all')">Rok zadatka (opcionalno)</label
+        ><input [id]="'task-date-' + (fixedId() ?? 'all')" type="date" formControlName="dueOn" />
+      </div>
+      @if (!fixedType()) {
         <div class="form-field">
-          <label for="task-course">Kolegij zadatka</label
-          ><select id="task-course" formControlName="contextId">
-            <option value="">Odaberi kolegij</option>
-            @for (c of store.academic.courses(); track c.id) {
-              <option [value]="c.id" [selected]="form.controls.contextId.value === c.id">
-                {{ c.name }}
-              </option>
-            }
-            @if (missingContextOption()) {
-              <option [value]="form.controls.contextId.value" selected>
-                {{ store.courseNames()[form.controls.contextId.value] ?? 'Izvorni kolegij' }}
-              </option>
-            }
+          <label for="task-context-type">Kontekst zadatka</label
+          ><select id="task-context-type" formControlName="contextType" (change)="contextChanged()">
+            <option value="none">Samostalni</option>
+            <option value="course">Kolegij</option>
+            <option value="project">Projekt</option>
+            <option value="thesis">Diplomski</option>
           </select>
         </div>
+        @if (form.controls.contextType.value === 'course') {
+          <div class="form-field">
+            <label for="task-course">Kolegij zadatka</label
+            ><select id="task-course" formControlName="contextId">
+              <option value="">Odaberi kolegij</option>
+              @for (c of store.academic.courses(); track c.id) {
+                <option [value]="c.id" [selected]="form.controls.contextId.value === c.id">
+                  {{ c.name }}
+                </option>
+              }
+              @if (missingContextOption()) {
+                <option [value]="form.controls.contextId.value" selected>
+                  {{ store.courseNames()[form.controls.contextId.value] ?? 'Izvorni kolegij' }}
+                </option>
+              }
+            </select>
+          </div>
+        }
+        @if (form.controls.contextType.value === 'project') {
+          <div class="form-field">
+            <label for="task-project">Projekt zadatka</label
+            ><select id="task-project" formControlName="contextId">
+              <option value="">Odaberi projekt</option>
+              @for (p of store.projects(); track p.id) {
+                <option [value]="p.id" [selected]="form.controls.contextId.value === p.id">
+                  {{ p.name }}
+                </option>
+              }
+              @if (missingContextOption()) {
+                <option [value]="form.controls.contextId.value" selected>Izvorni projekt</option>
+              }
+            </select>
+          </div>
+          <p class="hint">Kolegij se određuje iz projekta; ne upisuje se drugi kontekst.</p>
+        }
+        @if (form.controls.contextType.value === 'thesis' && !store.thesis()) {
+          <p>Najprije spremi osnovnu evidenciju diplomskog u sekciji Diplomski.</p>
+        }
       }
-      @if (form.controls.contextType.value === 'project') {
-        <div class="form-field">
-          <label for="task-project">Projekt zadatka</label
-          ><select id="task-project" formControlName="contextId">
-            <option value="">Odaberi projekt</option>
-            @for (p of store.projects(); track p.id) {
-              <option [value]="p.id" [selected]="form.controls.contextId.value === p.id">
-                {{ p.name }}
-              </option>
-            }
-            @if (missingContextOption()) {
-              <option [value]="form.controls.contextId.value" selected>Izvorni projekt</option>
-            }
-          </select>
-        </div>
-        <p class="hint">Kolegij se određuje iz projekta; ne upisuje se drugi kontekst.</p>
+      @if (store.academic.moreCourses()) {
+        <button type="button" (click)="store.academic.loadMore('courses')">
+          Učitaj još kolegija
+        </button>
       }
-      @if (form.controls.contextType.value === 'thesis' && !store.thesis()) {
-        <p>Najprije spremi osnovnu evidenciju diplomskog u sekciji Diplomski.</p>
+      @if (store.moreProjects()) {
+        <p>Za ostale projekte otvori njihov detalj i dodaj povezani zadatak.</p>
       }
-    }
-    @if (store.academic.moreCourses()) {
-      <button type="button" (click)="store.academic.loadMore('courses')">
-        Učitaj još kolegija
-      </button>
-    }
-    @if (store.moreProjects()) {
-      <p>Za ostale projekte otvori njihov detalj i dodaj povezani zadatak.</p>
-    }
-    <div class="actions">
-      <button class="primary" [disabled]="!store.canWrite()">Spremi zadatak</button
-      ><button type="button" (click)="cancel()">Odustani od zadatka</button>
-    </div>
-  </form>
-}
-<div class="record-list">
-  @for (row of visible(); track row.id) {
-    <article
-      class="panel record-row task-row"
-      [class.is-complete]="row.isCompleted"
-      [attr.aria-label]="row.title"
-    >
-      <div class="record-content">
-        <h3>{{ row.title }}</h3>
-        <p>
-          {{ description(row) }} · Rok: {{ row.dueOn ?? 'nije zadan' }} ·
-          {{ row.isCompleted ? 'Dovršeno' : 'Otvoreno' }}
-        </p>
-      </div>
       <div class="actions">
-        <button (click)="toggle(row)" [disabled]="!store.canEdit(row.id)">
-          {{ row.isCompleted ? 'Ponovno otvori zadatak' : 'Dovrši zadatak' }}</button
-        ><button (click)="start(row)" [disabled]="!store.canEdit(row.id)">Uredi zadatak</button>
+        <button class="primary" [disabled]="!store.canWrite()">Spremi zadatak</button
+        ><button type="button" (click)="cancel()">Odustani od zadatka</button>
       </div>
-    </article>
-  } @empty {
-    @if (!store.loading()) {
-      <p>Nema zadataka u ovom pregledu.</p>
+    </form>
+  </app-editor-dialog>
+}
+@for (group of groups(); track group.completed) {
+  @if (group.rows.length) {
+    @if (group.completed) {
+      @if (appliedFilters().status === 'done') {
+        <h2><app-icon name="check" /> Dovršeni zadaci ({{ group.rows.length }})</h2>
+      } @else {
+        <button
+          class="completed-heading"
+          (click)="showCompleted.set(!showCompleted())"
+          [attr.aria-expanded]="showCompleted()"
+        >
+          <app-icon name="check" /> Dovršeni zadaci ({{ group.rows.length }}) ·
+          {{ showCompleted() ? 'Sakrij' : 'Prikaži' }}
+        </button>
+      }
+    } @else {
+      <h2>Aktivni zadaci ({{ group.rows.length }})</h2>
+    }
+    @if (!group.completed || showCompleted() || appliedFilters().status === 'done') {
+      <div class="record-list">
+        @for (row of group.rows; track row.id) {
+          <article
+            class="panel record-row task-row"
+            [class.is-complete]="row.isCompleted"
+            [attr.aria-label]="row.title"
+          >
+            <div class="record-content">
+              <span class="status-badge" [class.is-complete]="row.isCompleted">
+                <app-icon [name]="row.isCompleted ? 'check' : 'list'" />
+                {{ row.isCompleted ? 'Dovršeno' : 'Otvoreno' }}
+              </span>
+              <h3>{{ row.title }}</h3>
+              <p>
+                {{ description(row) }} · Rok: {{ row.dueOn ?? 'nije zadan' }} ·
+                {{ row.isCompleted ? 'Dovršeno' : 'Otvoreno' }}
+              </p>
+            </div>
+            <div class="actions">
+              <button (click)="toggle(row)" [disabled]="!store.canEdit(row.id)">
+                {{ row.isCompleted ? 'Ponovno otvori zadatak' : 'Dovrši zadatak' }}</button
+              ><button (click)="start(row)" [disabled]="!store.canEdit(row.id)">
+                Uredi zadatak
+              </button>
+            </div>
+          </article>
+        }
+      </div>
     }
   }
-</div>
+}
+@if (!visible().length && !store.loading()) {
+  <p>Nema zadataka u ovom pregledu.</p>
+}
+<p class="hint">
+  Brojevi uključuju učitane zadatke. Za daljnje rezultate koristi Učitaj još zadataka.
+</p>
 @if (store.more()) {
   <button (click)="store.loadMore()" [disabled]="store.loading()">Učitaj još zadataka</button>
 }

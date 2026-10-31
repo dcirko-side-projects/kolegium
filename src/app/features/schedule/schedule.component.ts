@@ -1,3 +1,5 @@
+import { IconComponent } from '../../shared/ui/icon/icon.component';
+import { EditorDialogComponent } from '../../shared/ui/editor-dialog/editor-dialog.component';
 import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -12,7 +14,14 @@ import { CalendarView, calendarWindow, moveCalendar } from '../../domain/calenda
 
 @Component({
   selector: 'app-schedule',
-  imports: [ReactiveFormsModule, RouterLink, SessionRowComponent, CalendarImportComponent],
+  imports: [
+    IconComponent,
+    EditorDialogComponent,
+    ReactiveFormsModule,
+    RouterLink,
+    SessionRowComponent,
+    CalendarImportComponent,
+  ],
   providers: [ScheduleStoreService],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.scss',
@@ -42,13 +51,9 @@ export class ScheduleComponent {
   protected readonly importing = signal(false);
   protected readonly single = signal(false);
   protected readonly rows = computed(() =>
-    this.store
-      .rows()
-      .filter(
-        (r) =>
-          (this.appliedKind() === 'all' || r.kind === this.appliedKind()) &&
-          (!this.hideCancelled() || !r.isCancelled),
-      ),
+    (this.hideCancelled() ? this.store.activeRows() : this.store.rows()).filter(
+      (r) => this.appliedKind() === 'all' || r.kind === this.appliedKind(),
+    ),
   );
   protected readonly calendarDays = computed(() => {
     const { from, until } = this.window();
@@ -190,6 +195,9 @@ export class ScheduleComponent {
     if (!this.changes.confirm()) return;
     this.selectedDate.set(date);
     this.view.set('day');
+  }
+  protected toggleImport(): void {
+    if (this.changes.confirm()) this.importing.update((open) => !open);
   }
   protected applyFilters(reset = false): void {
     if (!this.changes.confirm()) return;

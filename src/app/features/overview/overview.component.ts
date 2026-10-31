@@ -1,3 +1,4 @@
+import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { Component, effect, inject, untracked } from '@angular/core';
 import { ScheduleStoreService } from '../../core/academic/schedule-store.service';
 import { SessionRowComponent } from '../../shared/ui/session-row/session-row.component';
@@ -8,13 +9,13 @@ import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-overview',
-  imports: [RouterLink, SessionRowComponent],
+  imports: [IconComponent, RouterLink, SessionRowComponent],
   providers: [ScheduleStoreService, PlanningStoreService],
   template: `
     <div class="overview-heading">
       <div>
         <p class="eyebrow">{{ today }}</p>
-        <h1>Tvoj dan u Kolegiumu</h1>
+        <h1><app-icon name="home" /> Tvoj dan u Kolegiumu</h1>
         <p class="intro">Nastava, zadaci i rokovi na jednom mjestu.</p>
       </div>
       <a class="text-link" routerLink="/schedule"
@@ -22,14 +23,14 @@ import { RouterLink } from '@angular/router';
       >
     </div>
     <section class="panel">
-      <h2>Podsjetnici za tvoje obaveze</h2>
+      <h2><app-icon name="bell" /> Podsjetnici za tvoje obaveze</h2>
       <p>
         Zadaci, projekti, rate, predavanja/vježbe i kolokviji/ispiti — pregled na jednom mjestu i
         besplatni izvoz u kalendar mobitela.
       </p>
       <a class="button-link" routerLink="/reminders">Otvori podsjetnike i preuzimanje za mobitel</a>
     </section>
-    @if (store.courses().length === 0) {
+    @if (store.academic.ready() && !store.academic.loading() && store.courses().length === 0) {
       <section class="hero" aria-labelledby="start-title">
         <div>
           <span class="label">DOBRO DOŠAO U KOLEGIUM</span>
@@ -44,7 +45,7 @@ import { RouterLink } from '@angular/router';
     <div class="cards">
       <section class="panel overview-section" aria-labelledby="classes-title">
         <div class="section-heading">
-          <h2 id="classes-title">Današnja nastava</h2>
+          <h2 id="classes-title"><app-icon name="calendar" /> Današnja nastava</h2>
           <a routerLink="/schedule">Raspored</a>
         </div>
         @if (store.loading()) {
@@ -57,18 +58,29 @@ import { RouterLink } from '@angular/router';
         @if (store.success()) {
           <p role="status">{{ store.success() }}</p>
         }
-        @for (row of store.rows(); track row.id) {
+        @for (row of store.todayRows(); track row.id) {
           <app-session-row [row]="row" [name]="courseName(row.courseId)" />
         } @empty {
-          <div class="empty">
-            <h3>Dan još nema raspored</h3>
-            <p>Ovdje će biti nastava iz tvog tjednog rasporeda.</p>
-          </div>
+          @if (store.academic.ready() && !store.loading() && !store.error()) {
+            <div class="empty">
+              <h3>Dan još nema raspored</h3>
+              <p>Ovdje će biti nastava iz tvog tjednog rasporeda.</p>
+            </div>
+          }
+        }
+        @if (store.academic.moreCourses()) {
+          <p class="hint">Za potpuni raspored učitaj preostale kolegije.</p>
+          <button
+            (click)="store.academic.loadMore('courses')"
+            [disabled]="store.academic.loading()"
+          >
+            Učitaj još kolegija
+          </button>
         }
       </section>
       <section class="panel overview-section" aria-labelledby="tasks-title">
         <div class="section-heading">
-          <h2 id="tasks-title">Nadolazeće obaveze</h2>
+          <h2 id="tasks-title"><app-icon name="clipboard" /> Nadolazeće obaveze</h2>
           <a routerLink="/todo">To-do</a>
         </div>
         <p>Sve zakašnjele obaveze i sljedećih 14 dana, do {{ until() }}.</p>
@@ -102,7 +114,7 @@ import { RouterLink } from '@angular/router';
       </section>
     </div>
     <section class="panel" aria-labelledby="installment-reminders-title">
-      <h2 id="installment-reminders-title">Podsjetnici za rate</h2>
+      <h2 id="installment-reminders-title"><app-icon name="wallet" /> Podsjetnici za rate</h2>
       <p>Neplaćene rate prikazuju se 30 dana prije roka, uz upozorenje u zadnjih 7 dana.</p>
       <a class="text-link" routerLink="/installments">Otvori rate fakulteta</a>
       @if (planning.loading()) {
@@ -133,7 +145,7 @@ import { RouterLink } from '@angular/router';
       }
     </section>
     <section class="panel">
-      <h2>Otvoreni zadaci</h2>
+      <h2><app-icon name="list" /> Otvoreni zadaci</h2>
       <a class="text-link" routerLink="/todo">Otvori To-do</a>
       @for (task of planning.tasks(); track task.id) {
         <article [attr.aria-label]="task.title">

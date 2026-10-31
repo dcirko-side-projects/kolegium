@@ -46,6 +46,8 @@ import { IconComponent } from '../../shared/ui/icon/icon.component';
       background: var(--color-ice);
     }
     app-icon {
+      width: 48px;
+      height: 48px;
       color: var(--color-primary);
       background: var(--color-blue-soft);
       padding: var(--space-3);

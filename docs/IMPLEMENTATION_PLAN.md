@@ -1,5 +1,13 @@
 # Implementation Roadmap
 
+31.10.2026. — naknadni izričiti nalog „Objavi online” izvršen: Hosting-only **2d05521c7c64e5c60e82**, hosted smoke PASS. Bez Rules/data/billing/Git promjena. Raniji lokalni status ispod opisuje prethodnu fazu. Dokazi CURRENT_STATE/DEPLOYMENT.
+
+
+## UX nastavak — 31.10.2026.
+
+Korisnik izričito odobrio implementaciju redizajna, modalnih obrazaca, statusa zadataka i ispravka današnje nastave. Outlook dio naknadno sužen na ručni .ics izvoz i upute. Lokalna implementacija i primjenjivi automatizirani gateovi dovršeni; UX_REFRESH_2026-10-31.md opisuje izmjene, CURRENT_STATE donosi završne dokaze (unit52, browser71 + završni15, Rules18, SDK34, releaseRules2, UI audit100, static/build/PWA PASS). TASK-009C/device/cloud recovery gates ostaju zasebni. Ovaj nalog ne uključuje novu objavu/commit/push.
+
+
 23.10.naknadno izvršenje: po korisnikovu izričitom nalogu commit00bdce9 i push postojećeg privatnog main PASS; Hosting-only08e81c515a7f1629ce7e i hosted18ruta/42assets/1440-390px smoke PASS. Release-evidence docs također commitirane/pushane. Ova konkretna objava dovršena; WebKit/native/grading/cloudrestore otvoreni gates nisu zatvoreni. Dokazi u CURRENT_STATE/DEPLOYMENT; stariji pending navodi ispod su povijest.
 
 23.10.2026. — nastavak TASK-011/012 po nalogu „dovrši sve što možeš”: kompatibilne razvojne zakrpe (0runtime/5moderateCLI/0high/critical), skip-link tabindex0 i semantički aria-busy, pozitivno čekanje spremnosti u login helperu, deterministički početni course izbor i opt-in privatni backup sandbox provjera. Svježi root28 snapshot read-only, payload restore/export i prekid/abort/cleanup2/2PASS; nema cloud mutacije. Lokalni kandidat08e81c515a7f1629ce7e, build/PWA/static/unit/Rules/SDK dokazi u CURRENT_STATE. **WebKit reload/restore ostaje otvoren**, unatoč ciljanim prolazima i emulator-only transport poboljšanju; nije cijeli TASK-011/012 Done. Konačni Chromium run i sljedeći koraci u CURRENT_STATE. Nema novog deploy/commit/push/billing naloga.

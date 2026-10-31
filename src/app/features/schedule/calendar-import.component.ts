@@ -1,4 +1,5 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { UnsavedChangesService } from '../../core/forms/unsaved-changes.service';
 import { ScheduleStoreService } from '../../core/academic/schedule-store.service';
 import { asApplicationError } from '../../core/errors/application-error';
 import {
@@ -79,6 +80,12 @@ import {
   </section>`,
 })
 export class CalendarImportComponent {
+  private readonly imported = signal(false);
+  constructor() {
+    inject(DestroyRef).onDestroy(
+      inject(UnsavedChangesService).register(() => this.lessons().length > 0 && !this.imported()),
+    );
+  }
   protected readonly store = inject(ScheduleStoreService);
   protected readonly lessons = signal<CalendarLesson[]>([]);
   protected readonly selected = signal(new Set<string>());
@@ -105,6 +112,7 @@ export class CalendarImportComponent {
     this.lessons().filter((l) => this.selected().has(seriesKey(l))),
   );
   protected toggle(key: string): void {
+    this.imported.set(false);
     this.selected.update((value) => {
       const next = new Set(value);
       if (next.has(key)) next.delete(key);
@@ -113,6 +121,7 @@ export class CalendarImportComponent {
     });
   }
   protected async read(event: Event): Promise<void> {
+    this.imported.set(false);
     this.error.set(null);
     this.progress.set(null);
     this.lessons.set([]);
@@ -136,6 +145,7 @@ export class CalendarImportComponent {
       await this.store.importLessons(this.chosen(), (done, total) =>
         this.progress.set(`Potvrđeno ${done} od ${total} termina.`),
       );
+      this.imported.set(true);
     } catch (error) {
       this.error.set(
         `${asApplicationError(error).message} Uvoz može biti djelomičan. Osvježi podatke i ponovi isti odabir; postojeći termini se preskaču.`,

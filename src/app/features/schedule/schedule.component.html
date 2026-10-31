@@ -1,5 +1,5 @@
 <div class="page-heading">
-  <h1>Raspored</h1>
+  <h1><app-icon name="calendar" /> Raspored</h1>
   <button
     class="primary"
     (click)="open()"
@@ -18,7 +18,7 @@
       Dodaj pojedinačni termin
     </button>
     <button
-      (click)="importing.set(!importing())"
+      (click)="toggleImport()"
       [disabled]="!store.academic.online() || store.busy() || store.academic.busy()"
     >
       {{ importing() ? 'Zatvori uvoz' : 'Uvezi TVZ raspored' }}
@@ -33,7 +33,16 @@
   </p>
 </details>
 @if (importing()) {
-  <app-calendar-import />
+  <app-editor-dialog title="Uvoz TVZ rasporeda" (dismiss)="toggleImport()">
+    <app-calendar-import />
+    <button
+      type="button"
+      (click)="toggleImport()"
+      [disabled]="store.busy() || store.academic.busy()"
+    >
+      Zatvori uvoz
+    </button>
+  </app-editor-dialog>
 }
 <p class="hint">
   Vrijeme nastave: Europe/Zagreb. Aktualni pregled:
@@ -179,137 +188,142 @@
   <p role="alert" class="error-message">{{ store.error()?.message }}</p>
   <button (click)="store.refresh()">Osvježi raspored</button>
 }
-@if (error()) {
+@if (error() && !(formOpen() || replacement())) {
   <p role="alert" class="error-message">{{ error()?.message }}</p>
 }
 @if (store.success()) {
   <p role="status" class="success-message">{{ store.success() }}</p>
 }
 @if (formOpen()) {
-  <form class="panel" [formGroup]="form" (ngSubmit)="single() ? saveSingle() : prepare()">
-    <h2>
-      {{
-        single()
-          ? 'Novi pojedinačni termin'
-          : editing()
-            ? 'Promjena budućeg rasporeda'
-            : 'Novo ponavljanje'
-      }}
-    </h2>
-    <div class="form-grid">
-      <div class="field">
-        <label for="schedule-course">Kolegij</label
-        ><select id="schedule-course" formControlName="courseId">
-          <option value="">Odaberi kolegij</option>
-          @for (c of store.courses(); track c.id) {
-            <option [value]="c.id">{{ c.name }}</option>
-          }
-        </select>
-      </div>
-      <div class="field">
-        <label for="schedule-kind">Vrsta nastave</label
-        ><select id="schedule-kind" formControlName="kind">
-          <option value="lecture">Predavanja</option>
-          <option value="exercise">Vježbe</option>
-        </select>
-      </div>
-      @if (!single()) {
+  <app-editor-dialog title="Termin nastave" (dismiss)="cancelForm()" [error]="error()">
+    <form class="panel" [formGroup]="form" (ngSubmit)="single() ? saveSingle() : prepare()">
+      <h2>
+        {{
+          single()
+            ? 'Novi pojedinačni termin'
+            : editing()
+              ? 'Promjena budućeg rasporeda'
+              : 'Novo ponavljanje'
+        }}
+      </h2>
+      <div class="form-grid">
         <div class="field">
-          <label for="schedule-weekday">Dan u tjednu</label
-          ><select id="schedule-weekday" formControlName="weekday">
-            @for (day of days; track day; let i = $index) {
-              <option [ngValue]="i + 1">{{ day }}</option>
+          <label for="schedule-course">Kolegij</label
+          ><select id="schedule-course" formControlName="courseId">
+            <option value="">Odaberi kolegij</option>
+            @for (c of store.courses(); track c.id) {
+              <option [value]="c.id">{{ c.name }}</option>
             }
           </select>
         </div>
-      } @else {
         <div class="field">
-          <label for="schedule-single-date">Datum termina</label
-          ><input id="schedule-single-date" type="date" formControlName="scheduledOn" />
+          <label for="schedule-kind">Vrsta nastave</label
+          ><select id="schedule-kind" formControlName="kind">
+            <option value="lecture">Predavanja</option>
+            <option value="exercise">Vježbe</option>
+          </select>
         </div>
-      }
-      <div class="field">
-        <label for="schedule-location">Lokacija / učionica (opcionalno)</label
-        ><input id="schedule-location" formControlName="location" maxlength="200" />
-      </div>
-      <div class="field">
-        <label for="schedule-start">Početak nastave</label
-        ><input id="schedule-start" type="time" formControlName="startsAt" />
-      </div>
-      <div class="field">
-        <label for="schedule-end">Završetak nastave</label
-        ><input id="schedule-end" type="time" formControlName="endsAt" />
-      </div>
-      @if (!single()) {
-        <div class="field">
-          <label for="schedule-from">Vrijedi od</label
-          ><input
-            id="schedule-from"
-            type="date"
-            formControlName="validFrom"
-            [readOnly]="!!editing()"
-          />
-        </div>
-        <div class="field">
-          <label for="schedule-until">Vrijedi do</label
-          ><input id="schedule-until" type="date" formControlName="validUntil" />
-        </div>
-        @if (editing()) {
+        @if (!single()) {
           <div class="field">
-            <label for="schedule-effective">Datum primjene promjene</label
-            ><input id="schedule-effective" type="date" formControlName="effectiveOn" />
-            <p class="hint">
-              Spremljena povijest ostaje. Spremljeni budući termini blokiraju regeneriranje.
-            </p>
+            <label for="schedule-weekday">Dan u tjednu</label
+            ><select id="schedule-weekday" formControlName="weekday">
+              @for (day of days; track day; let i = $index) {
+                <option [ngValue]="i + 1">{{ day }}</option>
+              }
+            </select>
+          </div>
+        } @else {
+          <div class="field">
+            <label for="schedule-single-date">Datum termina</label
+            ><input id="schedule-single-date" type="date" formControlName="scheduledOn" />
           </div>
         }
-      }
-    </div>
-    <div class="actions schedule-tools">
-      <button type="submit" [disabled]="!store.canWrite()">
-        {{ single() ? 'Spremi termin' : 'Pregledaj termine' }}</button
-      ><button type="button" (click)="cancelForm()">Odustani</button>
-    </div>
-    @if (preview(); as list) {
-      <p>
-        {{ list.length }} termina: {{ list[0]?.scheduledOn ?? 'nema termina' }} —
-        {{ list[list.length - 1]?.scheduledOn ?? '' }}. Jedan blok je jedna jedinica dolaznosti.
-      </p>
-      <div class="actions schedule-tools">
-        <button type="button" class="primary" (click)="save()" [disabled]="!store.canWrite()">
-          Potvrdi raspored
-        </button>
+        <div class="field">
+          <label for="schedule-location">Lokacija / učionica (opcionalno)</label
+          ><input id="schedule-location" formControlName="location" maxlength="200" />
+        </div>
+        <div class="field">
+          <label for="schedule-start">Početak nastave</label
+          ><input id="schedule-start" type="time" formControlName="startsAt" />
+        </div>
+        <div class="field">
+          <label for="schedule-end">Završetak nastave</label
+          ><input id="schedule-end" type="time" formControlName="endsAt" />
+        </div>
+        @if (!single()) {
+          <div class="field">
+            <label for="schedule-from">Vrijedi od</label
+            ><input
+              id="schedule-from"
+              type="date"
+              formControlName="validFrom"
+              [readOnly]="!!editing()"
+            />
+          </div>
+          <div class="field">
+            <label for="schedule-until">Vrijedi do</label
+            ><input id="schedule-until" type="date" formControlName="validUntil" />
+          </div>
+          @if (editing()) {
+            <div class="field">
+              <label for="schedule-effective">Datum primjene promjene</label
+              ><input id="schedule-effective" type="date" formControlName="effectiveOn" />
+              <p class="hint">
+                Spremljena povijest ostaje. Spremljeni budući termini blokiraju regeneriranje.
+              </p>
+            </div>
+          }
+        }
       </div>
-    }
-  </form>
+      <div class="actions schedule-tools">
+        <button type="submit" [disabled]="!store.canWrite()">
+          {{ single() ? 'Spremi termin' : 'Pregledaj termine' }}</button
+        ><button type="button" (click)="cancelForm()">Odustani</button>
+      </div>
+      @if (preview(); as list) {
+        <p>
+          {{ list.length }} termina: {{ list[0]?.scheduledOn ?? 'nema termina' }} —
+          {{ list[list.length - 1]?.scheduledOn ?? '' }}. Jedan blok je jedna jedinica dolaznosti.
+        </p>
+        <div class="actions schedule-tools">
+          <button type="button" class="primary" (click)="save()" [disabled]="!store.canWrite()">
+            Potvrdi raspored
+          </button>
+        </div>
+      }
+    </form>
+  </app-editor-dialog>
 }
 @if (replacement(); as source) {
-  <form class="panel" [formGroup]="replacementForm" (ngSubmit)="saveReplacement()">
-    <h2>Nadoknada: {{ name(source.courseId) }}</h2>
-    <p>Izvorni termin {{ source.scheduledOn }} ostaje sačuvan. Nadoknada je zaseban termin.</p>
-    <div class="form-grid">
-      <div class="field">
-        <label for="replacement-date">Datum nadoknade</label
-        ><input id="replacement-date" type="date" formControlName="scheduledOn" />
+  <app-editor-dialog title="Nadoknada" (dismiss)="cancelForm()" [error]="error()">
+    <form class="panel" [formGroup]="replacementForm" (ngSubmit)="saveReplacement()">
+      <h2>Nadoknada: {{ name(source.courseId) }}</h2>
+      <p>Izvorni termin {{ source.scheduledOn }} ostaje sačuvan. Nadoknada je zaseban termin.</p>
+      <div class="form-grid">
+        <div class="field">
+          <label for="replacement-date">Datum nadoknade</label
+          ><input id="replacement-date" type="date" formControlName="scheduledOn" />
+        </div>
+        <div class="field">
+          <label for="replacement-start">Početak nadoknade</label
+          ><input id="replacement-start" type="time" formControlName="startsAt" />
+        </div>
+        <div class="field">
+          <label for="replacement-end">Završetak nadoknade</label
+          ><input id="replacement-end" type="time" formControlName="endsAt" />
+        </div>
+        <div class="field">
+          <label for="replacement-location">Lokacija nadoknade (opcionalno)</label
+          ><input id="replacement-location" formControlName="location" maxlength="200" />
+        </div>
       </div>
-      <div class="field">
-        <label for="replacement-start">Početak nadoknade</label
-        ><input id="replacement-start" type="time" formControlName="startsAt" />
+      <div class="actions schedule-tools">
+        <button type="submit" class="primary" [disabled]="!store.canWrite()">
+          Spremi nadoknadu</button
+        ><button type="button" (click)="cancelForm()">Odustani</button>
       </div>
-      <div class="field">
-        <label for="replacement-end">Završetak nadoknade</label
-        ><input id="replacement-end" type="time" formControlName="endsAt" />
-      </div>
-      <div class="field">
-        <label for="replacement-location">Lokacija nadoknade (opcionalno)</label
-        ><input id="replacement-location" formControlName="location" maxlength="200" />
-      </div>
-    </div>
-    <div class="actions schedule-tools">
-      <button type="submit" class="primary" [disabled]="!store.canWrite()">Spremi nadoknadu</button
-      ><button type="button" (click)="cancelForm()">Odustani</button>
-    </div>
-  </form>
+    </form>
+  </app-editor-dialog>
 }
 @if (view() !== 'day') {
   <div class="calendar-scroll" tabindex="0" role="region" aria-label="Mreža kalendara">
@@ -356,8 +370,8 @@
     </div>
   </div>
   <p class="hint">
-    Odaberi datum ili termin za dnevni pregled i evidenciju dolaznosti. Predavanja su plava, vježbe
-    imaju svijetlu podlogu i oznaku vrste.
+    Odaberi datum ili termin za dnevni pregled i evidenciju dolaznosti. Predavanja imaju plavi, a
+    vježbe narančasti naglasak i oznaku vrste.
   </p>
 }
 @if (view() !== 'month') {

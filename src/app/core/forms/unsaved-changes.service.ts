@@ -47,6 +47,9 @@ export class UnsavedChangesService {
   hasUnsafeChanges(): boolean {
     return [...this.forms, ...this.pending].some((check) => check());
   }
+  hasPendingChanges(): boolean {
+    return [...this.pending].some((check) => check());
+  }
   reload(): void {
     if (!this.confirm()) return;
     this.discardDrafts();

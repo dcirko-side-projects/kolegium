@@ -101,6 +101,7 @@ test('project and global To-do share one task; project completion and archive pr
   await saved(page);
   await page.goto('/projects');
   await page.getByRole('link', { name: 'Sintetički projekt', exact: true }).click();
+  await page.getByRole('button', { name: /Dovršeni zadaci/ }).click();
   await expect(page.getByRole('article', { name: 'Dio projekta', exact: true })).toContainText(
     'Dovršeno',
   );
@@ -111,6 +112,7 @@ test('project and global To-do share one task; project completion and archive pr
   await expect(page.getByRole('article', { name: 'Pokušaj 1', exact: true })).toContainText('B+');
   await expect(page.getByRole('article', { name: 'Dio projekta', exact: true })).toBeVisible();
   await page.goto('/todo');
+  await page.getByRole('button', { name: /Dovršeni zadaci/ }).click();
   await expect(
     page
       .getByRole('article', { name: 'Dio projekta', exact: true })
@@ -150,6 +152,7 @@ test('thesis starts without topic/mentor and its tasks appear in the same To-do 
     .getByRole('button', { name: 'Dovrši zadatak', exact: true })
     .click();
   await saved(page);
+  await page.getByRole('button', { name: /Dovršeni zadaci/ }).click();
   await expect(
     page
       .getByRole('article', { name: 'Pronađi temu', exact: true })
@@ -161,6 +164,7 @@ test('thesis starts without topic/mentor and its tasks appear in the same To-do 
   await page.reload();
   await page.getByLabel('Filtriraj kontekst', { exact: true }).selectOption('thesis');
   await page.getByRole('button', { name: 'Pretraži', exact: true }).click();
+  await page.getByRole('button', { name: /Dovršeni zadaci/ }).click();
   await expect(page.getByRole('article', { name: 'Pronađi temu', exact: true })).toContainText(
     'Dovršeno',
   );

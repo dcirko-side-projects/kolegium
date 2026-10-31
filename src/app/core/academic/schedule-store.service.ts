@@ -28,6 +28,10 @@ export class ScheduleStoreService {
   readonly courseId = signal<string | null>(null);
   readonly fullCourseHistory = signal(false);
   readonly rows = signal<Occurrence[]>([]);
+  readonly activeRows = computed(() => this.rows().filter((row) => !row.isCancelled));
+  readonly todayRows = computed(() =>
+    this.activeRows().filter((row) => row.scheduledOn === this.today()),
+  );
   readonly templates = signal<ScheduleTemplate[]>([]);
   readonly loading = signal(false);
   readonly dataRevision = signal<number | null>(null);
@@ -45,10 +49,15 @@ export class ScheduleStoreService {
     () => this.academic.canWrite() && !this.loading() && !this.busy() && !this.error(),
   );
   constructor() {
-    const clock = setInterval(() => this.now.set(localNow()), 60000);
+    const updateClock = () => this.now.set(localNow());
+    const clock = setInterval(updateClock, 60000);
+    window.addEventListener('focus', updateClock);
+    document.addEventListener('visibilitychange', updateClock);
     inject(DestroyRef).onDestroy(() => {
       this.request++;
       clearInterval(clock);
+      window.removeEventListener('focus', updateClock);
+      document.removeEventListener('visibilitychange', updateClock);
     });
     effect(() => {
       const scope = this.academic.scope(),

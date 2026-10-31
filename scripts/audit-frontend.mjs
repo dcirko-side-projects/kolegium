@@ -36,6 +36,7 @@ try {
     '/todo',
     '/thesis',
     '/installments',
+    '/reminders',
     '/settings',
   ];
   for (const width of [320, 390, 768, 1024, 1440]) {
@@ -46,6 +47,7 @@ try {
       await expect(page.getByText(/^Učitavam/)).toHaveCount(0);
       if (route === '/attendance') {
         await page.locator('#attendance-course').selectOption({ index: 1 });
+        await page.getByRole('button', { name: 'Pretraži', exact: true }).click();
         await expect(page.getByRole('heading', { name: 'Predavanja', exact: true })).toBeVisible();
       }
       expect(
@@ -67,7 +69,9 @@ try {
     ]) {
       await page.goto('http://127.0.0.1:4300' + route);
       await page.getByRole('button', { name: button, exact: true }).click();
-      await expect(page.locator('form').first()).toBeVisible();
+      const modal = page.getByRole('dialog');
+      await expect(modal.locator('form').first()).toBeVisible();
+      expect(await modal.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
         `${route} form overflows at ${width}px`,

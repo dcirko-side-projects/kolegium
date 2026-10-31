@@ -1,3 +1,5 @@
+import { IconComponent } from '../../shared/ui/icon/icon.component';
+import { EditorDialogComponent } from '../../shared/ui/editor-dialog/editor-dialog.component';
 import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -8,7 +10,7 @@ import { CourseLink, unknownAttendanceRules } from '../../domain/academic.models
 
 @Component({
   selector: 'app-courses',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [IconComponent, EditorDialogComponent, ReactiveFormsModule, RouterLink],
   templateUrl: './courses.component.html',
   styleUrl: './courses.component.scss',
 })

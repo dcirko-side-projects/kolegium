@@ -1,3 +1,5 @@
+import { IconComponent } from '../../shared/ui/icon/icon.component';
+import { EditorDialogComponent } from '../../shared/ui/editor-dialog/editor-dialog.component';
 import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -12,7 +14,13 @@ import { SessionRowComponent } from '../../shared/ui/session-row/session-row.com
 
 @Component({
   selector: 'app-attendance',
-  imports: [ReactiveFormsModule, RouterLink, SessionRowComponent],
+  imports: [
+    IconComponent,
+    EditorDialogComponent,
+    ReactiveFormsModule,
+    RouterLink,
+    SessionRowComponent,
+  ],
   providers: [ScheduleStoreService],
   templateUrl: './attendance.component.html',
 })

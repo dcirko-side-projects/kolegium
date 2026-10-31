@@ -1,3 +1,5 @@
+import { IconComponent } from '../../shared/ui/icon/icon.component';
+import { EditorDialogComponent } from '../../shared/ui/editor-dialog/editor-dialog.component';
 import { CourseGradingComponent } from '../grading/course-grading.component';
 import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { courseInformationSections } from '../../domain/course-information';
@@ -13,7 +15,14 @@ import { CourseWorkComponent } from './course-work.component';
 
 @Component({
   selector: 'app-course-detail',
-  imports: [CourseGradingComponent, ReactiveFormsModule, RouterLink, CourseWorkComponent],
+  imports: [
+    IconComponent,
+    EditorDialogComponent,
+    CourseGradingComponent,
+    ReactiveFormsModule,
+    RouterLink,
+    CourseWorkComponent,
+  ],
   templateUrl: './course-detail.component.html',
   styleUrl: './courses.component.scss',
 })

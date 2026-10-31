@@ -8,7 +8,7 @@
 }
 
 html {
-  color-scheme: light;
+  color-scheme: dark;
   font-family: var(--font-family);
   background: var(--color-background);
   color: var(--color-text);
@@ -51,12 +51,62 @@ p {
 }
 
 h1 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   font-size: clamp(1.75rem, 3vw, 2.125rem);
   line-height: 1.2;
   letter-spacing: -0.035em;
-  color: var(--color-navy);
+  color: var(--color-heading);
   margin-bottom: var(--space-6);
   overflow-wrap: anywhere;
+}
+h1 app-icon {
+  color: var(--color-primary);
+}
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+app-editor-dialog .panel {
+  padding: 0;
+  border: 0;
+  margin: 0;
+  background: transparent;
+}
+.task-row.is-complete {
+  background: var(--color-complete-surface);
+}
+.task-row.is-complete h3 {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.task-row .status-badge {
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.completed-heading {
+  margin-top: var(--space-6);
+}
+.panel {
+  box-shadow: 0 6px 24px #02070a24;
+}
+.page-heading {
+  border-bottom-color: var(--color-blue-border);
+}
+.calendar-export-notice {
+  padding: var(--space-5);
+  margin-block: var(--space-5);
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-background);
+  border-radius: var(--radius-sm);
+}
+.calendar-export-notice h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.calendar-export-notice li {
+  margin-bottom: var(--space-3);
 }
 
 h2 {
@@ -139,7 +189,7 @@ app-backup {
   min-height: 44px;
   border-radius: var(--radius-sm);
   background: var(--color-primary);
-  color: white;
+  color: var(--color-on-primary);
   text-decoration: none;
   font-weight: 600;
 

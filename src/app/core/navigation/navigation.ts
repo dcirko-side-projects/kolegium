@@ -56,7 +56,7 @@ export const navigationItems: readonly NavigationItem[] = [
     path: '/reminders',
     label: 'Podsjetnici',
     description: 'Rokovi, nastava i podsjetnici za kalendar mobitela.',
-    icon: 'calendar',
+    icon: 'bell',
   },
   {
     path: '/settings',

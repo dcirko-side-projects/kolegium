@@ -1,3 +1,5 @@
+import { IconComponent } from '../../shared/ui/icon/icon.component';
+import { EditorDialogComponent } from '../../shared/ui/editor-dialog/editor-dialog.component';
 import { BackupComponent } from '../backup/backup.component';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -10,7 +12,7 @@ import { semesterInput } from '../../domain/academic.validation';
 
 @Component({
   selector: 'app-semesters',
-  imports: [ReactiveFormsModule, BackupComponent],
+  imports: [IconComponent, EditorDialogComponent, ReactiveFormsModule, BackupComponent],
   templateUrl: './semesters.component.html',
   styleUrl: './semesters.component.scss',
 })

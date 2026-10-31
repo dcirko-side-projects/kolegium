@@ -1,3 +1,4 @@
+import { EditorDialogComponent } from '../editor-dialog/editor-dialog.component';
 import { Component, DestroyRef, input, output, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UnsavedChangesService } from '../../../core/forms/unsaved-changes.service';
@@ -7,7 +8,7 @@ import { asApplicationError } from '../../../core/errors/application-error';
 
 @Component({
   selector: 'app-session-row',
-  imports: [ReactiveFormsModule],
+  imports: [EditorDialogComponent, ReactiveFormsModule],
   template: `<article
     class="panel session"
     [class.exercise]="row().kind === 'exercise'"
@@ -75,21 +76,27 @@ import { asApplicationError } from '../../../core/errors/application-error';
         }
       </div>
       @if (excusing()) {
-        <form [formGroup]="excuseForm" (ngSubmit)="saveExcuse()">
-          <label [for]="'absence-note-' + row().id">Napomena ispričnice (opcionalno)</label>
-          <input [id]="'absence-note-' + row().id" formControlName="note" maxlength="500" />
-          <p class="hint">
-            Ispričani izostanak vodi se zasebno. Ne povećava broj dolazaka niti mijenja službeni
-            fond ili minimum.
-          </p>
-          <div class="actions">
-            <button type="submit" [disabled]="disabled() || excuseForm.invalid">
-              Spremi ispričnicu</button
-            ><button type="button" (click)="closeExcuse()" [disabled]="store.busy()">
-              Odustani od ispričnice
-            </button>
-          </div>
-        </form>
+        <app-editor-dialog
+          title="Ispričani izostanak"
+          (dismiss)="closeExcuse()"
+          [message]="message()"
+        >
+          <form [formGroup]="excuseForm" (ngSubmit)="saveExcuse()">
+            <label [for]="'absence-note-' + row().id">Napomena ispričnice (opcionalno)</label>
+            <input [id]="'absence-note-' + row().id" formControlName="note" maxlength="500" />
+            <p class="hint">
+              Ispričani izostanak vodi se zasebno. Ne povećava broj dolazaka niti mijenja službeni
+              fond ili minimum.
+            </p>
+            <div class="actions">
+              <button type="submit" [disabled]="disabled() || excuseForm.invalid">
+                Spremi ispričnicu</button
+              ><button type="button" (click)="closeExcuse()" [disabled]="store.busy()">
+                Odustani od ispričnice
+              </button>
+            </div>
+          </form>
+        </app-editor-dialog>
       }
     }
     @if (details()) {
@@ -102,7 +109,7 @@ import { asApplicationError } from '../../../core/errors/application-error';
         </button>
       </div>
     }
-    @if (message()) {
+    @if (message() && !excusing()) {
       <p role="alert" class="error-message">{{ message() }}</p>
       <button (click)="reload()">Osvježi termin</button>
     }

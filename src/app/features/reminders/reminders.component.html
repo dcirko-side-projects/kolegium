@@ -1,6 +1,6 @@
 <div class="page-heading">
   <div>
-    <h1>Podsjetnici</h1>
+    <h1><app-icon name="bell" /> Podsjetnici</h1>
     <p class="hint">Zadaci, projekti, rate, nastava i provjere znanja.</p>
   </div>
   <button
@@ -33,6 +33,44 @@
     Preuzmi .ics datoteku i uvezi je u kalendar mobitela. Kalendar šalje obavijesti i kada je
     Kolegium zatvoren, ako podržava uvezene alarme i ima dopuštenje za obavijesti.
   </p>
+  <aside class="calendar-export-notice" aria-label="Status kalendarske sinkronizacije">
+    <h3><app-icon name="calendar" /> Ručni izvoz — Outlook nije povezan</h3>
+    <p>
+      Promjena roka, satnice, naziva ili statusa u Kolegiumu ne mijenja prethodno uvezene događaje u
+      Outlooku. Nakon izmjene preuzmi novu datoteku i zamijeni prethodni uvoz u zasebnom kalendaru.
+    </p>
+    <details>
+      <summary>Kako ručno ažurirati Outlook bez duplikata</summary>
+      <ol>
+        <li>
+          Preuzmi aktualnu .ics datoteku gumbom ispod. Provjeri raspon i učitaj sve stranice
+          obaveza.
+        </li>
+        <li>
+          U Outlooku na webu otvori Kalendar → Dodaj kalendar → Stvori prazan kalendar. Nazovi ga
+          Kolegium — uvoz.
+        </li>
+        <li>
+          Za prvi uvoz odaberi Dodaj kalendar → Prenesi iz datoteke, odaberi .ics i taj zasebni
+          kalendar.
+        </li>
+        <li>
+          Za ažuriranje najprije pregledaj stari kalendar. Ako sadrži isključivo prethodni Kolegium
+          uvoz, ukloni ga i stvori novi prazan kalendar za novu datoteku. Nemoj uklanjati osobni
+          kalendar ni druge događaje. Ako si uvoz napravio u osobni kalendar, pojedinačno ukloni
+          samo stare uvezene Kolegium događaje.
+        </li>
+        <li>
+          Uvezi novu datoteku jednom. Provjeri promijenjeni rok, vremensku zonu i barem jedan alarm.
+          Dovršene, plaćene i otkazane stavke izostavljene su iz novog izvoza.
+        </li>
+      </ol>
+      <p>
+        Ne uvozi novu datoteku preko stare očekujući ažuriranje: Outlookov uvoz može zadržati stare
+        datume ili stvoriti duplikate. Nazivi naredbi ovise o verziji Outlooka.
+      </p>
+    </details>
+  </aside>
   <form class="export-settings" [formGroup]="settings" (ngSubmit)="applySettings()">
     <div class="field">
       <label for="reminder-range">Raspon izvoza</label
@@ -142,7 +180,22 @@
       [attr.aria-label]="row.name"
     >
       <div class="reminder-heading">
-        <span class="status-badge">{{ row.label }}</span>
+        <span class="status-badge"
+          ><app-icon
+            [name]="
+              row.kind === 'session'
+                ? 'calendar'
+                : row.kind === 'task'
+                  ? 'list'
+                  : row.kind === 'project'
+                    ? 'folder'
+                    : row.kind === 'installment'
+                      ? 'wallet'
+                      : 'clipboard'
+            "
+          />
+          {{ row.label }}</span
+        >
         <h2>
           <a [routerLink]="row.route">{{ row.name }}</a>
         </h2>

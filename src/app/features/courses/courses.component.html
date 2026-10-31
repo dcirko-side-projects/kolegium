@@ -1,5 +1,5 @@
 <div class="page-heading">
-  <h1>Kolegiji</h1>
+  <h1><app-icon name="book" /> Kolegiji</h1>
   @if (store.selectedSemester()) {
     <button
       class="primary"
@@ -45,7 +45,7 @@
     }
   }
 </div>
-@if (error()) {
+@if (error() && !formOpen()) {
   <p class="error-message" role="alert">{{ error()?.message }}</p>
 }
 @if (success()) {
@@ -54,64 +54,67 @@
 @if (formOpen()) {
   <section class="panel" aria-labelledby="course-form-title">
     <h2 id="course-form-title">Novi kolegij</h2>
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <div class="form-field">
-        <label for="course-name">Naziv kolegija</label
-        ><input id="course-name" formControlName="name" maxlength="200" required />
-      </div>
-      <div class="form-field">
-        <label for="course-info">Informacije o kolegiju (opcionalno)</label
-        ><textarea id="course-info" formControlName="information" maxlength="10000"></textarea>
-      </div>
-      <div formArrayName="links">
-        <h3>Poveznice (opcionalno)</h3>
-        @for (link of form.controls.links.controls; track link; let i = $index) {
-          <div class="link-fields" [formGroupName]="i">
-            <div class="form-field">
-              <label [for]="'course-link-label-' + i">Naziv poveznice {{ i + 1 }}</label
-              ><input
-                [id]="'course-link-label-' + i"
-                formControlName="label"
-                maxlength="200"
-                required
-              />
+    <app-editor-dialog title="Novi kolegij" (dismiss)="cancel()" [error]="error()">
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="form-field">
+          <label for="course-name">Naziv kolegija</label
+          ><input id="course-name" formControlName="name" maxlength="200" required />
+        </div>
+        <div class="form-field">
+          <label for="course-info">Informacije o kolegiju (opcionalno)</label
+          ><textarea id="course-info" formControlName="information" maxlength="10000"></textarea>
+        </div>
+        <div formArrayName="links">
+          <h3>Poveznice (opcionalno)</h3>
+          @for (link of form.controls.links.controls; track link; let i = $index) {
+            <div class="link-fields" [formGroupName]="i">
+              <div class="form-field">
+                <label [for]="'course-link-label-' + i">Naziv poveznice {{ i + 1 }}</label
+                ><input
+                  [id]="'course-link-label-' + i"
+                  formControlName="label"
+                  maxlength="200"
+                  required
+                />
+              </div>
+              <div class="form-field">
+                <label [for]="'course-link-url-' + i">URL poveznice {{ i + 1 }}</label
+                ><input
+                  [id]="'course-link-url-' + i"
+                  formControlName="url"
+                  type="url"
+                  maxlength="2000"
+                  required
+                />
+              </div>
+              <button
+                type="button"
+                (click)="removeLink(i)"
+                [attr.aria-label]="'Ukloni poveznicu ' + (i + 1)"
+              >
+                Ukloni
+              </button>
             </div>
-            <div class="form-field">
-              <label [for]="'course-link-url-' + i">URL poveznice {{ i + 1 }}</label
-              ><input
-                [id]="'course-link-url-' + i"
-                formControlName="url"
-                type="url"
-                maxlength="2000"
-                required
-              />
-            </div>
-            <button
-              type="button"
-              (click)="removeLink(i)"
-              [attr.aria-label]="'Ukloni poveznicu ' + (i + 1)"
-            >
-              Ukloni
-            </button>
-          </div>
-        }
-      </div>
-      <button
-        type="button"
-        (click)="addLink()"
-        [disabled]="form.controls.links.length >= 20 || store.busy()"
-      >
-        Dodaj poveznicu
-      </button>
-      <p class="hint">
-        Samo HTTP/HTTPS adrese. Pravila dolaznosti i bodovanja ostaju nepoznata dok ih ne dostaviš.
-      </p>
-      <div class="actions">
-        <button class="primary" type="submit" [disabled]="!store.canWrite()">
-          {{ store.busy() ? 'Spremam…' : 'Spremi kolegij' }}</button
-        ><button type="button" (click)="cancel()" [disabled]="store.busy()">Odustani</button>
-      </div>
-    </form>
+          }
+        </div>
+        <button
+          type="button"
+          (click)="addLink()"
+          [disabled]="form.controls.links.length >= 20 || store.busy()"
+        >
+          Dodaj poveznicu
+        </button>
+        <p class="hint">
+          Samo HTTP/HTTPS adrese. Pravila dolaznosti i bodovanja ostaju nepoznata dok ih ne
+          dostaviš.
+        </p>
+        <div class="actions">
+          <button class="primary" type="submit" [disabled]="!store.canWrite()">
+            {{ store.busy() ? 'Spremam…' : 'Spremi kolegij' }}</button
+          ><button type="button" (click)="cancel()" [disabled]="store.busy()">Odustani</button>
+        </div>
+      </form>
+    </app-editor-dialog>
   </section>
 }
 @if (!store.selectedSemesterId() && store.ready()) {

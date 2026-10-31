@@ -92,6 +92,10 @@ try {
       page.getByRole('status').filter({ hasText: 'Izmjena je spremljena' }),
     ).toBeVisible();
     await page.goto('http://127.0.0.1:4300/attendance');
+    await page
+      .getByLabel('Kolegij za pregled dolaznosti', { exact: true })
+      .selectOption({ index: 1 });
+    await page.getByRole('button', { name: 'Pretraži', exact: true }).click();
     await expect(
       page
         .locator('section')
@@ -152,6 +156,11 @@ try {
       page.getByRole('article', { name: 'Dogovori temu s mentorom', exact: true }),
     ).toBeVisible();
     await capture(page, { path: `artifacts/academic/${name}-todo.png`, fullPage: true });
+    await page.getByRole('button', { name: 'Dodaj zadatak', exact: true }).click();
+    await capture(page, { path: `artifacts/academic/${name}-task-dialog.png`, fullPage: false });
+    await page.getByRole('button', { name: 'Zatvori obrazac', exact: true }).click();
+    await page.goto('http://127.0.0.1:4300/reminders');
+    await capture(page, { path: `artifacts/academic/${name}-reminders.png`, fullPage: true });
     await page.goto('http://127.0.0.1:4300/installments');
     await page.getByRole('button', { name: 'Dodaj ratu', exact: true }).click();
     await page.getByLabel('Naziv rate', { exact: true }).fill('Sintetička rata');

@@ -1,4 +1,6 @@
-<div class="page-heading"><h1>Dolaznost</h1></div>
+<div class="page-heading">
+  <h1><app-icon name="check" /> Dolaznost</h1>
+</div>
 @if (store.academic.moreCourses()) {
   <button (click)="store.academic.loadMore('courses')">Učitaj još kolegija</button>
 }
@@ -45,7 +47,7 @@
   <p role="alert" class="error-message">{{ store.error()?.message }}</p>
   <button (click)="store.refresh()">Osvježi dolaznost</button>
 }
-@if (error()) {
+@if (error() && !editing()) {
   <p role="alert" class="error-message">{{ error()?.message }}</p>
   @if (error()?.category === 'conflict') {
     <p>{{ serverRules() }}</p>
@@ -93,35 +95,44 @@
     Uredi uvjete dolaznosti
   </button>
   @if (editing()) {
-    <form class="panel" [formGroup]="form" (ngSubmit)="save()">
-      <h2>Uvjeti kolegija</h2>
-      <p class="hint">
-        Unesi službeni fond i minimum prema izvoru. Prazno znači nepoznato, 0 znači poznata nula.
-        Otkazivanje ne mijenja fond.
-      </p>
-      <div class="form-grid attendance-summary">
-        <div class="field">
-          <label for="lecture-total">Predavanja — ukupan broj</label
-          ><input id="lecture-total" inputmode="numeric" formControlName="lectureTotal" />
+    <app-editor-dialog
+      title="Uvjeti dolaznosti"
+      (dismiss)="cancel()"
+      [error]="error()"
+      [conflictDescription]="serverRules()"
+      (restore)="replaceRules()"
+      restoreLabel="Učitaj aktualne uvjete"
+    >
+      <form class="panel" [formGroup]="form" (ngSubmit)="save()">
+        <h2>Uvjeti kolegija</h2>
+        <p class="hint">
+          Unesi službeni fond i minimum prema izvoru. Prazno znači nepoznato, 0 znači poznata nula.
+          Otkazivanje ne mijenja fond.
+        </p>
+        <div class="form-grid attendance-summary">
+          <div class="field">
+            <label for="lecture-total">Predavanja — ukupan broj</label
+            ><input id="lecture-total" inputmode="numeric" formControlName="lectureTotal" />
+          </div>
+          <div class="field">
+            <label for="lecture-min">Predavanja — minimum</label
+            ><input id="lecture-min" inputmode="numeric" formControlName="lectureMinimum" />
+          </div>
+          <div class="field">
+            <label for="exercise-total">Vježbe — ukupan broj</label
+            ><input id="exercise-total" inputmode="numeric" formControlName="exerciseTotal" />
+          </div>
+          <div class="field">
+            <label for="exercise-min">Vježbe — minimum</label
+            ><input id="exercise-min" inputmode="numeric" formControlName="exerciseMinimum" />
+          </div>
         </div>
-        <div class="field">
-          <label for="lecture-min">Predavanja — minimum</label
-          ><input id="lecture-min" inputmode="numeric" formControlName="lectureMinimum" />
+        <div class="actions">
+          <button type="submit" class="primary" [disabled]="!store.canWrite()">Spremi uvjete</button
+          ><button type="button" (click)="cancel()">Odustani</button>
         </div>
-        <div class="field">
-          <label for="exercise-total">Vježbe — ukupan broj</label
-          ><input id="exercise-total" inputmode="numeric" formControlName="exerciseTotal" />
-        </div>
-        <div class="field">
-          <label for="exercise-min">Vježbe — minimum</label
-          ><input id="exercise-min" inputmode="numeric" formControlName="exerciseMinimum" />
-        </div>
-      </div>
-      <div class="actions">
-        <button type="submit" class="primary" [disabled]="!store.canWrite()">Spremi uvjete</button
-        ><button type="button" (click)="cancel()">Odustani</button>
-      </div>
-    </form>
+      </form>
+    </app-editor-dialog>
   }
   <h2>Evidencija termina</h2>
   <div class="actions">

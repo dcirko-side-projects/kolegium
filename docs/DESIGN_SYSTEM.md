@@ -1,5 +1,10 @@
 # Design System
 
+31.10.2026. — aktualni korisnikov redizajn zamjenjuje ranije svijetle palete i zabranu dark prikaza. Jedinstven tamni prikaz: Midnight Black #02070A navigacija/istaknute podloge, #071117 pozadina, #111E27 kartice; Electric Blue #0297DE akcije/aktivno, Cantaloupe Orange #FC734D sekundarni naglasci/vrsta nastave/rokovi. Tekst #EDF5FA, pomoćni #B0C2CE, heading #F4F9FC, input border #708A9A. Primarne akcije imaju tamni #02070A tekst radi kontrasta; bijeli tekst na Electric Blue nije prihvatljiv za mali tekst. Native inputs koriste dark color-scheme; manifest/theme i SVG/PNG monogram slijede paletu. Radijusi 8/12/16px; suptilna sjena, postojeći razmaci i breakpointi. Raniji datirani opisi ispod ostaju povijest.
+
+Svi glavni naslovi/navigacija/Sve sekcije koriste postojeću lokalnu konzistentnu SVG biblioteku IconComponent, uz dodano zvono i ikone kategorija. Bez vanjske ikonske/font biblioteke. Ikone dekorativne uz tekst; status nije kodiran samo bojom. TaskRow ima kvačicu/badge, suptilno precrtan naslov i drugačiju površinu; aktivni i dovršeni odvojeni. EditorDialogComponent: max760px desktop, do100dvh s safe-area donji panel mobile, sticky zaglavlje, 44px zatvaranje, Escape/Tab/povrat fokusa i potvrda nespremljenog unosa. Pozadinski klik ne odbacuje obrazac. Validacija i offline/conflict poruke dostupne unutar dijaloga. Detalji/dokazi u UX_REFRESH_2026-10-31.md/CURRENT_STATE.
+
+
 23.10.2026. — Preskoči na sadržaj ima izričit tabindex=0 radi WebKit zadane navigacije koja preskače native linkove bez eksplicitnog tab stopa. Nema pozitivnog tabindexa ili promjene redoslijeda; Enter vodi do postojećeg main-content fokusa. Pogođeni browser keyboard scenarij sada pokriva i desktop WebKit. Glavni sadržaj označava aria-busy tijekom početnog učitavanja/refresha/mutacije, bez mijenjanja fokusa ili uklanjanja otvorenog obrasca.
 
 20.10.2026. — Podsjetnici koriste postojeće panel/status-badge/actions/token obrasce, tekstualni status Danas/Sutra/ZaN dana/Rok je prošao i izravni link izvora. Izvoz ostaje vidljivo odvojen od in-app pregleda, s jasnim rasponom/satnicom i uputama; nema skrivenog traženja notifikacijskih dozvola. Informacije kolegija dobivaju tekstualni indeks cjelina i naslove iz postojećeg plain texta; izvorni tekst dostupan u native details. SessionRow ima dostupnu označenu formu ispričnice, stanja potvrde/offline/konflikta i zasebni status/broj, bez oslanjanja samo na boju.
@@ -20,22 +25,22 @@ Praktičan, čist, brz i pregledan. Dolaznost se unosi odmah iz termina. Podaci 
 
 | Token | Value | Svrha |
 |---|---|---|
-| color-primary | #2457FF | Quantum Blue: glavne akcije i active navigation |
-| color-ice | #DFF7FF | Ice Glass: blaga površina/isticanje |
-| color-background | #F7FAFF | Pozadina |
-| color-surface | #FFFFFF | Kartice/forme |
-| color-text | #14213D | Glavni tekst |
-| color-text-muted | #4B5A73 | Pomoćni tekst, verificirati kontrast |
-| color-border | #D7E1EF | Dekorativne granice; za input/focus koristiti jači kontrast |
-| color-success | #166534 | Uspjeh uz tekst/ikonu |
-| color-warning | #854D0E | Nepotpunost/rok uz tekst |
-| color-error | #B91C1C | Pogreška uz poruku |
+| color-primary | #0297DE | Electric Blue: akcije i aktivni elementi |
+| color-ice | #252C2E | Kontrastna sekundarna površina |
+| color-background | #071117 | Pozadina |
+| color-surface | #111E27 | Kartice/forme |
+| color-text | #EDF5FA | Glavni tekst |
+| color-text-muted | #B0C2CE | Pomoćni tekst, verificirati kontrast |
+| color-border | #30434F | Dekorativne granice; za input/focus koristiti jači kontrast |
+| color-success | #88DFB4 | Uspjeh uz tekst/ikonu |
+| color-warning | #FC997D | Nepotpunost/rok uz tekst |
+| color-error | #FF9C9C | Pogreška uz poruku |
 
-Primary button: bijeli tekst na Quantum Blue. Ice Glass nije boja teksta na bijeloj pozadini. Bez dark modea u MVP-u; može se kasnije dodati uz odvojene tokene i provjeru.
+Primary button: tamni tekst #02070A na Electric Blue. Sekundarni naglasak #FC734D. Tamni prikaz je aktualni default prema nalogu 31.10.; svijetli MVP opis zamijenjen.
 
 Font: system sans stack (system-ui, Segoe UI, sans-serif), bez vanjskog font servisa. Body 16px/1.5; small 14px/1.4; heading 24/32px prema kontekstu; minimum input font 16px na mobitelu. Weights 400/600/700.
 
-Spacing 4/8/12/16/24/32/48; radius 4/6/8; shadow suptilan samo za elevated surfaces/dialog. CSS custom properties centralno. Ne uvoditi nasumične hex/padding vrijednosti po featureima.
+Spacing 4/8/12/16/24/32/48; radius 8/12/16; shadow suptilan samo za elevated surfaces/dialog. CSS custom properties centralno. Ne uvoditi nasumične hex/padding vrijednosti po featureima.
 
 ## 3. Layout i responsive
 

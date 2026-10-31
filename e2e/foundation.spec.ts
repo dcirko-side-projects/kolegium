@@ -17,6 +17,10 @@ test('all sections are accessible, including thesis and installments', async ({
       .getByRole('link', { name: 'Sve sekcije' })
       .click();
   else await page.getByRole('link', { name: 'Istraži sve sekcije' }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Sve sekcije');
+  for (const icon of await page.locator('main app-icon svg').all()) {
+    expect((await icon.boundingBox())?.width).toBeGreaterThanOrEqual(20);
+  }
   await page
     .getByRole('main')
     .getByRole('link', { name: /Diplomski/ })
@@ -63,13 +67,24 @@ test('keyboard skip link reaches the main content', async ({ page, isMobile }) =
   await expect(page.getByRole('link', { name: 'Preskoči na sadržaj' })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('main')).toBeFocused();
+  const home = page
+    .getByRole('navigation', { name: 'Glavna navigacija' })
+    .getByRole('link')
+    .first();
+  await home.focus();
+  await expect(home).toHaveCSS('outline-color', 'rgb(2, 151, 222)');
 });
 
-test('narrow screens retain all section links', async ({ page }) => {
+test('narrow screens retain all section links', async ({ page, isMobile }) => {
   await page.setViewportSize({ width: 320, height: 740 });
   await page.goto('/sections');
   await expect(page.getByRole('main').getByRole('link')).toHaveCount(11);
   await expect(page.getByRole('main').getByRole('link', { name: /Podsjetnici/ })).toBeVisible();
+  if (isMobile) {
+    const home = page.locator('.mobile-nav a').first();
+    await home.hover();
+    await expect(home).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );

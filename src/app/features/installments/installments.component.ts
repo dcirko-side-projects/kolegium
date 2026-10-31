@@ -1,3 +1,5 @@
+import { IconComponent } from '../../shared/ui/icon/icon.component';
+import { EditorDialogComponent } from '../../shared/ui/editor-dialog/editor-dialog.component';
 import { Component, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { PlanningStoreService } from '../../core/academic/planning-store.service';
@@ -7,12 +9,12 @@ import { Installment } from '../../domain/planning.models';
 import { eurosToCents, installmentInput } from '../../domain/grading';
 @Component({
   selector: 'app-installments',
-  imports: [ReactiveFormsModule],
+  imports: [IconComponent, EditorDialogComponent, ReactiveFormsModule],
   providers: [PlanningStoreService],
   template: `
     <div class="page-heading">
       <div>
-        <h1>Rate fakulteta</h1>
+        <h1><app-icon name="wallet" /> Rate fakulteta</h1>
         <p class="hint">Iznos u EUR, rok i evidencija plaćanja.</p>
       </div>
       <button class="primary" (click)="start()" [disabled]="!store.canWrite()">Dodaj ratu</button>
@@ -27,7 +29,7 @@ import { eurosToCents, installmentInput } from '../../domain/grading';
     @if (store.success()) {
       <p role="status" class="success-message">{{ store.success() }}</p>
     }
-    @if (error()) {
+    @if (error() && !editing()) {
       <p role="alert" class="error-message">{{ error()?.message }}</p>
       @if (error()?.category === 'conflict') {
         <p>Nova server verzija: {{ serverDescription() }}</p>
@@ -35,26 +37,36 @@ import { eurosToCents, installmentInput } from '../../domain/grading';
       }
     }
     @if (editing()) {
-      <form class="panel form-grid" [formGroup]="form" (ngSubmit)="submit()">
-        <h2>{{ old() ? 'Uredi ratu' : 'Nova rata' }}</h2>
-        <div class="field">
-          <label for="installment-name">Naziv rate</label
-          ><input id="installment-name" maxlength="200" formControlName="name" />
-        </div>
-        <div class="field">
-          <label for="installment-amount">Iznos EUR</label
-          ><input id="installment-amount" inputmode="decimal" formControlName="amount" />
-        </div>
-        <div class="field">
-          <label for="installment-date">Rok plaćanja</label
-          ><input id="installment-date" type="date" formControlName="dueOn" />
-        </div>
-        <label class="checkbox"><input type="checkbox" formControlName="isPaid" />Plaćeno</label>
-        <div class="actions">
-          <button class="primary" [disabled]="!store.canWrite()">Spremi ratu</button
-          ><button type="button" (click)="cancel()">Odustani od rate</button>
-        </div>
-      </form>
+      <app-editor-dialog
+        title="Rata fakulteta"
+        (dismiss)="cancel()"
+        [error]="error()"
+        [conflictDescription]="serverDescription()"
+        (restore)="discard()"
+        conflictPrefix="Nova server verzija"
+        restoreLabel="Učitaj novu verziju rate"
+      >
+        <form class="panel form-grid" [formGroup]="form" (ngSubmit)="submit()">
+          <h2>{{ old() ? 'Uredi ratu' : 'Nova rata' }}</h2>
+          <div class="field">
+            <label for="installment-name">Naziv rate</label
+            ><input id="installment-name" maxlength="200" formControlName="name" />
+          </div>
+          <div class="field">
+            <label for="installment-amount">Iznos EUR</label
+            ><input id="installment-amount" inputmode="decimal" formControlName="amount" />
+          </div>
+          <div class="field">
+            <label for="installment-date">Rok plaćanja</label
+            ><input id="installment-date" type="date" formControlName="dueOn" />
+          </div>
+          <label class="checkbox"><input type="checkbox" formControlName="isPaid" />Plaćeno</label>
+          <div class="actions">
+            <button class="primary" [disabled]="!store.canWrite()">Spremi ratu</button
+            ><button type="button" (click)="cancel()">Odustani od rate</button>
+          </div>
+        </form>
+      </app-editor-dialog>
     }
     <div class="record-list">
       @for (row of store.rows(); track row.id) {

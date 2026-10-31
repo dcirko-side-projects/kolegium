@@ -48,14 +48,16 @@ describe('Authenticated shell routes', () => {
 
   it('opens an approved direct thesis link without academic data', async () => {
     const harness = await RouterTestingHarness.create('/thesis');
-    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe('Diplomski');
+    expect(harness.routeNativeElement?.querySelector('h1')?.textContent?.trim()).toBe('Diplomski');
     expect(harness.routeNativeElement?.textContent).toContain('još nije poznata');
   });
 
   it('opens projects and installments', async () => {
     const harness = await RouterTestingHarness.create('/projects');
     await harness.navigateByUrl('/installments');
-    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe('Rate fakulteta');
+    expect(harness.routeNativeElement?.querySelector('h1')?.textContent?.trim()).toBe(
+      'Rate fakulteta',
+    );
   });
 
   it('makes thesis and installments reachable through the mobile section directory', async () => {
@@ -66,7 +68,7 @@ describe('Authenticated shell routes', () => {
 
   it('offers a recovery link for an unknown URL', async () => {
     const harness = await RouterTestingHarness.create('/missing-section');
-    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe(
+    expect(harness.routeNativeElement?.querySelector('h1')?.textContent?.trim()).toBe(
       'Stranica nije pronađena',
     );
     expect(harness.routeNativeElement?.textContent).toContain('Povratak na početnu');

@@ -1,5 +1,42 @@
 # Trenutno stanje
 
+## Objavljen UX redizajn — 31.10.2026.
+
+Po naknadnom izričitom nalogu korisnika **„Objavi online”** izvršen je Hosting-only deploy provjerenog kandidata **2d05521c7c64e5c60e82** u postojeći **kolegium-c8970**. Firebase CLI `deploy --project kolegium-c8970 --config firebase.release.json --only hosting --non-interactive` PASS:45Hosting datoteka/44PWAassets. Integritet kandidata neposredno prije objave potvrđen ponovnim SHA-256 izračunom. Nema nove Rules/index/schema/data/billing promjene, seeda, migracije, Git commita ili pusha.
+
+**Hosted smoke PASS:**18HTTP/cache provjera na firebaseapp.com i web.app, byte-identičan service worker na oba origina, SHA-256 svih44javnih assets identičan lokalnom release buildu. Produkcijski javni login na1440/390px prikazuje stvarni project ID i Google gumb, bez testnog login gumba ili overflowa; mobilna snimka pregledana. Nema nove owner prijave, privatnih upisa, Outlook import/alarm ili fizičkog-device dokaza. Raniji grading/WebKit/cross-device/recovery gates ostaju odvojeni.
+
+Online: **https://kolegium-c8970.firebaseapp.com**, alias https://kolegium-c8970.web.app. U postojećem PWA-u/tabu najprije spremiti unos pa odabrati **Učitaj novu verziju** kada se ponudi. Dokazi su u ignoriranom `artifacts/release/ux-2026-10-31` (deploy.log, hosted-smoke.json, hosted-http-smoke.json i login snimke). Raniji današnji odlomci „lokalno/nije objavljeno” opisuju stanje prije ovog naloga i uspješne objave; ovo odobrenje ne predstavlja trajni automatski deploy.
+
+
+## Lokalni UX redizajn i ispravci — 31.10.2026.
+
+Implementiran korisnikov nalog: Midnight Black/Electric Blue/Cantaloupe Orange paleta kroz sve sekcije i PWA, konzistentne lokalne SVG ikone, shared desktop modal/mobile bottom sheet za mutation obrasce, dirty/pending/offline/conflict/focus zaštite i sklopiva grupa dovršenih canonical zadataka. Dodana zaštita od lažnog empty stanja i mogućnost učitavanja preostalih kolegija na Početnoj. Detalji i upute u **UX_REFRESH_2026-10-31.md**.
+
+**Nalaz današnje nastave:** Početna je prikazivala i otkazane termine koje Raspored početno skriva. Oba sada koriste zajednički `ScheduleStore.activeRows`, Početna i `todayRows` za Zagreb datum. Focus/visibility osvježavaju sat nakon buđenja/ponoći, uz postojeće server/revision/date-bound upite i recurrence/recorded override pravila. Nema novog cachea ili kopije rasporeda.
+
+**Outlook odluka:** u projektu postoji samo ručni .ics izvoz. Korisnik nakon rasprave izričito odabrao „ostavi onda ručno unošenje podsjetnika i na kraju objasni kako se to radi”. Zadržan snapshot s istim UID-jevima i jasnim statusom Outlook nije povezan, uz upute za zasebni kalendar i zamjenu starog uvoza. Nema Microsoft API integracije ili novih dependencies; package.json/lockfile nepromijenjeni. Nepotrebna MSAL instalacija nakon promjene odluke odbijena automatskim reviewom, nije izvršena. Stvarni Outlook import/alarm **NOT RUN**.
+
+| Završna provjera | Rezultat i granica |
+|---|---|
+| Typecheck / lint / format:check / git diff --check | PASS na konačnim izvorima |
+| Unit | **52/52**, 14 datoteka PASS; jedan ponovljeni run imao je Windows `UNKNOWN open` pri pokretanju jsdom workera (49 testova bez assertion pada, 1 worker error); svježi ponovljeni puni run 52/52 PASS |
+| Puna desktop/Pixel Chromium regresija | **71 PASS / 1 namjerni mobile keyboard skip**, 72 slučaja, 5.8 min. Zamrznuti izvori tijekom runa. Nije fizički uređaj ili real OAuth/cloud dokaz |
+| Konačni vizualni ispravci i browser podskup | **15 PASS / isti 1 skip** nakon CSS/caption ispravaka; nova provjera stvarne veličine sekcijskih SVG-ova, boje sidebar fokusa i hover ponašanja dodirne navigacije, uz sve nove modal/today/ICS scenarije |
+| Rules | **18/18 PASS** |
+| SDK integration | **34/34 PASS**, 5 datoteka, uključujući canonical podatke/konflikt/restore |
+| Release Rules | **2/2 PASS**; harness ponovno vratio local-owner Rules |
+| UI audit | **100/100 PASS**: 15 ruta/detaila + 5 modalnih obrazaca na 320/390/768/1024/1440 px, bez axe nalaza ili horizontalnog overflowa; nije formalna WCAG certifikacija |
+| Snimke | **57 sintetičkih snimki** (19 prikaza × desktop/mobile/tablet); pregledani završni desktop overview/modal i mobile/tablet modal/raspored. Artefakti u ignoriranom artifacts/academic |
+| Default i production,release build + oba PWA smokea | PASS, bez budget warninga. Konačni release **364.61 kB initial / 100.24 kB estimated transfer**, public-shell **2d05521c7c64e5c60e82**, 44 assets. Static-only cache/offline shell/waiting update/no second-tab reload/install adapter PASS |
+
+Novi testovi `e2e/design-refresh.spec.ts`: odbijeni Escape čuva dirty unos, kruženje i povrat fokusa, modalni axe/320–1440px, dovršavanje/grupa/reopen/reload, otkazivanje zajedničko Početnoj i Rasporedu, Zagreb midnight/focus te stvarno preuzeti ICS prije/poslije pomicanja roka s istim UID-jem i bez dovršenog zadatka. Postojeći testovi prilagođeni namjerno sklopljenim grupama i modalnoj interakciji; ispričnica sada čeka zatvaranje modala/server-confirmed aria-pressed prije reloada, umjesto podudaranja s naslovom dijaloga. Dijagnostički browser pokušaji prije ispravka tih očekivanja imali su stvarne padove i prekinuti su; konačni puni i ciljani rezultati iznad nisu zamjena za te povijesne logove.
+
+Svi data-bearing suiteovi/captures izvedeni **sekvencijalno samo na demo-kolegium-tests**, Auth 19099/Firestore 18080. Prvi sandbox browser/emulator pokušaji nisu mogli pristupiti localhostu; konačni runovi koriste odobren pristup lokalnoj mreži. Node 22.23.3 iz postojećeg ignoriranog artifacts/tooling. Dokazi: artifacts/ux-browser-final.log, ux-visual-regression-final.log, ux-unit-final.log, ux-rules.log, ux-integration.log, ux-release-rules.log, ux-audit-final.log, ux-build-final.log, ux-release-build-final.log, ux-pwa-final.log, ux-release-pwa-final.log i artifacts/ui-review/audit.json.
+
+**Lokalno, nije objavljeno niti commitirano/pushano.** Bez cloud/data/Rules/schema/migration/billing/visibility promjena i bez pristupa stvarnim osobnim podacima. Fizički Android/iPhone/Safari, native alarm/PWA, real cross-device i raniji TASK-009C/WebKit/cloud recovery gates ostaju otvoreni. Ovo nije novi hosted/device acceptance. Stariji datirani dokazi ispod ostaju povijest.
+
+
 ## Odobren Git checkpoint i Hosting objava —23.10.2026.
 
 Korisnik izričito zatražio „Commitaj pushaj i objavi online”. Repo metadata potvrđuje privatni dcirko-side-projects/kolegium/main; origin ispravan, fetch prije commita HEAD/origin-main0/0. **Commit00bdce9 i push main PASS**,101projektna datoteka, source/test/docs checkpoint19.–23.10. Staged provjera:0credential signatures/0privatnih ili generiranih datoteka; privatni backupi/credentials/source privitci/generirani artefakti ostaju ignorirani. Izvorni kod i provjere iz prethodnog odlomka objavljeni uz odobreni Hosting-only nalog. Nema nove Rules/index/data/billing/visibility promjene ili trajnog automatskog deploya.

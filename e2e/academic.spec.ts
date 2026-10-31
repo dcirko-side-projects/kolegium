@@ -102,7 +102,7 @@ test('two clients preserve a stale local edit and offer the server version', asy
   }
 });
 
-test('offline disables mutation, keeps draft and refreshes before continuing; logout requires confirmation', async ({
+test('offline disables mutation, keeps draft and refreshes before continuing; modal dismissal requires confirmation before logout', async ({
   page,
   context,
 }) => {
@@ -117,9 +117,11 @@ test('offline disables mutation, keeps draft and refreshes before continuing; lo
   await context.setOffline(false);
   await expect(page.getByRole('button', { name: 'Spremi kolegij' })).toBeEnabled();
   page.once('dialog', (dialog) => dialog.dismiss());
-  await page.getByRole('button', { name: 'Odjava', exact: true }).click();
+  await page.getByRole('button', { name: 'Zatvori obrazac', exact: true }).click();
   await expect(page.getByLabel('Naziv kolegija', { exact: true })).toHaveValue('Nespremljen unos');
   page.once('dialog', (dialog) => dialog.accept());
+  await page.getByRole('button', { name: 'Zatvori obrazac', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.getByRole('button', { name: 'Odjava', exact: true }).click();
   await expect(page).toHaveTitle('Prijava | Kolegium');
   await page.goto('/courses');

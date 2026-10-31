@@ -1,3 +1,4 @@
+import { EditorDialogComponent } from '../editor-dialog/editor-dialog.component';
 import { Component, DestroyRef, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { AcademicStoreService } from '../../../core/academic/academic-store.service';
@@ -8,7 +9,7 @@ import { ApplicationError, asApplicationError } from '../../../core/errors/appli
 import { UnsavedChangesService } from '../../../core/forms/unsaved-changes.service';
 @Component({
   selector: 'app-result-history',
-  imports: [ReactiveFormsModule],
+  imports: [EditorDialogComponent, ReactiveFormsModule],
   template: ` <section class="panel" aria-label="Pokusaji i rezultati">
     <h2>Pokušaji i rezultati</h2>
     <p class="hint">
@@ -18,7 +19,7 @@ import { UnsavedChangesService } from '../../../core/forms/unsaved-changes.servi
     @if (loading()) {
       <p role="status">Učitavam pokušaje…</p>
     }
-    @if (error()) {
+    @if (error() && !editing()) {
       <p role="alert" class="error-message">{{ error()?.message }}</p>
       <button (click)="refresh()">Osvježi pokušaje</button>
       @if (error()?.category === 'conflict') {
@@ -47,32 +48,41 @@ import { UnsavedChangesService } from '../../../core/forms/unsaved-changes.servi
     }
     <button (click)="add()" [disabled]="!canEdit() || loading()">Dodaj pokušaj</button>
     @if (editing()) {
-      <form [formGroup]="form" (ngSubmit)="submit()">
-        <h3>{{ old() ? 'Ispravak pokušaja' : 'Novi pokušaj' }} {{ number() }}</h3>
-        <div class="form-grid">
-          <div class="form-field">
-            <label [attr.for]="prefix() + 'date'">Datum pokušaja (opcionalno)</label
-            ><input [id]="prefix() + 'date'" type="date" formControlName="takenOn" />
+      <app-editor-dialog
+        title="Pokušaj i rezultat"
+        (dismiss)="discard()"
+        [error]="error()"
+        [conflictDescription]="serverDescription()"
+        (restore)="discard()"
+        restoreLabel="Učitaj novu verziju pokušaja"
+      >
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <h3>{{ old() ? 'Ispravak pokušaja' : 'Novi pokušaj' }} {{ number() }}</h3>
+          <div class="form-grid">
+            <div class="form-field">
+              <label [attr.for]="prefix() + 'date'">Datum pokušaja (opcionalno)</label
+              ><input [id]="prefix() + 'date'" type="date" formControlName="takenOn" />
+            </div>
+            <div class="form-field">
+              <label [attr.for]="prefix() + 'points'">Bodovi (opcionalno)</label
+              ><input [id]="prefix() + 'points'" inputmode="decimal" formControlName="points" />
+              <p class="hint">
+                Decimalna točka, najviše četiri decimalna mjesta. Prazno je nepoznato; 0 je unesena
+                nula.
+              </p>
+            </div>
           </div>
           <div class="form-field">
-            <label [attr.for]="prefix() + 'points'">Bodovi (opcionalno)</label
-            ><input [id]="prefix() + 'points'" inputmode="decimal" formControlName="points" />
-            <p class="hint">
-              Decimalna točka, najviše četiri decimalna mjesta. Prazno je nepoznato; 0 je unesena
-              nula.
-            </p>
+            <label [attr.for]="prefix() + 'grade'">Ocjena (opcionalno)</label
+            ><input [id]="prefix() + 'grade'" maxlength="200" formControlName="grade" />
           </div>
-        </div>
-        <div class="form-field">
-          <label [attr.for]="prefix() + 'grade'">Ocjena (opcionalno)</label
-          ><input [id]="prefix() + 'grade'" maxlength="200" formControlName="grade" />
-        </div>
-        <div class="actions">
-          <button class="primary" [disabled]="!canEdit() || academic.busy() || loading()">
-            Spremi pokušaj</button
-          ><button type="button" (click)="discard()">Odustani od pokušaja</button>
-        </div>
-      </form>
+          <div class="actions">
+            <button class="primary" [disabled]="!canEdit() || academic.busy() || loading()">
+              Spremi pokušaj</button
+            ><button type="button" (click)="discard()">Odustani od pokušaja</button>
+          </div>
+        </form>
+      </app-editor-dialog>
     }
   </section>`,
 })

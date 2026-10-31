@@ -1,5 +1,17 @@
 # Deployment i environments
 
+## Objavljen UX redizajn — 31.10.2026.
+
+Po naknadnom izričitom nalogu korisnika **„Objavi online”** izvršen je Hosting-only deploy provjerenog kandidata **2d05521c7c64e5c60e82** u postojeći **kolegium-c8970**. Firebase CLI `deploy --project kolegium-c8970 --config firebase.release.json --only hosting --non-interactive` PASS:45Hosting datoteka/44PWAassets. Integritet kandidata neposredno prije objave potvrđen ponovnim SHA-256 izračunom. Nema nove Rules/index/schema/data/billing promjene, seeda, migracije, Git commita ili pusha.
+
+**Hosted smoke PASS:**18HTTP/cache provjera na firebaseapp.com i web.app, byte-identičan service worker na oba origina, SHA-256 svih44javnih assets identičan lokalnom release buildu. Produkcijski javni login na1440/390px prikazuje stvarni project ID i Google gumb, bez testnog login gumba ili overflowa; mobilna snimka pregledana. Nema nove owner prijave, privatnih upisa, Outlook import/alarm ili fizičkog-device dokaza. Raniji grading/WebKit/cross-device/recovery gates ostaju odvojeni.
+
+Online: **https://kolegium-c8970.firebaseapp.com**, alias https://kolegium-c8970.web.app. U postojećem PWA-u/tabu najprije spremiti unos pa odabrati **Učitaj novu verziju** kada se ponudi. Dokazi su u ignoriranom `artifacts/release/ux-2026-10-31` (deploy.log, hosted-smoke.json, hosted-http-smoke.json i login snimke). Raniji današnji odlomci „lokalno/nije objavljeno” opisuju stanje prije ovog naloga i uspješne objave; ovo odobrenje ne predstavlja trajni automatski deploy.
+
+
+31.10.2026. — novi UX redizajn je **lokalni kandidat, nije objavljen**. Konačni production,release build/PWA smoke PASS; public-shell content verzija `2d05521c7c64e5c60e82`, 44 assets,364.61 kB initial / 100.24 kB estimated transfer, bez budget warninga. Promjene shella, native dialoga, navigacijskih ikona, stilova i PWA boja ne mijenjaju Firestore schema/Rules/indekse/auth. Nema deploya, podatkovnih upisa, migracije, naplate ili commita/pusha u ovom nastavku. Default production build/PWA također lokalno provjeren; detaljni dokazi i real Outlook/device granice u CURRENT_STATE i UX_REFRESH_2026-10-31.md. Prijašnji datirani deploy dokazi ispod ostaju povijest.
+
+
 ## Odobrena Hosting objava i Git checkpoint —23.10.2026.
 
 Po izričitom nalogu „Commitaj pushaj i objavi online” commit00bdce9/source+tests+docs pushan na potvrđeni privatni dcirko-side-projects/kolegium/main. Zatim postojeći wrapper deploy --project kolegium-c8970 --config firebase.release.json --only hosting --non-interactive PASS. Release **08e81c515a7f1629ce7e**,43Hostingdatoteke/42PWAassets; nema Rules/index/data/billing/visibility promjene. Privatni/generirani sadržaj nije commitiran. Release-evidence dokumentacija također commitirana/pushana u ovom nalogu.

@@ -60,6 +60,7 @@ test('explicit calendar preview excludes databases, selects exercises, retries a
   await expect(
     page.getByText('Uvoz potvrđen na poslužitelju: dodano 0, već postojeće 2.'),
   ).toBeVisible();
+  await page.getByRole('dialog').getByRole('button', { name: 'Zatvori uvoz', exact: true }).click();
   await page.getByLabel('Datum pregleda').fill('2026-10-12');
   await expect(session(page, '2026-10-12', '16:30')).toBeVisible();
   await page.getByRole('button', { name: 'Dodaj pojedinačni termin' }).click();

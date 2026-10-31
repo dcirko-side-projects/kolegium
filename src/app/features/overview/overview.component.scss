@@ -55,6 +55,9 @@ h1 {
 .overview-section {
   border-top: 3px solid var(--color-blue-dark);
 }
+.overview-section:nth-child(2) {
+  border-top-color: var(--color-accent);
+}
 .section-heading {
   display: flex;
   justify-content: space-between;

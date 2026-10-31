@@ -8,7 +8,7 @@
   left: 16px;
   z-index: 10;
   background: var(--color-primary);
-  color: white;
+  color: var(--color-on-primary);
   padding: 16px;
   border-radius: var(--radius-sm);
 }
@@ -71,17 +71,17 @@ nav a {
   margin-top: var(--space-6);
   border-top: 1px solid var(--color-blue-dark);
 }
-nav a:hover {
-  background: var(--color-blue-dark);
+.sidebar nav a:hover {
+  background: var(--color-nav-active);
   color: white;
 }
 nav a.active {
-  background: var(--color-blue-dark);
-  border-left-color: var(--color-ice);
+  background: var(--color-nav-active);
+  border-left-color: var(--color-accent);
   color: white;
 }
 .sidebar :focus-visible {
-  outline-color: var(--color-ice);
+  outline-color: var(--color-primary);
 }
 .sidebar-note {
   margin-top: auto;
@@ -149,7 +149,7 @@ main {
     font-weight: 700;
     letter-spacing: -0.04em;
     text-decoration: none;
-    color: var(--color-navy);
+    color: var(--color-heading);
   }
   main {
     padding: var(--space-8) var(--space-6) calc(112px + env(safe-area-inset-bottom));
@@ -178,9 +178,11 @@ main {
     background: var(--color-blue-soft);
     border-top-color: var(--color-primary);
   }
-  .mobile-nav a:hover {
-    background: var(--color-blue-soft);
-    color: var(--color-primary);
+  @media (hover: hover) {
+    .mobile-nav a:hover {
+      background: var(--color-blue-soft);
+      color: var(--color-primary);
+    }
   }
 }
 @media (max-width: 599px) {

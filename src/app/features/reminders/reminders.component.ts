@@ -1,3 +1,4 @@
+import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -15,7 +16,7 @@ import { asApplicationError } from '../../core/errors/application-error';
 
 @Component({
   selector: 'app-reminders',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [IconComponent, RouterLink, ReactiveFormsModule],
   providers: [PlanningStoreService, ScheduleStoreService],
   templateUrl: './reminders.component.html',
   styles: `

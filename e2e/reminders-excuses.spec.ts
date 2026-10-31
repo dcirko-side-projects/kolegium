@@ -40,7 +40,11 @@ test('excused absence persists separately, retains offline draft, clears its not
   await expect(row(page).getByRole('button', { name: 'Spremi ispričnicu' })).toBeDisabled();
   await context.setOffline(false);
   await row(page).getByRole('button', { name: 'Spremi ispričnicu' }).click();
-  await expect(row(page).getByText('Ispričani izostanak', { exact: true })).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(row(page).getByRole('button', { name: 'Uredi ispričnicu' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
   await page.reload();
   await expect(row(page)).toContainText('Ispričnica: Liječnička potvrda');
   await page.goto('/attendance');

@@ -1,3 +1,5 @@
+import { IconComponent } from '../../shared/ui/icon/icon.component';
+import { EditorDialogComponent } from '../../shared/ui/editor-dialog/editor-dialog.component';
 import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -11,7 +13,14 @@ import { ResultHistoryComponent } from '../../shared/ui/results/result-history.c
 import { TasksComponent } from '../todo/tasks.component';
 @Component({
   selector: 'app-work-items',
-  imports: [ReactiveFormsModule, RouterLink, ResultHistoryComponent, TasksComponent],
+  imports: [
+    IconComponent,
+    EditorDialogComponent,
+    ReactiveFormsModule,
+    RouterLink,
+    ResultHistoryComponent,
+    TasksComponent,
+  ],
   providers: [WorkStoreService],
   templateUrl: './work-items.component.html',
 })

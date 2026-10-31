@@ -1,3 +1,5 @@
+import { IconComponent } from '../../shared/ui/icon/icon.component';
+import { EditorDialogComponent } from '../../shared/ui/editor-dialog/editor-dialog.component';
 import { Component, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -9,11 +11,11 @@ import { thesisInput } from '../../domain/work.validation';
 import { TasksComponent } from '../todo/tasks.component';
 @Component({
   selector: 'app-thesis',
-  imports: [ReactiveFormsModule, RouterLink, TasksComponent],
+  imports: [IconComponent, EditorDialogComponent, ReactiveFormsModule, RouterLink, TasksComponent],
   providers: [WorkStoreService],
   template: `
     <div class="page-heading">
-      <h1>Diplomski</h1>
+      <h1><app-icon name="cap" /> Diplomski</h1>
       <a routerLink="/sections">Pogledaj sve sekcije</a>
     </div>
     <p>Tema i mentor mogu ostati prazni. Ovdje su osnovne informacije i zadaci diplomskog.</p>
@@ -24,7 +26,7 @@ import { TasksComponent } from '../todo/tasks.component';
       <p role="alert">{{ store.error()?.message }}</p>
       <button (click)="store.refresh()">Osvježi diplomski</button>
     }
-    @if (error()) {
+    @if (error() && !editing()) {
       <p role="alert" class="error-message">{{ error()?.message }}</p>
       @if (error()?.category === 'conflict') {
         <p>Server verzija: {{ serverDescription() }}</p>
@@ -56,28 +58,37 @@ import { TasksComponent } from '../todo/tasks.component';
         </button>
       </section>
     } @else {
-      <form class="panel" [formGroup]="form" (ngSubmit)="submit()">
-        <div class="form-field">
-          <label for="thesis-topic">Tema diplomskog (opcionalno)</label
-          ><input id="thesis-topic" maxlength="500" formControlName="topic" />
-        </div>
-        <div class="form-field">
-          <label for="thesis-mentor">Mentor (opcionalno)</label
-          ><input id="thesis-mentor" maxlength="500" formControlName="mentor" />
-        </div>
-        <div class="form-field">
-          <label for="thesis-information">Informacije o diplomskom</label
-          ><textarea
-            id="thesis-information"
-            maxlength="10000"
-            formControlName="information"
-          ></textarea>
-        </div>
-        <div class="actions">
-          <button class="primary" [disabled]="!store.canWrite()">Spremi diplomski</button
-          ><button type="button" (click)="cancel()">Odustani od diplomskog</button>
-        </div>
-      </form>
+      <app-editor-dialog
+        title="Diplomski"
+        (dismiss)="cancel()"
+        [error]="error()"
+        [conflictDescription]="serverDescription()"
+        (restore)="replaceWithServer()"
+        restoreLabel="Učitaj novu verziju diplomskog"
+      >
+        <form class="panel" [formGroup]="form" (ngSubmit)="submit()">
+          <div class="form-field">
+            <label for="thesis-topic">Tema diplomskog (opcionalno)</label
+            ><input id="thesis-topic" maxlength="500" formControlName="topic" />
+          </div>
+          <div class="form-field">
+            <label for="thesis-mentor">Mentor (opcionalno)</label
+            ><input id="thesis-mentor" maxlength="500" formControlName="mentor" />
+          </div>
+          <div class="form-field">
+            <label for="thesis-information">Informacije o diplomskom</label
+            ><textarea
+              id="thesis-information"
+              maxlength="10000"
+              formControlName="information"
+            ></textarea>
+          </div>
+          <div class="actions">
+            <button class="primary" [disabled]="!store.canWrite()">Spremi diplomski</button
+            ><button type="button" (click)="cancel()">Odustani od diplomskog</button>
+          </div>
+        </form>
+      </app-editor-dialog>
     }
     @if (store.thesis()) {
       <app-tasks [embedded]="true" fixedType="thesis" fixedId="main" />

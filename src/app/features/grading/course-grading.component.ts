@@ -1,3 +1,4 @@
+import { EditorDialogComponent } from '../../shared/ui/editor-dialog/editor-dialog.component';
 import { Component, DestroyRef, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { PlanningStoreService } from '../../core/academic/planning-store.service';
@@ -53,7 +54,7 @@ type Draft = {
 };
 @Component({
   selector: 'app-course-grading',
-  imports: [ReactiveFormsModule, ResultHistoryComponent],
+  imports: [EditorDialogComponent, ReactiveFormsModule, ResultHistoryComponent],
   providers: [PlanningStoreService, WorkStoreService],
   templateUrl: './course-grading.component.html',
 })

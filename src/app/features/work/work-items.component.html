@@ -1,5 +1,5 @@
 <div class="page-heading">
-  <h1>{{ detailId() ? (detail()?.name ?? heading) : heading }}</h1>
+  <h1><app-icon name="clipboard" /> {{ detailId() ? (detail()?.name ?? heading) : heading }}</h1>
   <a routerLink="/sections">Pogledaj sve sekcije</a>
 </div>
 @if (detailId()) {
@@ -12,7 +12,7 @@
   <p role="alert">{{ store.error()?.message }}</p>
   <button (click)="store.refresh()">Osvježi obaveze</button>
 }
-@if (error()) {
+@if (error() && !editing()) {
   <p role="alert" class="error-message">{{ error()?.message }}</p>
   @if (error()?.category === 'conflict') {
     <p>Server verzija: {{ serverDescription() }}</p>
@@ -103,69 +103,78 @@
   </form>
 }
 @if (editing()) {
-  <form class="panel" [formGroup]="form" (ngSubmit)="submit()">
-    <h2>{{ old() ? 'Uredi stavku' : isAssessment ? 'Nova provjera' : 'Novi projekt' }}</h2>
-    <div class="form-field">
-      <label for="work-name">{{ isAssessment ? 'Naziv provjere' : 'Naziv projekta' }}</label
-      ><input id="work-name" maxlength="200" formControlName="name" />
-    </div>
-    <div class="form-field">
-      <label for="work-course">{{
-        isAssessment ? 'Kolegij provjere' : 'Kolegij projekta (opcionalno)'
-      }}</label
-      ><select id="work-course" formControlName="courseId">
-        <option value="">{{ isAssessment ? 'Odaberi kolegij' : 'Bez kolegija' }}</option>
-        @for (c of store.academic.courses(); track c.id) {
-          <option [value]="c.id" [selected]="form.controls.courseId.value === c.id">
-            {{ c.name }}
-          </option>
-        }
-        @if (missingCourseOption(form.controls.courseId.value)) {
-          <option [value]="form.controls.courseId.value" selected>
-            {{ detailCourseName() || 'Izvorni kolegij' }}
-          </option>
-        }
-      </select>
-    </div>
-    @if (store.academic.moreCourses()) {
-      <button type="button" (click)="store.academic.loadMore('courses')">
-        Učitaj još kolegija
-      </button>
-    }
-    @if (isAssessment) {
+  <app-editor-dialog
+    title="Provjera / projekt"
+    (dismiss)="cancel()"
+    [error]="error()"
+    [conflictDescription]="serverDescription()"
+    (restore)="replaceWithServer()"
+    restoreLabel="Učitaj novu verziju stavke"
+  >
+    <form class="panel" [formGroup]="form" (ngSubmit)="submit()">
+      <h2>{{ old() ? 'Uredi stavku' : isAssessment ? 'Nova provjera' : 'Novi projekt' }}</h2>
       <div class="form-field">
-        <label for="work-type">Vrsta provjere</label
-        ><select id="work-type" formControlName="type">
-          <option value="quiz">Kolokvij</option>
-          <option value="exam">Ispit</option>
-          <option value="oral">Usmeni</option>
-          <option value="defense">Obrana</option>
-          <option value="other">Drugo</option>
+        <label for="work-name">{{ isAssessment ? 'Naziv provjere' : 'Naziv projekta' }}</label
+        ><input id="work-name" maxlength="200" formControlName="name" />
+      </div>
+      <div class="form-field">
+        <label for="work-course">{{
+          isAssessment ? 'Kolegij provjere' : 'Kolegij projekta (opcionalno)'
+        }}</label
+        ><select id="work-course" formControlName="courseId">
+          <option value="">{{ isAssessment ? 'Odaberi kolegij' : 'Bez kolegija' }}</option>
+          @for (c of store.academic.courses(); track c.id) {
+            <option [value]="c.id" [selected]="form.controls.courseId.value === c.id">
+              {{ c.name }}
+            </option>
+          }
+          @if (missingCourseOption(form.controls.courseId.value)) {
+            <option [value]="form.controls.courseId.value" selected>
+              {{ detailCourseName() || 'Izvorni kolegij' }}
+            </option>
+          }
         </select>
       </div>
-      <div class="form-grid">
+      @if (store.academic.moreCourses()) {
+        <button type="button" (click)="store.academic.loadMore('courses')">
+          Učitaj još kolegija
+        </button>
+      }
+      @if (isAssessment) {
         <div class="form-field">
-          <label for="work-date">Datum provjere</label
-          ><input id="work-date" type="date" formControlName="scheduledOn" />
+          <label for="work-type">Vrsta provjere</label
+          ><select id="work-type" formControlName="type">
+            <option value="quiz">Kolokvij</option>
+            <option value="exam">Ispit</option>
+            <option value="oral">Usmeni</option>
+            <option value="defense">Obrana</option>
+            <option value="other">Drugo</option>
+          </select>
         </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="work-date">Datum provjere</label
+            ><input id="work-date" type="date" formControlName="scheduledOn" />
+          </div>
+          <div class="form-field">
+            <label for="work-time">Vrijeme provjere (opcionalno)</label
+            ><input id="work-time" type="time" formControlName="scheduledAt" />
+            <p class="hint">Europe/Zagreb</p>
+          </div>
+        </div>
+      } @else {
         <div class="form-field">
-          <label for="work-time">Vrijeme provjere (opcionalno)</label
-          ><input id="work-time" type="time" formControlName="scheduledAt" />
-          <p class="hint">Europe/Zagreb</p>
+          <label for="project-date">Rok projekta (opcionalno)</label
+          ><input id="project-date" type="date" formControlName="dueOn" />
         </div>
+      }
+      <div class="actions">
+        <button class="primary" [disabled]="!store.canWrite()">
+          {{ isAssessment ? 'Spremi provjeru' : 'Spremi projekt' }}</button
+        ><button type="button" (click)="cancel()">Odustani od stavke</button>
       </div>
-    } @else {
-      <div class="form-field">
-        <label for="project-date">Rok projekta (opcionalno)</label
-        ><input id="project-date" type="date" formControlName="dueOn" />
-      </div>
-    }
-    <div class="actions">
-      <button class="primary" [disabled]="!store.canWrite()">
-        {{ isAssessment ? 'Spremi provjeru' : 'Spremi projekt' }}</button
-      ><button type="button" (click)="cancel()">Odustani od stavke</button>
-    </div>
-  </form>
+    </form>
+  </app-editor-dialog>
 }
 @if (detailId()) {
   @if (detail(); as row) {

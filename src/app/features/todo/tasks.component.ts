@@ -1,3 +1,5 @@
+import { IconComponent } from '../../shared/ui/icon/icon.component';
+import { EditorDialogComponent } from '../../shared/ui/editor-dialog/editor-dialog.component';
 import {
   Component,
   DestroyRef,
@@ -17,7 +19,7 @@ import { Task, TaskContext, Project } from '../../domain/work.models';
 import { taskInput } from '../../domain/work.validation';
 @Component({
   selector: 'app-tasks',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [IconComponent, EditorDialogComponent, ReactiveFormsModule, RouterLink],
   providers: [WorkStoreService],
   templateUrl: './tasks.component.html',
 })
@@ -41,6 +43,11 @@ export class TasksComponent {
   protected readonly filterStatus = signal('all');
   protected readonly appliedFilters = signal({ type: 'all', id: '', status: 'all' });
   protected readonly visible = computed(() => this.store.tasks());
+  protected readonly showCompleted = signal(false);
+  protected readonly groups = computed(() => [
+    { completed: false, rows: this.visible().filter((row) => !row.isCompleted) },
+    { completed: true, rows: this.visible().filter((row) => row.isCompleted) },
+  ]);
   private id: string = crypto.randomUUID();
   private draftRestored = false;
   protected missingContextOption(): boolean {

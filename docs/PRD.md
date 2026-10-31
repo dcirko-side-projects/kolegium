@@ -1,5 +1,8 @@
 # Product Requirements Document
 
+31.10.2026. — korisnik odobrio cjelovit lokalni UX redizajn i ispravke FR-004/010/013/018/019. Nova paleta Midnight Black #02070A, Electric Blue #0297DE, Cantaloupe Orange #FC734D zamjenjuje prethodnu paletu. Mutation obrasci koriste modal/mobile bottom sheet uz zaštitu unosa; dovršeni zadaci ostaju u sklopivoj grupi. Naknadna izričita odluka korisnika: **zadržati ručni unos/uvoz podsjetnika**, bez Microsoft/Outlook API povezivanja. FR-019 ostaje privatni .ics snapshot, bez obećanja automatskog ažuriranja u Outlooku. Detalji u UX_REFRESH_2026-10-31.md; stvarni dokazi u CURRENT_STATE.
+
+
 20.10.2026. — novi nalog i odgovori korisnika: podsjetnici za To-do, projekte, rate, današnja predavanja/vježbe i kolokvije/ispite. Korisnik odabrao **besplatni privatni .ics izvoz** s alarmima u kalendar mobitela, uz pregled u aplikaciji; bez aktivacije naplate i bez novog push backenda. Ručni izvoz nije kalendarska sinkronizacija. FR-019: objedinjeni podsjetnici i privatni kalendarski izvoz s vidljivim alarmima, rasponom, paging zaštitom, isključenim obavljenim/plaćenim/otkazanim/arhiviranim stavkama i uputom provjere na telefonu.
 
 FR-005/006 korisnik potvrdio zaseban **ispričani izostanak**, opcionalnu napomenu i odvojeni broj; nije prisutnost, ne mijenja službeni fond/minimum i ne izmišlja institucijska pravila. FR-003: informacije o kolegiju preglednije po postojećim naslovima, bez uklanjanja sadržaja i s dostupnim cjelovitim izvornim tekstom. Jednokratna korisnikova evidencija: svi završeni neotkazani termini do trenutka pregleda kao izostanci, osim predavanja/vježbi BU 9.10. i NoSQL 10.10. kao prisutnost. Konkretan atomic/readback dokaz u CURRENT_STATE.

@@ -1,5 +1,8 @@
 # Technical Requirements Document
 
+31.10.2026. — FR-018 obrasci koriste native modal i mobile bottom sheet s focus trap/povratom fokusa, dirty/pending zaštitom i vidljivim greškama/offline/konfliktom. Nova tamna paleta i PWA boje prema DESIGN_SYSTEM. FR-013 i FR-004 dijele activeRows iz istog ScheduleStore snapshot-a; sat Europe/Zagreb osvježava se i pri focus/visibility događaju nakon buđenja. Ručni .ics izvoz ostaje jedina vanjska calendar mogućnost prema posljednjoj korisnikovoj odluci, bez Microsoft API-ja ili promjene auth/data ugovora.
+
+
 23.10.2026. — lokalni emulator adapter koristi forced long-polling/5s idle timeout nakon ponovljivih WebKit/Windows stream zastoja pri reloadu. Produkcijski transport/cache/authorization ostaju isti. Dodatni opt-in WebKit projekti imaju60s ukupni rok i10s assertion rok; višekoračni restore ima120s ukupno/60s aktivaciju. Ti testni rokovi nisu NFR-005 mjerni rezultat. Stvarni Safari/phone/cloud recovery i dalje zasebni.
 
 Datum: 2026-10-07. Zahtjevi, ne izvještaj o provedenim provjerama.

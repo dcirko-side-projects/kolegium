@@ -2,7 +2,7 @@
 @if (loading()) {
   <p role="status">Učitavam kolegij…</p>
 }
-@if (error()) {
+@if (error() && !editing()) {
   <div class="panel error-message" role="alert">
     {{ error()?.message }}
     @if (error()?.category === 'conflict') {
@@ -24,7 +24,7 @@
 }
 @if (course(); as row) {
   <div class="page-heading">
-    <h1>{{ row.name }}</h1>
+    <h1><app-icon name="book" /> {{ row.name }}</h1>
     <div class="actions">
       @if (!editing()) {
         <button
@@ -50,64 +50,73 @@
       <h2 id="edit-course-title">
         {{ row.isArchived || semester()?.isArchived ? 'Uređivanje arhive' : 'Uređivanje kolegija' }}
       </h2>
-      <form [formGroup]="form" (ngSubmit)="submit()">
-        <div class="form-field">
-          <label for="detail-name">Naziv kolegija</label
-          ><input id="detail-name" formControlName="name" maxlength="200" required />
-        </div>
-        <div class="form-field">
-          <label for="detail-info">Informacije o kolegiju (opcionalno)</label
-          ><textarea id="detail-info" formControlName="information" maxlength="10000"></textarea>
-        </div>
-        <div formArrayName="links">
-          <h3>Poveznice (opcionalno)</h3>
-          @for (link of form.controls.links.controls; track link; let i = $index) {
-            <div class="link-fields" [formGroupName]="i">
-              <div class="form-field">
-                <label [for]="'detail-label-' + i">Naziv poveznice {{ i + 1 }}</label
-                ><input
-                  [id]="'detail-label-' + i"
-                  formControlName="label"
-                  maxlength="200"
-                  required
-                />
+      <app-editor-dialog
+        title="Uredi kolegij"
+        (dismiss)="cancel()"
+        [error]="error()"
+        [conflictDescription]="serverDescription()"
+        (restore)="replaceWithServer()"
+        restoreLabel="Učitaj novu verziju"
+      >
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <div class="form-field">
+            <label for="detail-name">Naziv kolegija</label
+            ><input id="detail-name" formControlName="name" maxlength="200" required />
+          </div>
+          <div class="form-field">
+            <label for="detail-info">Informacije o kolegiju (opcionalno)</label
+            ><textarea id="detail-info" formControlName="information" maxlength="10000"></textarea>
+          </div>
+          <div formArrayName="links">
+            <h3>Poveznice (opcionalno)</h3>
+            @for (link of form.controls.links.controls; track link; let i = $index) {
+              <div class="link-fields" [formGroupName]="i">
+                <div class="form-field">
+                  <label [for]="'detail-label-' + i">Naziv poveznice {{ i + 1 }}</label
+                  ><input
+                    [id]="'detail-label-' + i"
+                    formControlName="label"
+                    maxlength="200"
+                    required
+                  />
+                </div>
+                <div class="form-field">
+                  <label [for]="'detail-url-' + i">URL poveznice {{ i + 1 }}</label
+                  ><input
+                    [id]="'detail-url-' + i"
+                    formControlName="url"
+                    type="url"
+                    maxlength="2000"
+                    required
+                  />
+                </div>
+                <button
+                  type="button"
+                  (click)="removeLink(i)"
+                  [attr.aria-label]="'Ukloni poveznicu ' + (i + 1)"
+                >
+                  Ukloni
+                </button>
               </div>
-              <div class="form-field">
-                <label [for]="'detail-url-' + i">URL poveznice {{ i + 1 }}</label
-                ><input
-                  [id]="'detail-url-' + i"
-                  formControlName="url"
-                  type="url"
-                  maxlength="2000"
-                  required
-                />
-              </div>
-              <button
-                type="button"
-                (click)="removeLink(i)"
-                [attr.aria-label]="'Ukloni poveznicu ' + (i + 1)"
-              >
-                Ukloni
-              </button>
-            </div>
-          }
-        </div>
-        <button
-          type="button"
-          (click)="addLink()"
-          [disabled]="form.controls.links.length >= 20 || store.busy()"
-        >
-          Dodaj poveznicu
-        </button>
-        <p class="hint">
-          HTTP/HTTPS poveznice otvaraju se izvan aplikacije. Kolegij zadržava izvorni semestar.
-        </p>
-        <div class="actions">
-          <button class="primary" type="submit" [disabled]="!store.canWrite() || loading()">
-            {{ store.busy() ? 'Spremam…' : 'Spremi promjene' }}</button
-          ><button type="button" (click)="cancel()" [disabled]="store.busy()">Odustani</button>
-        </div>
-      </form>
+            }
+          </div>
+          <button
+            type="button"
+            (click)="addLink()"
+            [disabled]="form.controls.links.length >= 20 || store.busy()"
+          >
+            Dodaj poveznicu
+          </button>
+          <p class="hint">
+            HTTP/HTTPS poveznice otvaraju se izvan aplikacije. Kolegij zadržava izvorni semestar.
+          </p>
+          <div class="actions">
+            <button class="primary" type="submit" [disabled]="!store.canWrite() || loading()">
+              {{ store.busy() ? 'Spremam…' : 'Spremi promjene' }}</button
+            ><button type="button" (click)="cancel()" [disabled]="store.busy()">Odustani</button>
+          </div>
+        </form>
+      </app-editor-dialog>
     </section>
   } @else {
     <div class="course-information-grid">

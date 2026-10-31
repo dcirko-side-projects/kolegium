@@ -1,5 +1,5 @@
 <div class="page-heading">
-  <h1>Postavke</h1>
+  <h1><app-icon name="settings" /> Postavke</h1>
   <button class="primary" (click)="open()" [disabled]="!store.canWrite()">Dodaj semestar</button>
 </div>
 <section class="panel">
@@ -7,7 +7,7 @@
   <p>{{ store.activeSemester()?.name ?? 'Aktualni semestar još nije postavljen.' }}</p>
   <p class="hint">Semestri čuvaju povijest. Arhiva se pregledava odvojeno i ne briše kolegije.</p>
 </section>
-@if (error()) {
+@if (error() && !formOpen()) {
   <div class="panel error-message" role="alert">
     {{ error()?.message }}
     @if (error()?.category === 'conflict' && editing()) {
@@ -30,27 +30,36 @@
           : 'Novi semestar'
       }}
     </h2>
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <div class="form-field">
-        <label for="semester-name">Naziv semestra</label
-        ><input id="semester-name" formControlName="name" maxlength="200" required />
-      </div>
-      <div class="form-grid">
+    <app-editor-dialog
+      title="Semestar"
+      (dismiss)="cancel()"
+      [error]="error()"
+      [conflictDescription]="serverName()"
+      (restore)="replaceWithServer()"
+      restoreLabel="Učitaj novu verziju"
+    >
+      <form [formGroup]="form" (ngSubmit)="submit()">
         <div class="form-field">
-          <label for="semester-start">Početak nastave</label
-          ><input id="semester-start" type="date" formControlName="startsOn" required />
+          <label for="semester-name">Naziv semestra</label
+          ><input id="semester-name" formControlName="name" maxlength="200" required />
         </div>
-        <div class="form-field">
-          <label for="semester-end">Završetak nastave</label
-          ><input id="semester-end" type="date" formControlName="endsOn" required />
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="semester-start">Početak nastave</label
+            ><input id="semester-start" type="date" formControlName="startsOn" required />
+          </div>
+          <div class="form-field">
+            <label for="semester-end">Završetak nastave</label
+            ><input id="semester-end" type="date" formControlName="endsOn" required />
+          </div>
         </div>
-      </div>
-      <div class="actions">
-        <button class="primary" type="submit" [disabled]="!store.canWrite()">
-          {{ store.busy() ? 'Spremam…' : 'Spremi semestar' }}</button
-        ><button type="button" (click)="cancel()" [disabled]="store.busy()">Odustani</button>
-      </div>
-    </form>
+        <div class="actions">
+          <button class="primary" type="submit" [disabled]="!store.canWrite()">
+            {{ store.busy() ? 'Spremam…' : 'Spremi semestar' }}</button
+          ><button type="button" (click)="cancel()" [disabled]="store.busy()">Odustani</button>
+        </div>
+      </form>
+    </app-editor-dialog>
   </section>
 }
 <section aria-labelledby="semesters-title">
