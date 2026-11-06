@@ -1,5 +1,11 @@
 # Deployment i environments
 
+## Nova aplikacijska ikona — 6.11.2026.
+
+Izričiti nalog „commitaj pushaj sve i objavi” izvršen za odabranu ikonu A. Source commit **e8517ac** pushan na postojeći privatni origin/main; release build i release PWA smoke PASS. Postojeći firebase-cloud.mjs wrapper izvršio je deploy --project kolegium-c8970 --config firebase.release.json --only hosting --non-interactive: PASS, 45 datoteka, public-shell **df0d8b34c8d0658eb8bb** / 44 assets. Bez Rules/index/data/billing promjene. Online https://kolegium-c8970.firebaseapp.com i https://kolegium-c8970.web.app.
+
+Hosted smoke PASS: 18 HTTP/cache provjera, identičan worker na oba origina, SHA-256 svih 44 assets uključujući ikone identičan lokalnom releaseu, javni desktop/mobile login 1440/390px PASS. Dokazi u ignoriranom artifacts/release/icon-2026-11-06. Native OS osvježavanje instalirane ikone nije provjereno. Postojeći PWA treba učitati novu verziju; OS može zasebno zadržati prethodnu ikonu. Završna dokumentacija objave također se commitira/pusha po istom nalogu.
+
 ## GitHub checkpoint — 31.10.2026.
 
 Po naknadnom izričitom nalogu „commitaj i pushaj promjene na github ako već nisi” izvorni kod, testovi, javne aplikacijske ikone i dokumentacija redizajna/objave commitirani su kao **6bc1cb1** (`Redesign interface and unify today's schedule`) i uspješno poslani na `main` postojećeg privatnog **dcirko-side-projects/kolegium** repozitorija. Remote/Private metadata potvrđeni prije slanja; fetch je potvrdio HEAD/origin-main0/0. Staged provjera64datoteke:0credential signatures/0privatnih ili generiranih datoteka. Privatni backupi, privitci, CLI store, node_modules, dist i testni artefakti ostaju ignorirani. Ova dopuna dokumentacije bilježi ostvareni source checkpoint; njezin završni commit/push provjerava se Git poviješću. Nema nove objave, Rules/data/billing/visibility promjene niti promjene testiranog/objavljenog kandidata **2d05521c7c64e5c60e82**.

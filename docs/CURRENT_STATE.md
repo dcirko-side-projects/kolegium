@@ -1,5 +1,11 @@
 # Trenutno stanje
 
+## Objavljena nova ikona i Git checkpoint — 6.11.2026.
+
+Po naknadnom izričitom nalogu „commitaj pushaj sve i objavi” svih šest aktualnih projektnih izmjena (SVG, PNG 192/512 i dokumentacija) commitirano je kao **e8517ac** i pushano na postojeći privatni dcirko-side-projects/kolegium/main. Release build i release PWA smoke PASS; Hosting-only deploy u kolegium-c8970 PASS, **df0d8b34c8d0658eb8bb**, 45 Hosting datoteka/44 PWA assets. Nova ikona A sada je online. Raniji lokalni status ispod opisuje stanje prije ove objave.
+
+Hosted smoke PASS: 18 HTTP/cache provjera na firebaseapp.com i web.app, isti service worker kao lokalno, SHA-256 svih 44 javnih assets uključujući SVG/PNG ikone identičan provjerenom buildu, javni login 1440/390px s produkcijskim project ID-em i Google gumbom bez testnog gumba/overflowa. Dokazi u ignoriranom artifacts/release/icon-2026-11-06. Stvarna OS instalacija/osvježavanje ikone NOT RUN; nema nove owner prijave, privatnih upisa, Rules/index/schema/billing promjena. Ova završna dokazna dopuna također se commitira/pusha po istom nalogu; konačan hash provjeriti Git poviješću.
+
 ## Nova aplikacijska ikona — 6.11.2026.
 
 Po korisnikovu odabiru i nalogu „Ajde opcija A. Kreni” radni monogram K zamijenjen je bijelom akademskom kapom s tamnom kićankom na plavoj podlozi (#F4F9FC/#02070A/#0297DE). Izrađen canonical SVG i regenerirani PNG 192/512 postojećim scripts/generate-icons.mjs. Postojeći favicon, manifest i apple-touch-icon već koriste te datoteke. Vizualno pregledan konačni PNG 512; puna kvadratna pozadina čuva boju pri OS maskiranju. Nema promjene podataka, Rules ili dependencies.
