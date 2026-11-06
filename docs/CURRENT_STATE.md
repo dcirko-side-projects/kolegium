@@ -1,5 +1,11 @@
 # Trenutno stanje
 
+## Nova aplikacijska ikona — 6.11.2026.
+
+Po korisnikovu odabiru i nalogu „Ajde opcija A. Kreni” radni monogram K zamijenjen je bijelom akademskom kapom s tamnom kićankom na plavoj podlozi (#F4F9FC/#02070A/#0297DE). Izrađen canonical SVG i regenerirani PNG 192/512 postojećim scripts/generate-icons.mjs. Postojeći favicon, manifest i apple-touch-icon već koriste te datoteke. Vizualno pregledan konačni PNG 512; puna kvadratna pozadina čuva boju pri OS maskiranju. Nema promjene podataka, Rules ili dependencies.
+
+Provjere: generator ikona, npm run build i npm run test:pwa PASS (public shell 37ab36052c07da4e8019, 44 assets). Prvi PWA pokušaj blokiran sandbox loopback pristupom ERR_NETWORK_ACCESS_DENIED; isti test izvan sandboxa PASS. Stvarna instalacija/OS osvježavanje ikone NOT RUN. Promjena je lokalna, bez deploya/commita/pusha.
+
 ## GitHub checkpoint — 31.10.2026.
 
 Po naknadnom izričitom nalogu „commitaj i pushaj promjene na github ako već nisi” izvorni kod, testovi, javne aplikacijske ikone i dokumentacija redizajna/objave commitirani su kao **6bc1cb1** (`Redesign interface and unify today's schedule`) i uspješno poslani na `main` postojećeg privatnog **dcirko-side-projects/kolegium** repozitorija. Remote/Private metadata potvrđeni prije slanja; fetch je potvrdio HEAD/origin-main0/0. Staged provjera64datoteke:0credential signatures/0privatnih ili generiranih datoteka. Privatni backupi, privitci, CLI store, node_modules, dist i testni artefakti ostaju ignorirani. Ova dopuna dokumentacije bilježi ostvareni source checkpoint; njezin završni commit/push provjerava se Git poviješću. Nema nove objave, Rules/data/billing/visibility promjene niti promjene testiranog/objavljenog kandidata **2d05521c7c64e5c60e82**.

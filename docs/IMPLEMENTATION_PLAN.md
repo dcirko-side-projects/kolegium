@@ -1,5 +1,7 @@
 # Implementation Roadmap
 
+6.11.2026. — odobrena zamjena aplikacijske ikone opcijom A lokalno implementirana (SVG i PNG 192/512); build i PWA smoke PASS. Online objava i stvarna provjera instalirane ikone na telefonu ostaju neizvedene. Dokazi u CURRENT_STATE.
+
 31.10.2026. — naknadni izričiti nalog „Objavi online” izvršen: Hosting-only **2d05521c7c64e5c60e82**, hosted smoke PASS. Bez Rules/data/billing/Git promjena. Raniji lokalni status ispod opisuje prethodnu fazu. Dokazi CURRENT_STATE/DEPLOYMENT.
 
 
