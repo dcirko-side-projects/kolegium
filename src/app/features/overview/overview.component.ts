@@ -22,14 +22,6 @@ import { RouterLink } from '@angular/router';
         >Otvori raspored <span aria-hidden="true">→</span></a
       >
     </div>
-    <section class="panel">
-      <h2><app-icon name="bell" /> Podsjetnici za tvoje obaveze</h2>
-      <p>
-        Zadaci, projekti, rate, predavanja/vježbe i kolokviji/ispiti — pregled na jednom mjestu i
-        besplatni izvoz u kalendar mobitela.
-      </p>
-      <a class="button-link" routerLink="/reminders">Otvori podsjetnike i preuzimanje za mobitel</a>
-    </section>
     @if (store.academic.ready() && !store.academic.loading() && store.courses().length === 0) {
       <section class="hero" aria-labelledby="start-title">
         <div>
@@ -107,12 +99,13 @@ import { RouterLink } from '@angular/router';
           }
         }
         @if (planning.more()) {
-          <button (click)="planning.count.update(increase)" [disabled]="planning.loading()">
+          <button (click)="planning.loadMore()" [disabled]="planning.loading()">
             Učitaj još obaveza
           </button>
         }
       </section>
     </div>
+    <p><a class="text-link" routerLink="/reminders">Svi podsjetnici i izvoz u kalendar</a></p>
     <section class="panel" aria-labelledby="installment-reminders-title">
       <h2 id="installment-reminders-title"><app-icon name="wallet" /> Podsjetnici za rate</h2>
       <p>Neplaćene rate prikazuju se 30 dana prije roka, uz upozorenje u zadnjih 7 dana.</p>
@@ -129,7 +122,9 @@ import { RouterLink } from '@angular/router';
       }
       @for (row of planning.installmentReminders(); track row.id) {
         <article [attr.aria-label]="row.name">
-          <h3>{{ row.name }}</h3>
+          <h3>
+            <a [routerLink]="['/installments', row.id]">{{ row.name }}</a>
+          </h3>
           <p>{{ row.message }} Rok: {{ row.dueOn }} · {{ money(row.amountCents) }}</p>
         </article>
       } @empty {
@@ -139,7 +134,7 @@ import { RouterLink } from '@angular/router';
       }
       @if (planning.more()) {
         <p>Pregled ima dodatne stranice. Učitaj ih za potpuni prikaz podsjetnika.</p>
-        <button (click)="planning.count.update(increase)" [disabled]="planning.loading()">
+        <button (click)="planning.loadMore()" [disabled]="planning.loading()">
           Učitaj još podsjetnika
         </button>
       }
@@ -150,7 +145,7 @@ import { RouterLink } from '@angular/router';
       @for (task of planning.tasks(); track task.id) {
         <article [attr.aria-label]="task.title">
           <h3>
-            <a routerLink="/todo">{{ task.title }}</a>
+            <a [routerLink]="['/todo', task.id]">{{ task.title }}</a>
           </h3>
           <p>Rok: {{ task.dueOn ?? 'nije zadan' }}</p>
         </article>
@@ -173,7 +168,6 @@ export class OverviewComponent {
   protected until() {
     return addDays(this.planning.today(), 14);
   }
-  protected readonly increase = (n: number) => n + 50;
   protected money(cents: number) {
     return new Intl.NumberFormat('hr-HR', { style: 'currency', currency: 'EUR' }).format(
       cents / 100,

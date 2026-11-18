@@ -115,13 +115,13 @@
       <h2>{{ old() ? 'Uredi stavku' : isAssessment ? 'Nova provjera' : 'Novi projekt' }}</h2>
       <div class="form-field">
         <label for="work-name">{{ isAssessment ? 'Naziv provjere' : 'Naziv projekta' }}</label
-        ><input id="work-name" maxlength="200" formControlName="name" />
+        ><input id="work-name" required maxlength="200" formControlName="name" />
       </div>
       <div class="form-field">
         <label for="work-course">{{
           isAssessment ? 'Kolegij provjere' : 'Kolegij projekta (opcionalno)'
         }}</label
-        ><select id="work-course" formControlName="courseId">
+        ><select id="work-course" [required]="isAssessment" formControlName="courseId">
           <option value="">{{ isAssessment ? 'Odaberi kolegij' : 'Bez kolegija' }}</option>
           @for (c of store.academic.courses(); track c.id) {
             <option [value]="c.id" [selected]="form.controls.courseId.value === c.id">
@@ -154,7 +154,7 @@
         <div class="form-grid">
           <div class="form-field">
             <label for="work-date">Datum provjere</label
-            ><input id="work-date" type="date" formControlName="scheduledOn" />
+            ><input id="work-date" required type="date" formControlName="scheduledOn" />
           </div>
           <div class="form-field">
             <label for="work-time">Vrijeme provjere (opcionalno)</label

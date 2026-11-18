@@ -31,6 +31,17 @@ import {
 import { installmentInput, rulesInput, outcomeInput, calculateCourse } from '../domain/grading';
 import { dateOnly, recordId } from '../domain/academic.validation';
 import { ApplicationError, asApplicationError } from '../core/errors/application-error';
+export interface InstallmentCursor {
+  datasetId: string;
+  uid: string;
+  row: QueryDocumentSnapshot;
+  revision: number;
+}
+export interface OverviewCursor {
+  queryKey: string;
+  revision: number;
+  streams: Map<string, QueryDocumentSnapshot | null>;
+}
 type Name = 'installments' | 'gradingRules' | 'courseOutcomes';
 type RecordValue = Installment | GradingRules | CourseOutcome;
 type Input = InstallmentInput | GradingRulesInput | CourseOutcomeInput;
@@ -84,10 +95,16 @@ export class PlanningRepository {
       throw asApplicationError(e);
     }
   }
-  async installments(scope: ActiveScope, count = 50) {
+  async installments(scope: ActiveScope, count = 50, previous?: InstallmentCursor) {
     this.connected();
     const rows: Installment[] = [];
-    let cursor: QueryDocumentSnapshot | undefined;
+    const academic = new AcademicRepository(this.db, this.online);
+    const before = await academic.readControl(scope.uid);
+    const append =
+      previous?.revision === before.dataRevision &&
+      previous.datasetId === scope.datasetId &&
+      previous.uid === scope.uid;
+    let cursor = append ? previous.row : undefined;
     let more: boolean;
     do {
       const snap = await getDocsFromServer(
@@ -105,8 +122,24 @@ export class PlanningRepository {
       more = snap.size === 50;
       cursor = snap.docs.at(-1);
       if (!more) break;
-    } while (cursor && rows.length < count);
-    return { rows, more };
+    } while (cursor && rows.length < (append ? 50 : count));
+    const after = await academic.readControl(scope.uid);
+    if (
+      after.activeDatasetId !== scope.datasetId ||
+      after.dataRevision !== before.dataRevision ||
+      after.restoreToken !== before.restoreToken
+    ) {
+      throw new ApplicationError(
+        'conflict',
+        'Rate su promijenjene tijekom čitanja. Osvježi pregled.',
+      );
+    }
+    return {
+      rows,
+      more,
+      append,
+      cursor: cursor && { ...scope, row: cursor, revision: after.dataRevision },
+    };
   }
   async save(scope: ActiveScope, name: Name, id: string, input: Input, revision: number | null) {
     this.connected();
@@ -188,14 +221,9 @@ export class PlanningRepository {
         ),
       );
       for (const row of page.docs) {
-        const activity = (await work.get(scope, 'scoreActivities', row.id)) as ScoreActivity;
+        const activity = work.decode('scoreActivities', row.id, row.data()) as ScoreActivity;
         activities.push(activity);
-        const data = await work.attempts(
-          scope,
-          activity.source.type,
-          activity.source.id ?? activity.id,
-        );
-        attempts.push(...data.attempts);
+        attempts.push(...(await work.attemptHistory(scope, activity.id)));
         if (activity.source.type === 'assessment' || activity.source.type === 'project') {
           const source = await work.get(
             scope,
@@ -227,7 +255,13 @@ export class PlanningRepository {
       );
     return { activities, attempts, completed, rules, outcome };
   }
-  async overview(scope: ActiveScope, until: string, count = 50, installmentsUntil = until) {
+  async overview(
+    scope: ActiveScope,
+    until: string,
+    count = 50,
+    installmentsUntil = until,
+    previous?: OverviewCursor,
+  ) {
     this.connected();
     dateOnly(until);
     dateOnly(installmentsUntil);
@@ -235,6 +269,17 @@ export class PlanningRepository {
     const academic = new AcademicRepository(this.db, this.online),
       before = await academic.readControl(scope.uid),
       deadlines: Deadline[] = [];
+    const queryKey = JSON.stringify([scope.uid, scope.datasetId, until, installmentsUntil]);
+    const append = previous?.queryKey === queryKey && previous.revision === before.dataRevision;
+    const streams = new Map(append ? previous.streams : []);
+    const pageLimit = append ? 50 : count;
+    const parents = new Map<string, Record<string, unknown> | undefined>();
+    const parent = async (name: string, id: string) => {
+      const key = name + '/' + id;
+      if (!parents.has(key))
+        parents.set(key, (await getDocFromServer(this.ref(scope, name, id))).data());
+      return parents.get(key);
+    };
     let more = false;
     const specs = [
       ['assessments', 'scheduledOn', 'isCompleted', 'Kolokvij / ispit'],
@@ -243,7 +288,8 @@ export class PlanningRepository {
       ['installments', 'dueOn', 'isPaid', 'Rata'],
     ] as const;
     for (const [name, date, status, label] of specs) {
-      let cursor: QueryDocumentSnapshot | undefined;
+      if (streams.get(name) === null) continue;
+      let cursor = streams.get(name) ?? undefined;
       let loaded = 0;
       do {
         const constraints: QueryConstraint[] = [
@@ -266,55 +312,53 @@ export class PlanningRepository {
           if (name === 'installments')
             installmentReminders.push(this.decode('installments', d.id, v) as Installment);
           if (dateOnly(v[date]) > until) continue;
-          if (await this.visible(scope, v))
+          if (await this.visible(parent, v))
             deadlines.push({
               id: name + '/' + d.id,
               name: String(v['name'] ?? v['title']),
               date: dateOnly(v[date]),
-              route:
-                name === 'tasks'
-                  ? '/todo'
-                  : name === 'installments'
-                    ? '/installments'
-                    : '/' + name + '/' + d.id,
+              route: '/' + (name === 'tasks' ? 'todo' : name) + '/' + d.id,
               kind: label,
               ...(name === 'assessments' ? { scheduledAt: v['scheduledAt'] as string | null } : {}),
             });
         }
+        streams.set(name, page.size === 50 ? page.docs.at(-1)! : null);
         loaded += page.size;
         cursor = page.docs.at(-1);
         if (page.size < 50) break;
-        if (loaded >= count) {
+        if (loaded >= pageLimit) {
           more = true;
           break;
         }
       } while (cursor);
     }
     const tasks: Task[] = [];
-    let cursor: QueryDocumentSnapshot | undefined;
+    let cursor = streams.get('openTasks') ?? undefined;
     let loaded = 0;
-    do {
-      const page = await getDocsFromServer(
-        query(
-          collection(this.db, 'users', scope.uid, 'datasets', scope.datasetId, 'tasks'),
-          where('isCompleted', '==', false),
-          orderBy('__name__'),
-          ...(cursor ? [startAfter(cursor)] : []),
-          limit(50),
-        ),
-      );
-      const work = new WorkRepository(this.db, this.online);
-      for (const d of page.docs)
-        if (await this.visible(scope, d.data()))
-          tasks.push((await work.get(scope, 'tasks', d.id)) as Task);
-      loaded += page.size;
-      cursor = page.docs.at(-1);
-      if (page.size < 50) break;
-      if (loaded >= count) {
-        more = true;
-        break;
-      }
-    } while (cursor);
+    if (streams.get('openTasks') !== null)
+      do {
+        const page = await getDocsFromServer(
+          query(
+            collection(this.db, 'users', scope.uid, 'datasets', scope.datasetId, 'tasks'),
+            where('isCompleted', '==', false),
+            orderBy('__name__'),
+            ...(cursor ? [startAfter(cursor)] : []),
+            limit(50),
+          ),
+        );
+        const work = new WorkRepository(this.db, this.online);
+        for (const d of page.docs)
+          if (await this.visible(parent, d.data()))
+            tasks.push(work.decode('tasks', d.id, d.data()) as Task);
+        streams.set('openTasks', page.size === 50 ? page.docs.at(-1)! : null);
+        loaded += page.size;
+        cursor = page.docs.at(-1);
+        if (page.size < 50) break;
+        if (loaded >= pageLimit) {
+          more = true;
+          break;
+        }
+      } while (cursor);
     const after = await academic.readControl(scope.uid);
     if (
       before.dataRevision !== after.dataRevision ||
@@ -326,6 +370,8 @@ export class PlanningRepository {
         'Obaveze su promijenjene tijekom čitanja. Osvježi pregled.',
       );
     return {
+      cursor: { queryKey, revision: after.dataRevision, streams },
+      append,
       installmentReminders,
       dataRevision: after.dataRevision,
       deadlines: deadlines.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id)),
@@ -333,21 +379,24 @@ export class PlanningRepository {
       more,
     };
   }
-  private async visible(scope: ActiveScope, v: Record<string, unknown>) {
+  private async visible(
+    parent: (name: string, id: string) => Promise<Record<string, unknown> | undefined>,
+    v: Record<string, unknown>,
+  ) {
     if (v['isArchived']) return false;
     let course = v['courseId'] as string | null | undefined;
     const context = v['context'] as Task['context'] | undefined;
     if (context?.type === 'course') course = context.id;
     if (context?.type === 'project') {
-      const p = await getDocFromServer(this.ref(scope, 'projects', context.id!));
-      if (!p.exists() || p.data()['isArchived']) return false;
-      course = p.data()['courseId'];
+      const p = await parent('projects', context.id!);
+      if (!p || p['isArchived']) return false;
+      course = p['courseId'] as string;
     }
     if (course) {
-      const c = await getDocFromServer(this.ref(scope, 'courses', course));
-      if (!c.exists() || c.data()['isArchived']) return false;
-      const semester = await getDocFromServer(this.ref(scope, 'semesters', c.data()['semesterId']));
-      if (!semester.exists() || semester.data()['isArchived']) return false;
+      const c = await parent('courses', course);
+      if (!c || c['isArchived']) return false;
+      const semester = await parent('semesters', c['semesterId'] as string);
+      if (!semester || semester['isArchived']) return false;
     }
     return true;
   }

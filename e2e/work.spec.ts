@@ -25,6 +25,25 @@ async function task(page: Page, title: string) {
 test.beforeEach(async ({ page }) => {
   await prepare(page);
 });
+test('home opens the chosen task and an empty task focuses its title', async ({ page }) => {
+  await page.goto('/todo');
+  await page.getByRole('button', { name: 'Dodaj zadatak', exact: true }).click();
+  await page.getByRole('button', { name: 'Spremi zadatak', exact: true }).click();
+  const title = page.getByLabel('Naziv zadatka', { exact: true });
+  await expect(title).toBeFocused();
+  await expect(title).toHaveAttribute('aria-invalid', 'true');
+  await title.fill('Ciljani zadatak');
+  await page.getByRole('button', { name: 'Spremi zadatak', exact: true }).click();
+  await saved(page);
+  await task(page, 'Drugi zadatak');
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Ciljani zadatak', exact: true }).click();
+  await expect(page.getByRole('article', { name: 'Ciljani zadatak' })).toBeVisible();
+  await expect(page.getByRole('article', { name: 'Drugi zadatak' })).toHaveCount(0);
+  await page.getByRole('link', { name: 'Svi zadaci' }).click();
+  await expect(page.getByRole('article', { name: 'Drugi zadatak' })).toBeVisible();
+});
+
 test('assessment attempts retain zero, unknown and all history; correction does not create another attempt', async ({
   page,
 }) => {

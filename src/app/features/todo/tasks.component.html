@@ -1,6 +1,9 @@
 @if (!embedded()) {
   <div class="page-heading">
     <h1><app-icon name="list" /> To-do</h1>
+    @if (store.recordId()) {
+      <a routerLink="/todo">← Svi zadaci</a>
+    }
     <a routerLink="/sections">Pogledaj sve sekcije</a>
   </div>
   <p>Jedna lista zadataka: samostalni, za kolegij, projekt ili diplomski.</p>
@@ -28,7 +31,9 @@
   <p role="status">Spremam promjenu…</p>
 }
 <div class="actions">
-  <button class="primary" (click)="start()" [disabled]="!store.canWrite()">Dodaj zadatak</button>
+  @if (!store.recordId()) {
+    <button class="primary" (click)="start()" [disabled]="!store.canWrite()">Dodaj zadatak</button>
+  }
   @if (store.archivedIds().size > 0) {
     <button
       (click)="store.archiveEditing.set(!store.archiveEditing())"
@@ -42,7 +47,7 @@
     </p>
   }
 </div>
-@if (!embedded()) {
+@if (!embedded() && !store.recordId()) {
   <form
     class="panel form-grid"
     (submit)="$event.preventDefault(); applyFilters()"
@@ -141,6 +146,7 @@
           [id]="'task-title-' + (fixedId() ?? 'all')"
           maxlength="200"
           formControlName="title"
+          required
         />
       </div>
       <div class="form-field">
@@ -160,7 +166,7 @@
         @if (form.controls.contextType.value === 'course') {
           <div class="form-field">
             <label for="task-course">Kolegij zadatka</label
-            ><select id="task-course" formControlName="contextId">
+            ><select id="task-course" required formControlName="contextId">
               <option value="">Odaberi kolegij</option>
               @for (c of store.academic.courses(); track c.id) {
                 <option [value]="c.id" [selected]="form.controls.contextId.value === c.id">
@@ -178,7 +184,7 @@
         @if (form.controls.contextType.value === 'project') {
           <div class="form-field">
             <label for="task-project">Projekt zadatka</label
-            ><select id="task-project" formControlName="contextId">
+            ><select id="task-project" required formControlName="contextId">
               <option value="">Odaberi projekt</option>
               @for (p of store.projects(); track p.id) {
                 <option [value]="p.id" [selected]="form.controls.contextId.value === p.id">
@@ -214,7 +220,7 @@
 @for (group of groups(); track group.completed) {
   @if (group.rows.length) {
     @if (group.completed) {
-      @if (appliedFilters().status === 'done') {
+      @if (store.recordId() || appliedFilters().status === 'done') {
         <h2><app-icon name="check" /> Dovršeni zadaci ({{ group.rows.length }})</h2>
       } @else {
         <button
@@ -229,7 +235,9 @@
     } @else {
       <h2>Aktivni zadaci ({{ group.rows.length }})</h2>
     }
-    @if (!group.completed || showCompleted() || appliedFilters().status === 'done') {
+    @if (
+      store.recordId() || !group.completed || showCompleted() || appliedFilters().status === 'done'
+    ) {
       <div class="record-list">
         @for (row of group.rows; track row.id) {
           <article
@@ -262,11 +270,11 @@
   }
 }
 @if (!visible().length && !store.loading()) {
-  <p>Nema zadataka u ovom pregledu.</p>
+  <p>
+    {{ store.recordId() ? 'Traženi zadatak nije pronađen.' : 'Nema zadataka u ovom pregledu.' }}
+  </p>
 }
-<p class="hint">
-  Brojevi uključuju učitane zadatke. Za daljnje rezultate koristi Učitaj još zadataka.
-</p>
 @if (store.more()) {
+  <p class="hint">Brojevi uključuju učitane zadatke.</p>
   <button (click)="store.loadMore()" [disabled]="store.loading()">Učitaj još zadataka</button>
 }

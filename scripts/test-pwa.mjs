@@ -82,6 +82,22 @@ try {
     ),
   );
   await context.setOffline(true);
+  for (const route of [
+    'sections',
+    'schedule',
+    'attendance',
+    'courses',
+    'assessments',
+    'projects',
+    'todo',
+    'thesis',
+    'installments',
+    'settings',
+    'reminders',
+  ]) {
+    const response = await page.goto('http://127.0.0.1:4401/' + route);
+    assert(response?.ok() && response.fromServiceWorker(), route);
+  }
   await page.goto('http://127.0.0.1:4401/login');
   assert.match(await page.locator('main').innerText(), /Tvoj studentski prostor/);
   assert.equal(

@@ -24,7 +24,12 @@
       <a class="mobile-brand" routerLink="/">Kolegium</a>
       <div class="context">
         <span class="preview">{{ auth.isLocal ? 'Lokalni emulator' : 'Privatni prostor' }}</span>
-        <strong>{{ store.selectedSemester()?.name ?? 'Tvoja akademska evidencija' }}</strong>
+        <strong>
+          @if (store.selectedSemester()?.isArchived) {
+            Arhiva ·
+          }
+          {{ store.selectedSemester()?.name ?? 'Tvoja akademska evidencija' }}</strong
+        >
       </div>
       <button (click)="logout()" [disabled]="store.busy()">Odjava</button>
     </header>

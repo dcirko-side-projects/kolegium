@@ -1,5 +1,7 @@
 # Testing Guide
 
+18.11.2026. — pregled kolegija na trećoj stranici prati potvrđenu izmjenu, dok drugi otvoreni obrazac zadržava lokalni unos. Test sa 51 ratom provjerava nastavak od 51. zapisa i obnovu prve stranice nakon promjene revizije. PWA smoke otvara sve glavne navigacijske ulaze bez mreže. U desktop/mobilnom Chromium skupu prošlo je 68 slučajeva u punom pokretanju, uz jedan predviđen skip. Tri tada neuspješna slučaja pokrivena su uspješnim ciljanim ponavljanjem nakon ispravaka. Završni ciljani skup 6/6 uključuje i dva nova testa odabira zadatka i fokusa pri praznom nazivu. Ukupno 73 različita uspješna slučaja i jedan skip.
+
 31.10.2026. — nakon naloga „Objavi online” Hosting-only deploy **2d05521c7c64e5c60e82 PASS**. Hosted18HTTP/cache, oba byte-identična workera,44assets SHA-256 i javni produkcijski login1440/390px bez mock gumba/overflowa PASS. Bez privatnih/cloud data upisa ili novog owner/device/Outlook dokaza; detalji CURRENT_STATE/DEPLOYMENT i artifacts/release/ux-2026-10-31.
 
 

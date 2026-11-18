@@ -1,3 +1,5 @@
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { EditorDialogComponent } from '../../shared/ui/editor-dialog/editor-dialog.component';
 import { Component, DestroyRef, effect, inject, signal, untracked } from '@angular/core';
@@ -9,15 +11,20 @@ import { Installment } from '../../domain/planning.models';
 import { eurosToCents, installmentInput } from '../../domain/grading';
 @Component({
   selector: 'app-installments',
-  imports: [IconComponent, EditorDialogComponent, ReactiveFormsModule],
+  imports: [RouterLink, IconComponent, EditorDialogComponent, ReactiveFormsModule],
   providers: [PlanningStoreService],
   template: `
+    @if (store.recordId()) {
+      <a routerLink="/installments">← Sve rate</a>
+    }
     <div class="page-heading">
       <div>
         <h1><app-icon name="wallet" /> Rate fakulteta</h1>
         <p class="hint">Iznos u EUR, rok i evidencija plaćanja.</p>
       </div>
-      <button class="primary" (click)="start()" [disabled]="!store.canWrite()">Dodaj ratu</button>
+      @if (!store.recordId()) {
+        <button class="primary" (click)="start()" [disabled]="!store.canWrite()">Dodaj ratu</button>
+      }
     </div>
     @if (store.loading()) {
       <p role="status">Učitavam rate…</p>
@@ -50,15 +57,22 @@ import { eurosToCents, installmentInput } from '../../domain/grading';
           <h2>{{ old() ? 'Uredi ratu' : 'Nova rata' }}</h2>
           <div class="field">
             <label for="installment-name">Naziv rate</label
-            ><input id="installment-name" maxlength="200" formControlName="name" />
+            ><input id="installment-name" required maxlength="200" formControlName="name" />
           </div>
           <div class="field">
             <label for="installment-amount">Iznos EUR</label
-            ><input id="installment-amount" inputmode="decimal" formControlName="amount" />
+            ><input
+              id="installment-amount"
+              required
+              pattern="(0|[1-9][0-9]{0,7})([.,][0-9]{1,2})?"
+              data-invalid-message="Iznos mora imati najviše dvije decimale."
+              inputmode="decimal"
+              formControlName="amount"
+            />
           </div>
           <div class="field">
             <label for="installment-date">Rok plaćanja</label
-            ><input id="installment-date" type="date" formControlName="dueOn" />
+            ><input id="installment-date" required type="date" formControlName="dueOn" />
           </div>
           <label class="checkbox"><input type="checkbox" formControlName="isPaid" />Plaćeno</label>
           <div class="actions">
@@ -97,14 +111,12 @@ import { eurosToCents, installmentInput } from '../../domain/grading';
         </article>
       } @empty {
         @if (!store.loading() && !store.error()) {
-          <p>Nema unesenih rata.</p>
+          <p>{{ store.recordId() ? 'Tražena rata nije pronađena.' : 'Nema unesenih rata.' }}</p>
         }
       }
     </div>
     @if (store.more()) {
-      <button (click)="store.count.update(increase)" [disabled]="store.loading()">
-        Učitaj još rata
-      </button>
+      <button (click)="store.loadMore()" [disabled]="store.loading()">Učitaj još rata</button>
     }
   `,
 })
@@ -122,8 +134,9 @@ export class InstallmentsComponent {
   protected readonly error = signal<ApplicationError | null>(null);
   private id = '';
   private restored = false;
-  protected readonly increase = (n: number) => n + 50;
   constructor() {
+    const params = toSignal(inject(ActivatedRoute).paramMap);
+    effect(() => this.store.recordId.set(params()?.get('id') ?? null));
     const destroy = inject(DestroyRef);
     destroy.onDestroy(this.changes.register(() => this.form.dirty));
     destroy.onDestroy(() => {

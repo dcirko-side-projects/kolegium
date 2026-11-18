@@ -1,5 +1,6 @@
 import { Component, DestroyRef, effect, inject, input, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import type { CourseResultsCursor } from '../../data/work.repository';
 import { WorkStoreService } from '../../core/academic/work-store.service';
 import { ApplicationError, asApplicationError } from '../../core/errors/application-error';
 import { Assessment, Project, ResultSource, ScoreAttempt } from '../../domain/work.models';
@@ -57,7 +58,7 @@ import { Assessment, Project, ResultSource, ScoreAttempt } from '../../domain/wo
         }
       }
       @if (more()) {
-        <button (click)="count.update(increase); refresh()" [disabled]="loading()">
+        <button (click)="count.update(increase); refresh(true)" [disabled]="loading()">
           Učitaj još izvora rezultata
         </button>
       }
@@ -76,6 +77,7 @@ export class CourseWorkComponent {
   protected readonly more = signal(false);
   protected readonly count = signal(50);
   protected readonly increase = (n: number) => n + 50;
+  private cursor?: CourseResultsCursor;
   private request = 0;
   constructor() {
     this.store.kind.set('results');
@@ -94,7 +96,7 @@ export class CourseWorkComponent {
       });
     });
   }
-  protected async refresh() {
+  protected async refresh(next = false) {
     const scope = this.store.academic.scope();
     if (!scope || !this.store.academic.online()) return;
     const request = ++this.request;
@@ -102,9 +104,10 @@ export class CourseWorkComponent {
     try {
       const data = await this.store
         .repository()
-        .courseResults(scope, this.courseId(), this.count());
+        .courseResults(scope, this.courseId(), this.count(), next ? this.cursor : undefined);
       if (request !== this.request) return;
-      this.rows.set(data.rows);
+      this.cursor = data.cursor;
+      this.rows.set(data.append ? [...this.rows(), ...data.rows] : data.rows);
       this.more.set(data.more);
       this.error.set(null);
     } catch (e) {

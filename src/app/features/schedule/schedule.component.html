@@ -49,7 +49,7 @@
   {{ store.academic.selectedSemester()?.name ?? 'odaberi semestar' }}.
   <a routerLink="/courses">Kolegiji i semestar</a>
 </p>
-<section class="calendar-toolbar" aria-label="Navigacija kalendara">
+<section class="panel calendar-toolbar" aria-label="Navigacija kalendara">
   <div class="calendar-title">
     <h2>{{ periodLabel() }}</h2>
     <span>{{ rows().length }} termina · Europe/Zagreb</span>
@@ -121,8 +121,18 @@
     />
   </div>
 </section>
+<button
+  class="filter-toggle"
+  (click)="filtersOpen.set(!filtersOpen())"
+  [attr.aria-expanded]="filtersOpen()"
+  aria-controls="schedule-filters"
+>
+  Filtri rasporeda ({{ (store.courseId() ? 1 : 0) + (appliedKind() === 'all' ? 0 : 1) }})
+</button>
 <form
-  class="calendar-filters"
+  id="schedule-filters"
+  [class.filters-open]="filtersOpen()"
+  class="panel calendar-filters"
   [formGroup]="filterForm"
   (ngSubmit)="applyFilters()"
   aria-label="Filtri rasporeda"
@@ -209,7 +219,7 @@
       <div class="form-grid">
         <div class="field">
           <label for="schedule-course">Kolegij</label
-          ><select id="schedule-course" formControlName="courseId">
+          ><select id="schedule-course" required formControlName="courseId">
             <option value="">Odaberi kolegij</option>
             @for (c of store.courses(); track c.id) {
               <option [value]="c.id">{{ c.name }}</option>
@@ -235,7 +245,7 @@
         } @else {
           <div class="field">
             <label for="schedule-single-date">Datum termina</label
-            ><input id="schedule-single-date" type="date" formControlName="scheduledOn" />
+            ><input id="schedule-single-date" required type="date" formControlName="scheduledOn" />
           </div>
         }
         <div class="field">
@@ -244,11 +254,11 @@
         </div>
         <div class="field">
           <label for="schedule-start">Početak nastave</label
-          ><input id="schedule-start" type="time" formControlName="startsAt" />
+          ><input id="schedule-start" required type="time" formControlName="startsAt" />
         </div>
         <div class="field">
           <label for="schedule-end">Završetak nastave</label
-          ><input id="schedule-end" type="time" formControlName="endsAt" />
+          ><input id="schedule-end" required type="time" formControlName="endsAt" />
         </div>
         @if (!single()) {
           <div class="field">
@@ -262,7 +272,7 @@
           </div>
           <div class="field">
             <label for="schedule-until">Vrijedi do</label
-            ><input id="schedule-until" type="date" formControlName="validUntil" />
+            ><input id="schedule-until" required type="date" formControlName="validUntil" />
           </div>
           @if (editing()) {
             <div class="field">
@@ -302,15 +312,15 @@
       <div class="form-grid">
         <div class="field">
           <label for="replacement-date">Datum nadoknade</label
-          ><input id="replacement-date" type="date" formControlName="scheduledOn" />
+          ><input id="replacement-date" required type="date" formControlName="scheduledOn" />
         </div>
         <div class="field">
           <label for="replacement-start">Početak nadoknade</label
-          ><input id="replacement-start" type="time" formControlName="startsAt" />
+          ><input id="replacement-start" required type="time" formControlName="startsAt" />
         </div>
         <div class="field">
           <label for="replacement-end">Završetak nadoknade</label
-          ><input id="replacement-end" type="time" formControlName="endsAt" />
+          ><input id="replacement-end" required type="time" formControlName="endsAt" />
         </div>
         <div class="field">
           <label for="replacement-location">Lokacija nadoknade (opcionalno)</label
@@ -326,7 +336,13 @@
   </app-editor-dialog>
 }
 @if (view() !== 'day') {
-  <div class="calendar-scroll" tabindex="0" role="region" aria-label="Mreža kalendara">
+  <div
+    class="calendar-scroll"
+    [class.week-grid-region]="view() === 'week'"
+    tabindex="0"
+    role="region"
+    aria-label="Mreža kalendara"
+  >
     <div class="calendar-grid" [class.month-grid]="view() === 'month'">
       @for (day of days; track day) {
         <div class="calendar-weekday">{{ day }}</div>

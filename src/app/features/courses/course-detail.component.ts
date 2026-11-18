@@ -46,6 +46,7 @@ export class CourseDetailComponent {
     information: ['', Validators.maxLength(10000)],
     links: this.fb.array<ReturnType<CourseDetailComponent['linkGroup']>>([]),
   });
+  private readonly dataRevision = computed(() => this.store.control()?.dataRevision);
   private loadedId: string | null = null;
   private request = 0;
   private pendingDraft = this.changes.takeDraft<{
@@ -66,8 +67,17 @@ export class CourseDetailComponent {
     effect(() => {
       const id = this.parameters()?.get('id');
       const ready = this.store.ready();
+      this.dataRevision();
+      const editing = this.editing();
       untracked(() => {
-        if (ready && id && this.loadedId !== id) {
+        if (ready && id && (this.loadedId !== id || !editing)) {
+          if (this.loadedId !== id) {
+            this.course.set(null);
+            this.semester.set(null);
+            this.editing.set(false);
+            this.success.set(null);
+            this.sourceTextOpen.set(false);
+          }
           this.loadedId = id;
           void this.load();
         }
@@ -131,6 +141,8 @@ export class CourseDetailComponent {
     this.form.markAsPristine();
   }
   protected startEditing(): void {
+    this.request++;
+    this.loading.set(false);
     this.editing.set(true);
     this.success.set(null);
   }

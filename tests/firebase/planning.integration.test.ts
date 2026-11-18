@@ -134,7 +134,26 @@ describe('Planning SDK invariants', () => {
         { name: 'R' + n, amountCents: 1, dueOn: '2026-10-01', isPaid: false },
         null,
       );
-    expect((await repo.overview(scope, '2026-10-23')).more).toBe(true);
+    const first = await repo.overview(scope, '2026-10-23');
+    expect(first.more).toBe(true);
+    const next = await repo.overview(scope, '2026-10-23', 100, '2026-10-23', first.cursor);
+    expect(next.append).toBe(true);
+    expect(next.deadlines.map((d) => d.id)).toEqual(['installments/r50']);
+    expect(next.more).toBe(false);
+    const rates = await repo.installments(scope);
+    const last = await repo.installments(scope, 100, rates.cursor);
+    expect(last.rows.map((r) => r.id)).toEqual(['r50']);
+    expect(last.more).toBe(false);
+    await repo.save(
+      scope,
+      'installments',
+      'r50',
+      { ...last.rows[0], name: 'Updated' },
+      last.rows[0].revision,
+    );
+    const refreshed = await repo.installments(scope, 100, rates.cursor);
+    expect(refreshed.append).toBe(false);
+    expect(refreshed.rows).toHaveLength(51);
     const full = await repo.overview(scope, '2026-10-23', 100);
     expect(full.deadlines).toHaveLength(51);
     expect(new Set(full.deadlines.map((r) => r.id)).size).toBe(51);

@@ -1,5 +1,7 @@
 # Pregled ovisnosti — 2026-10-08
 
+18.11.2026. — Firestoreova tranzitivna ovisnost re2js ažurirana je s 2.8.6 na 2.10.0 unutar postojećeg raspona. GHSA-gg6h-894w-4m9c ispravljen je od 2.8.7. Ponovljeni npm audit za produkcijske ovisnosti završio je mrežnom pogreškom ECONNRESET na registry endpointu.
+
 ## Aktualna provjera i zakrpe 23.10.2026.
 
 Svježi početni audit postojećeg lockfilea: **16 nalaza (8 high / 7 moderate / 1 low)**, runtime bez nalaza. Primijenjene kompatibilne razvojne zakrpe: @angular/build i @angular/cli **21.2.28**, vitest **4.1.12**, firebase-tools **15.34.1**; ip-address **10.7.4** osvježen unutar postojećeg transitive semver ugovora. Angular runtime/compiler 21.2.25, Firebase SDK 12.19.0 i Node22 baseline ostaju isti. Instalacija s ignore-scripts; postojeći re2 native ABI load PASS na22.23.3. Nema force fixa, major overridea ili novog dependencyja.

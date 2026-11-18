@@ -36,6 +36,7 @@ export class ScheduleComponent {
     courseId: '',
     kind: 'all',
   });
+  protected readonly filtersOpen = signal(false);
   protected readonly appliedKind = signal('all');
   protected readonly window = computed(() => calendarWindow(this.selectedDate(), this.view()));
   protected readonly periodLabel = computed(() =>

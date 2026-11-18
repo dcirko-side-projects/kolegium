@@ -1,5 +1,7 @@
 # Implementation Roadmap
 
+18.11.2026. — Implementirano je deset odabranih nalaza audita. Provjere i identifikator objave evidentiraju se u CURRENT_STATE i DEPLOYMENT.
+
 6.11.2026. — naknadni nalog „commitaj pushaj sve i objavi” izvršen za novu ikonu A: source e8517ac pushan, Hosting-only df0d8b34c8d0658eb8bb objavljen, release build/PWA i hosted HTTP/assets/desktop/mobile login smoke PASS. Stvarna OS provjera ikone ostaje NOT RUN. Dokazi CURRENT_STATE/DEPLOYMENT; lokalni status ispod je prethodna faza.
 
 6.11.2026. — odobrena zamjena aplikacijske ikone opcijom A lokalno implementirana (SVG i PNG 192/512); build i PWA smoke PASS. Online objava i stvarna provjera instalirane ikone na telefonu ostaju neizvedene. Dokazi u CURRENT_STATE.

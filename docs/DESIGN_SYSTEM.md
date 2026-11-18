@@ -1,5 +1,7 @@
 # Design System
 
+18.11.2026. — Dijalozi označavaju prvo nevaljano obvezno polje ili nevaljan format, povezuju poruku preko aria-describedby i vraćaju fokus na polje. Domena i dalje provjerava poslovna pravila pri spremanju.
+
 6.11.2026. — korisnik odabrao i odobrio aplikacijsku ikonu A: bijela akademska kapa #F4F9FC s tamnom kićankom #02070A na punoj Electric Blue #0297DE podlozi. Zamjenjuje radni monogram K. Canonical SVG je public/icons/kolegium.svg; scripts/generate-icons.mjs izrađuje PNG 192/512 za postojeći manifest i apple-touch-icon. Puna kvadratna podloga dopušta native OS maskiranje bez prozirnih kutova. Paleta ostatka UI-ja ostaje postojeća.
 
 31.10.2026. — aktualni korisnikov redizajn zamjenjuje ranije svijetle palete i zabranu dark prikaza. Jedinstven tamni prikaz: Midnight Black #02070A navigacija/istaknute podloge, #071117 pozadina, #111E27 kartice; Electric Blue #0297DE akcije/aktivno, Cantaloupe Orange #FC734D sekundarni naglasci/vrsta nastave/rokovi. Tekst #EDF5FA, pomoćni #B0C2CE, heading #F4F9FC, input border #708A9A. Primarne akcije imaju tamni #02070A tekst radi kontrasta; bijeli tekst na Electric Blue nije prihvatljiv za mali tekst. Native inputs koriste dark color-scheme; manifest/theme i SVG/PNG monogram slijede paletu. Radijusi 8/12/16px; suptilna sjena, postojeći razmaci i breakpointi. Raniji datirani opisi ispod ostaju povijest.

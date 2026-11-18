@@ -75,7 +75,6 @@ export class RemindersComponent {
     dailyTime: '09:00',
   });
   protected readonly days = signal(90);
-  protected readonly increase = (n: number) => n + 50;
   protected readonly category = signal('all');
   protected readonly message = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);

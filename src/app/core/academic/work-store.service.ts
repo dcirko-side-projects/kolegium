@@ -27,6 +27,10 @@ export class WorkStoreService {
   readonly archiveEditing = signal(false);
   readonly archivedIds = signal<Set<string>>(new Set());
   readonly courseNames = signal<Record<string, string | undefined>>({});
+  readonly recordId = signal<string | null>(null);
+  private pageKey = '';
+  private cursor: Awaited<ReturnType<WorkRepository['page']>>['cursor'] = null;
+  private listed: (Assessment | Project | Task)[] = [];
   private request = 0;
   readonly canWrite = computed(() => this.academic.canWrite() && !this.loading() && !this.error());
   constructor() {
@@ -39,7 +43,7 @@ export class WorkStoreService {
       this.academic.courses();
       this.kind();
       this.courseId();
-      this.count();
+      this.recordId();
       this.contextFilter();
       this.completedFilter();
       untracked(() => {
@@ -49,6 +53,9 @@ export class WorkStoreService {
           this.assessments.set([]);
           this.projects.set([]);
           this.tasks.set([]);
+          this.listed = [];
+          this.cursor = null;
+          this.pageKey = '';
           this.thesis.set(null);
           this.loading.set(false);
           this.courseNames.set({});
@@ -60,7 +67,7 @@ export class WorkStoreService {
   repository(): WorkRepository {
     return new WorkRepository(this.context.firestore, () => this.academic.online());
   }
-  async refresh(): Promise<void> {
+  async refresh(next = false): Promise<void> {
     if (this.kind() === 'results') return;
     const scope = this.academic.scope();
     if (!scope || !this.academic.ready() || !this.academic.online()) return;
@@ -72,10 +79,23 @@ export class WorkStoreService {
         before = await controlRepo.readControl(scope.uid);
       const kind = this.kind(),
         filter = this.contextFilter();
-      const rows: (Assessment | Project | Task)[] = [];
-      let cursor = null,
+      const key = JSON.stringify([
+        scope,
+        before.dataRevision,
+        kind,
+        filter,
+        this.completedFilter(),
+        this.courseId(),
+        this.recordId(),
+      ]);
+      const append = next && key === this.pageKey;
+      const rows = append ? [...this.listed] : [];
+      let cursor = append ? this.cursor : null,
         more = false;
-      if (kind !== 'thesis' && kind !== 'results') {
+      if (kind === 'tasks' && this.recordId()) {
+        const task = (await repo.get(scope, 'tasks', this.recordId()!)) as Task | null;
+        if (task) rows.push(task);
+      } else if (kind !== 'thesis' && kind !== 'results') {
         do {
           const page = await repo.page(
             scope,
@@ -99,11 +119,16 @@ export class WorkStoreService {
           more = page.hasMore;
         } while (more && rows.length < this.count());
       }
-      const thesis = (await repo.get(scope, 'thesis', 'main')) as Thesis | null;
+      const thesis =
+        kind === 'thesis' || kind === 'tasks'
+          ? ((await repo.get(scope, 'thesis', 'main')) as Thesis | null)
+          : null;
       const projects =
         kind === 'projects'
           ? (rows as Project[])
-          : ((await repo.page(scope, 'projects')).records as Project[]);
+          : kind === 'tasks'
+            ? ((await repo.page(scope, 'projects')).records as Project[])
+            : [];
       const projectMap = new Map(projects.map((p) => [p.id, p]));
       for (const task of rows.filter((r): r is Task => 'context' in r)) {
         if (task.context.type === 'project' && !projectMap.has(task.context.id!)) {
@@ -123,11 +148,17 @@ export class WorkStoreService {
         if (id) courseIds.add(id);
       }
       const archivedCourses = new Set<string>();
+      const semesterArchive = new Map<string, boolean>();
       for (const id of courseIds) {
-        const course = await this.academic.getCourse(id),
-          semester = await this.academic.getSemester(course.semesterId);
+        const course = await this.academic.getCourse(id);
+        if (!semesterArchive.has(course.semesterId)) {
+          semesterArchive.set(
+            course.semesterId,
+            (await this.academic.getSemester(course.semesterId)).isArchived,
+          );
+        }
         courseNames[id] = course.name;
-        if (course.isArchived || semester.isArchived) archivedCourses.add(id);
+        if (course.isArchived || semesterArchive.get(course.semesterId)) archivedCourses.add(id);
       }
       const archived = new Set<string>();
       for (const row of [...rows, ...projectMap.values()]) {
@@ -151,6 +182,9 @@ export class WorkStoreService {
         return;
       }
       this.assessments.set(kind === 'assessments' ? (rows as Assessment[]) : []);
+      this.pageKey = key;
+      this.cursor = cursor;
+      this.listed = rows;
       this.tasks.set(kind === 'tasks' ? (rows as Task[]) : []);
       this.projects.set([...projectMap.values()]);
       this.thesis.set(thesis);
@@ -206,6 +240,8 @@ export class WorkStoreService {
     }
   }
   loadMore(): void {
+    if (this.loading() || !this.more()) return;
     this.count.update((n) => n + 50);
+    void this.refresh(true);
   }
 }

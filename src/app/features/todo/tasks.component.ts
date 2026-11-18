@@ -1,3 +1,4 @@
+import { toSignal } from '@angular/core/rxjs-interop';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { EditorDialogComponent } from '../../shared/ui/editor-dialog/editor-dialog.component';
 import {
@@ -60,6 +61,8 @@ export class TasksComponent {
     );
   }
   constructor() {
+    const params = toSignal(inject(ActivatedRoute).paramMap);
+    effect(() => this.store.recordId.set(this.embedded() ? null : (params()?.get('id') ?? null)));
     const courseId = inject(ActivatedRoute).snapshot.queryParamMap.get('courseId');
     if (courseId) {
       this.filterType.set('course');

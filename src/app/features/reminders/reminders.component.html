@@ -114,7 +114,7 @@
   </p>
   @if (planning.more()) {
     <p>Za cjelovit izvoz najprije učitaj preostale obaveze.</p>
-    <button (click)="planning.count.update(increase)" [disabled]="planning.loading()">
+    <button (click)="planning.loadMore()" [disabled]="planning.loading()">
       Učitaj još obaveza
     </button>
   }

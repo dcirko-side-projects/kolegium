@@ -116,6 +116,8 @@ test('calendar day/week/month navigation, explicit filters and accessible respon
   await expect(page.getByLabel('Datum pregleda')).toHaveValue('2026-11-19');
   await expect(page.locator('.calendar-event')).toHaveCount(1);
   await page.getByRole('button', { name: 'Prethodni mjesec' }).click();
+  const filters = page.getByRole('button', { name: /Filtri rasporeda/ });
+  if (await filters.isVisible()) await filters.click();
   await page.getByLabel('Kolegij u rasporedu').selectOption({ label: 'Programiranje' });
   await expect(page.locator('.calendar-event')).toHaveCount(2);
   await search(page);

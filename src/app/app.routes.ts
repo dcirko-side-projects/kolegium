@@ -72,22 +72,22 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/reminders/reminders.component').then((m) => m.RemindersComponent),
       },
-      {
-        path: 'installments',
+      ...['installments', 'installments/:id'].map((path) => ({
+        path,
         title: 'Rate fakulteta | Kolegium',
         canDeactivate: [unsavedChangesGuard],
         loadComponent: () =>
           import('./features/installments/installments.component').then(
             (m) => m.InstallmentsComponent,
           ),
-      },
-      {
-        path: 'todo',
+      })),
+      ...['todo', 'todo/:id'].map((path) => ({
+        path,
         title: 'To-do | Kolegium',
         canDeactivate: [unsavedChangesGuard],
         loadComponent: () =>
           import('./features/todo/tasks.component').then((m) => m.TasksComponent),
-      },
+      })),
       {
         path: 'thesis',
         title: 'Diplomski | Kolegium',

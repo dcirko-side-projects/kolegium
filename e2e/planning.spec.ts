@@ -25,7 +25,11 @@ test('installment cents/overdue/home visibility and paid/reopen survive reload; 
   await expect(page.getByRole('article', { name: 'Sintetička rata' })).toContainText('12,34');
   await page.goto('/');
   await expect(page.getByRole('article', { name: 'Sintetička rata' })).toContainText('Zakašnjelo');
-  await page.goto('/installments');
+  await page
+    .getByRole('region', { name: 'Nadolazeće obaveze' })
+    .getByRole('link', { name: 'Sintetička rata' })
+    .click();
+  await expect(page).toHaveURL(/\/installments\/[\w-]+$/);
   await page.getByRole('button', { name: 'Označi plaćeno', exact: true }).click();
   await saved(page);
   await page.goto('/');
@@ -38,6 +42,11 @@ test('installment cents/overdue/home visibility and paid/reopen survive reload; 
   await page.getByRole('button', { name: 'Spremi ratu', exact: true }).click();
   await expect(page.getByRole('alert').filter({ hasText: 'dvije decimale' })).toBeVisible();
   await expect(page.getByLabel('Iznos EUR', { exact: true })).toHaveValue('1.001');
+  await expect(page.getByLabel('Iznos EUR', { exact: true })).toBeFocused();
+  await expect(page.getByLabel('Iznos EUR', { exact: true })).toHaveAttribute(
+    'aria-invalid',
+    'true',
+  );
 });
 test('unpaid installment reminder appears 30 days ahead and disappears after payment', async ({
   page,
@@ -70,7 +79,8 @@ test('unpaid installment reminder appears 30 days ahead and disappears after pay
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );
-  await page.goto('/installments');
+  await reminders.getByRole('link', { name: 'Sintetički podsjetnik' }).click();
+  await expect(page).toHaveURL(/\/installments\/[\w-]+$/);
   await page.getByRole('button', { name: 'Označi plaćeno', exact: true }).click();
   await saved(page);
   await page.goto('/');

@@ -1,5 +1,13 @@
 # Trenutno stanje
 
+## 18.11.2026. — deset poboljšanja iz audita
+
+Detalj kolegija prati promjene revizije dok je otvoren za pregled. Uređivanje zadržava početnu reviziju radi otkrivanja konflikta. Početna daje prednost nastavi i rokovima te povezuje pojedine zadatke i rate. Odabrani semestar i arhiva vidljivi su na mobitelu, uz sklopive filtre i tjednu agendu prije kalendarske mreže. Obvezna polja i nevaljan format u dijalozima imaju povezanu poruku i fokus. Ruta /sections dobila je offline javni shell.
+
+Pregledi koriste dokumente iz odgovora upita i privremeno pamte već pročitane roditelje. Dodatne stranice zadataka, projekata, provjera, rata, rokova i povezanih rezultata nastavljaju se od kursora. Promjena revizije pokreće čitanje od početka. Firestoreova tranzitivna ovisnost re2js sada je na 2.10.0.
+
+Node 22.23.3. Typecheck, ESLint, 52 jedinična testa, 18 testova pravila i 34 SDK integracijska testa prolaze. Release build i PWA provjera uključuju izravnu offline navigaciju. Kandidat 95c990c972aea307b0b0 sadrži 44 javna resursa.
+
 ## Objavljena nova ikona i Git checkpoint — 6.11.2026.
 
 Po naknadnom izričitom nalogu „commitaj pushaj sve i objavi” svih šest aktualnih projektnih izmjena (SVG, PNG 192/512 i dokumentacija) commitirano je kao **e8517ac** i pushano na postojeći privatni dcirko-side-projects/kolegium/main. Release build i release PWA smoke PASS; Hosting-only deploy u kolegium-c8970 PASS, **df0d8b34c8d0658eb8bb**, 45 Hosting datoteka/44 PWA assets. Nova ikona A sada je online. Raniji lokalni status ispod opisuje stanje prije ove objave.

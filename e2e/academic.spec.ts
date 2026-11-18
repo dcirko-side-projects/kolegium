@@ -79,6 +79,9 @@ test('two clients preserve a stale local edit and offer the server version', asy
   try {
     await login(second);
     await second.goto(url);
+    const viewer = await context.newPage();
+    await viewer.goto(url);
+    await expect(viewer.getByRole('button', { name: 'Uredi kolegij' })).toBeVisible();
     await second.getByRole('button', { name: 'Uredi kolegij' }).click();
     await second
       .getByLabel('Informacije o kolegiju (opcionalno)')
@@ -87,6 +90,7 @@ test('two clients preserve a stale local edit and offer the server version', asy
     await expect(
       second.getByText('Kolegij je spremljen i potvrđen na poslužitelju.', { exact: true }),
     ).toBeVisible();
+    await expect(viewer.getByText('Potvrđen unos drugog klijenta.', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Spremi promjene' }).click();
     await expect(page.getByRole('alert')).toContainText('Potvrđen unos drugog klijenta.');
     await expect(page.getByLabel('Informacije o kolegiju (opcionalno)')).toHaveValue(

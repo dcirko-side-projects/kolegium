@@ -48,12 +48,20 @@ type WorkCollection =
   'assessments' | 'projects' | 'tasks' | 'thesis' | 'scoreActivities' | 'scoreAttempts';
 type WorkRecord = Assessment | Project | Task | Thesis | ScoreActivity | ScoreAttempt;
 type WorkInput = AssessmentInput | ProjectInput | TaskInput | ThesisInput;
+export interface CourseResultsCursor {
+  scopeKey: string;
+  revision: number;
+  streams: Map<string, QueryDocumentSnapshot | null>;
+}
 export class WorkRepository {
   async courseResults(
     scope: ActiveScope,
     courseId: string,
     count = 50,
+    previous?: CourseResultsCursor,
   ): Promise<{
+    cursor: CourseResultsCursor;
+    append: boolean;
     rows: { source: Assessment | Project; type: ResultSource; attempts: ScoreAttempt[] }[];
     more: boolean;
   }> {
@@ -61,9 +69,13 @@ export class WorkRepository {
       before = await academic.readControl(scope.uid);
     const rows: { source: Assessment | Project; type: ResultSource; attempts: ScoreAttempt[] }[] =
       [];
+    const scopeKey = JSON.stringify([scope.uid, scope.datasetId, courseId]);
+    const append = previous?.scopeKey === scopeKey && previous.revision === before.dataRevision;
+    const streams = new Map(append ? previous.streams : []);
     let more = false;
     for (const name of ['assessments', 'projects'] as const) {
-      let cursor: QueryDocumentSnapshot | null = null,
+      if (streams.get(name) === null) continue;
+      let cursor: QueryDocumentSnapshot | null = streams.get(name) ?? null,
         loaded = 0,
         collectionMore: boolean;
       do {
@@ -79,8 +91,9 @@ export class WorkRepository {
         loaded += page.records.length;
         cursor = page.cursor;
         collectionMore = page.hasMore;
-        if (!page.hasMore || loaded >= count) break;
+        if (!page.hasMore || loaded >= (append ? 50 : count)) break;
       } while (cursor);
+      streams.set(name, collectionMore ? cursor : null);
       more = more || collectionMore;
     }
     const after = await academic.readControl(scope.uid);
@@ -93,7 +106,7 @@ export class WorkRepository {
         'conflict',
         'Podaci su promijenjeni tijekom čitanja. Osvježi rezultate.',
       );
-    return { rows, more };
+    return { rows, more, append, cursor: { scopeKey, revision: after.dataRevision, streams } };
   }
   constructor(
     private readonly db: Firestore,
@@ -114,7 +127,7 @@ export class WorkRepository {
       recordId(id),
     );
   }
-  private decode(name: WorkCollection, id: string, raw: DocumentData | undefined): WorkRecord {
+  decode(name: WorkCollection, id: string, raw: DocumentData | undefined): WorkRecord {
     if (
       !raw ||
       raw['id'] !== id ||
@@ -193,7 +206,10 @@ export class WorkRepository {
     this.online();
     const id = activityId(type, sourceId);
     const activity = (await this.get(scope, 'scoreActivities', id)) as ScoreActivity | null;
-    if (!activity) return { activity: null, attempts: [] };
+    return { activity, attempts: activity ? await this.attemptHistory(scope, id) : [] };
+  }
+  async attemptHistory(scope: ActiveScope, id: string): Promise<ScoreAttempt[]> {
+    this.online();
     try {
       let cursor: QueryDocumentSnapshot | undefined;
       const rows: ScoreAttempt[] = [];
@@ -218,7 +234,7 @@ export class WorkRepository {
         if (snap.size < 50) break;
         cursor = snap.docs.at(-1);
       } while (cursor);
-      return { activity, attempts: rows };
+      return rows;
     } catch (e) {
       throw asApplicationError(e);
     }

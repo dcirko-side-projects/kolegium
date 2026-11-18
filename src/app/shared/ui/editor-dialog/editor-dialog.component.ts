@@ -76,9 +76,16 @@ export class EditorDialogComponent {
     const state = inject(DialogStateService);
     state.count.update((count) => count + 1);
     const previous = document.activeElement;
-    afterNextRender(() => this.dialog().nativeElement.showModal());
+    afterNextRender(() => {
+      const dialog = this.dialog().nativeElement;
+      dialog.showModal();
+      dialog.addEventListener('submit', this.validateFields, true);
+      dialog.addEventListener('input', this.clearFieldError);
+    });
     inject(DestroyRef).onDestroy(() => {
       state.count.update((count) => count - 1);
+      this.dialog().nativeElement.removeEventListener('submit', this.validateFields, true);
+      this.dialog().nativeElement.removeEventListener('input', this.clearFieldError);
       this.dialog().nativeElement.close();
       queueMicrotask(() => {
         const target =
@@ -89,6 +96,58 @@ export class EditorDialogComponent {
       });
     });
   }
+  private readonly clearFieldError = (event: Event) => {
+    const field = event.target;
+    if (!(field instanceof HTMLElement) || !field.id) return;
+    const id = field.id + '-validation';
+    const message = document.getElementById(id);
+    if (!message) return;
+    message.remove();
+    field.removeAttribute('aria-invalid');
+    const remaining = (field.getAttribute('aria-describedby') ?? '')
+      .split(' ')
+      .filter((value) => value && value !== id);
+    if (remaining.length) field.setAttribute('aria-describedby', remaining.join(' '));
+    else field.removeAttribute('aria-describedby');
+  };
+  private readonly validateFields = (event: Event) => {
+    if (!(event.target instanceof HTMLFormElement)) return;
+    for (const field of event.target.elements) {
+      if (
+        !(
+          field instanceof HTMLInputElement ||
+          field instanceof HTMLSelectElement ||
+          field instanceof HTMLTextAreaElement
+        ) ||
+        !field.id ||
+        field.disabled
+      )
+        continue;
+      const label = field.labels?.[0]?.textContent?.trim() ?? 'Polje';
+      const missing = field.required && !field.value.trim();
+      if (!missing && field.validity.valid) continue;
+      const id = field.id + '-validation';
+      if (!document.getElementById(id)) {
+        const message = document.createElement('p');
+        message.id = id;
+        message.className = 'error-message';
+        message.setAttribute('role', 'alert');
+        message.textContent = missing
+          ? label + ' je obvezno polje.'
+          : (field.dataset['invalidMessage'] ?? label + ' — provjeri format unosa.');
+        field.after(message);
+        field.setAttribute('aria-invalid', 'true');
+        field.setAttribute(
+          'aria-describedby',
+          [field.getAttribute('aria-describedby'), id].filter(Boolean).join(' '),
+        );
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      field.focus();
+      return;
+    }
+  };
   protected escape(event: Event): void {
     event.preventDefault();
     if (!this.changes.hasPendingChanges()) this.dismiss.emit();
