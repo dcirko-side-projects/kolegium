@@ -1,5 +1,9 @@
 # Deployment i environments
 
+## 18.11.2026. — objava deset poboljšanja iz audita
+
+Implementacijski commit 544514e pushan je na main. Firebase Hosting release 95c990c972aea307b0b0 objavljen je na kolegium-c8970, ukupno 45 datoteka. Readback je potvrdio 20 HTTP provjera na oba javna origina, identičan service worker, SHA-256 svih 44 javnih resursa te produkcijsku prijavu na 1440 i 390 px. Rezultati su u ignoriranoj mapi artifacts/release/audit-2026-11-18. Objava je obuhvatila samo Hosting.
+
 ## Nova aplikacijska ikona — 6.11.2026.
 
 Izričiti nalog „commitaj pushaj sve i objavi” izvršen za odabranu ikonu A. Source commit **e8517ac** pushan na postojeći privatni origin/main; release build i release PWA smoke PASS. Postojeći firebase-cloud.mjs wrapper izvršio je deploy --project kolegium-c8970 --config firebase.release.json --only hosting --non-interactive: PASS, 45 datoteka, public-shell **df0d8b34c8d0658eb8bb** / 44 assets. Bez Rules/index/data/billing promjene. Online https://kolegium-c8970.firebaseapp.com i https://kolegium-c8970.web.app.
